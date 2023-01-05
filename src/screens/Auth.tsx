@@ -11,8 +11,8 @@ import {
   Text,
 } from "@ui-kitten/components"
 import { useSelector, useDispatch } from "react-redux"
-import type { RootState } from "redux/store"
-import { updateProfilesByPubkey } from "redux/notesSlice"
+import type { RootState } from "state/store"
+import { updateProfilesByPubkey, updateContactListByPubkey } from "state/notesSlice"
 import { getProfile } from "core/nostr"
 
 export const AuthScreen = ({ navigation, route }) => {
@@ -29,20 +29,18 @@ export const AuthScreen = ({ navigation, route }) => {
 
   const handlePrivateKeySubmit = () => {}
 
-  React.useEffect(() => {
-    const init = async () => {
-      if (pub) {
-        const profile = (await getProfile(pub)) as NostrProfile
-        dispatch(updateProfilesByPubkey({ [pub]: profile }))
-        reset({
-          index: 0,
-          routes: [{ name: "Home" }],
-        })
-      }
-    }
+  // React.useEffect(() => {
+  //   const init = async () => {
+  //     if (pub) {
+  //       reset({
+  //         index: 0,
+  //         routes: [{ name: "Home" }],
+  //       })
+  //     }
+  //   }
 
-    init()
-  }, [pub, dispatch])
+  //   init()
+  // }, [pub, dispatch])
 
   if (loading) {
     return <Layout style={{ flex: 1 }} />

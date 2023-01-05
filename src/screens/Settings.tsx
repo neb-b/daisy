@@ -1,8 +1,8 @@
 import React from "react"
 import { View, SafeAreaView, ScrollView, Modal, Pressable, FlatList } from "react-native"
 import { useSelector, useDispatch } from "react-redux"
-import type { RootState } from "redux/store"
-import { updateTheme } from "redux/settingsSlice"
+import type { RootState } from "state/store"
+import { updateTheme } from "state/settingsSlice"
 
 import {
   Input,

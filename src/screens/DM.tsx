@@ -11,11 +11,10 @@ import {
   Text,
   TopNavigationAction,
 } from "@ui-kitten/components"
-import { messages } from "redux/test-messages"
+import { messages } from "state/test-messages"
 
-import type { RootState } from "redux/store"
-import { updateNotesAndProfiles, updateFeedByChannelId } from "redux/notesSlice"
-import { getEventsForChannel } from "core/nostr"
+import type { RootState } from "state/store"
+import { updateNotesAndProfiles, updateFeedByChannelId } from "state/notesSlice"
 import { MessageInput } from "components/MessageInput"
 import { Avatar } from "components/Avatar"
 

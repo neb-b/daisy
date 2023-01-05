@@ -12,9 +12,8 @@ import {
   TopNavigationAction,
 } from "@ui-kitten/components"
 
-import type { RootState } from "redux/store"
-import { updateNotesAndProfiles, updateFeedByChannelId } from "redux/notesSlice"
-import { getEventsForChannel } from "core/nostr"
+import type { RootState } from "state/store"
+import { updateNotesAndProfiles, updateFeedByChannelId } from "state/notesSlice"
 
 import { NoteItem } from "components/Note"
 import { MessageInput } from "components/MessageInput"
@@ -32,17 +31,6 @@ export const ChannelScreen = ({ navigation }) => {
   const notesInFeed = feedByChannelId[CHANNEL]?.map((id) => notesById[id]).sort(
     (a, b) => a.created_at - b.created_at
   )
-
-  React.useEffect(() => {
-    const fetchData = async () => {
-      const { notes, profiles } = await getEventsForChannel(CHANNEL)
-
-      dispatch(updateNotesAndProfiles({ notes, profiles }))
-      dispatch(updateFeedByChannelId({ [CHANNEL]: Array.from(new Set(notes.map((note) => note.id))) }))
-    }
-
-    // fetchData()
-  }, [dispatch])
 
   const navigateBack = () => {
     navigation.goBack()

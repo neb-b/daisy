@@ -12,21 +12,39 @@ import {
   TopNavigationAction,
 } from "@ui-kitten/components"
 
-import type { RootState } from "redux/store"
-import { updateNotesAndProfiles, updateFeedByChannelId } from "redux/notesSlice"
-import { getEventsForChannel } from "core/nostr"
+import type { RootState } from "state/store"
+import { updateNotesAndProfiles, updateFeedByChannelId } from "state/notesSlice"
+import { getEventsFromContactList } from "core/nostr"
 
 import { NoteItem } from "components/Note"
 import { NewNote } from "components/NewNote"
 
-export const FeedScreen = ({ navigation }) => {
+export const FollowingFeedScreen = ({ navigation }) => {
   const dispatch = useDispatch()
   const { notes: notesState, settings: settingsState } = useSelector((state: RootState) => state)
-  const { profilesByPubkey, loading } = notesState
+  const { profilesByPubkey, feedByChannelId, contactListByPubkey, loading } = notesState
   const [creatingNote, setCreatingNote] = React.useState(false)
 
+  const followingFeed = feedByChannelId["following"] || []
   const profilePubkey = settingsState.pub
   const profile = profilesByPubkey[profilePubkey]
+  const contactList = contactListByPubkey[profilePubkey]?.tags.map((tag) => tag[1])
+
+  const stringifiedContactList = JSON.stringify(contactList)
+  React.useEffect(() => {
+    const fetchNotes = async () => {
+      if (!contactList) {
+        return
+      }
+
+      const jsonContactList = JSON.parse(stringifiedContactList)
+      const { notes, profiles } = await getEventsFromContactList(jsonContactList)
+      dispatch(updateNotesAndProfiles({ notes, profiles }))
+      dispatch(updateFeedByChannelId({ following: notes.map((note) => note.id) }))
+    }
+
+    fetchNotes()
+  }, [stringifiedContactList])
 
   return (
     <Layout style={{ flex: 1 }}>
@@ -37,6 +55,26 @@ export const FeedScreen = ({ navigation }) => {
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
             <Text>Loading...</Text>
           </View>
+        )}
+
+        {followingFeed.length > 0 && (
+          <FlatList
+            data={followingFeed}
+            renderItem={({ item }) => (
+              <Pressable
+                onPress={() => navigation.navigate("Thread", { id: item })}
+                style={{
+                  paddingLeft: 10,
+                  paddingRight: 15,
+                  paddingTop: 5,
+                  paddingBottom: 5,
+                }}
+              >
+                <NoteItem navigation={navigation} key={item} id={item} />
+              </Pressable>
+            )}
+            keyExtractor={(item) => item}
+          />
         )}
 
         <Button

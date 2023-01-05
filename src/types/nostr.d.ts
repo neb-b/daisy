@@ -24,12 +24,18 @@ declare interface NostrProfileEvent extends NostrBaseEvent {
   kind: 0
 }
 
-declare type NostrEvent = NostrNoteEvent | NostrProfileEvent
+declare interface NostrContactListEvent extends NostrBaseEvent {
+  kind: 3
+}
+
+declare type NostrEvent = NostrNoteEvent | NostrProfileEvent | NostrContactListEvent
 
 declare type NostrProfile = NostrNoteEvent & {
   picture?: string
   name?: string
   about?: string
+  nip05?: string
+  website?: string
 }
 
 declare interface NostrFilter {

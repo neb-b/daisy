@@ -1,12 +1,19 @@
 import { relayInit } from "nostr-tools"
 
+const nostrEventKinds = {
+  profile: 0,
+  note: 1,
+  contactList: 3,
+  reaction: 7,
+}
+
 export const relays = [
   "wss://relay.damus.io",
   "wss://nostr-relay.wlvs.space",
-  // "wss://nostr.fmt.wiz.biz",
-  // "wss://relay.nostr.bg",
-  // "wss://nostr.oxtr.dev",
-  // "wss://nostr.v0l.io",
+  "wss://nostr.fmt.wiz.biz",
+  "wss://relay.nostr.bg",
+  "wss://nostr.oxtr.dev",
+  "wss://nostr.v0l.io",
 ]
 
 const relayStatus = {}
@@ -44,22 +51,22 @@ export const initRelays = async () => {
   })
 }
 
-export const getEventsForChannel = async (
-  channelId?: string
-): Promise<{ notes: NostrEvent[]; profiles: Record<string, NostrProfile> }> => {
+export const getEventsFromContactList = async (
+  pubkeys: string[]
+): Promise<{ notes: NostrEvent[]; profiles: Record<string, NostrProfileEvent> }> => {
   return new Promise(async (resolve) => {
-    const notes = await getNostrEvents({ ...(channelId ? { "#e": [channelId] } : {}) })
+    const notes = await getNostrEvents({ authors: pubkeys, kinds: [1] })
 
     const profilePubkeysSet = new Set<string>()
     notes.forEach((message) => {
       profilePubkeysSet.add(message.pubkey)
     })
 
-    const profilesEvents = await getNostrEvents({
-      kinds: [0],
+    const profilesEvents = (await getNostrEvents({
+      kinds: [nostrEventKinds.profile],
       authors: Array.from(profilePubkeysSet),
       limit: profilePubkeysSet.size,
-    })
+    })) as NostrProfileEvent[]
 
     const userProfileInfos = {}
     profilesEvents.forEach((profileEvent) => {
@@ -81,7 +88,8 @@ export const getEventsForChannel = async (
 const getNostrEvents = async (filter?: NostrFilter): Promise<NostrEvent[]> => {
   return new Promise((resolve) => {
     const limit = filter?.limit || 10
-    const events: NostrEvent[] = []
+    const eventsById: Record<string, NostrEvent> = {}
+    let fetchedCount = 0
 
     const connectedRelays = relays.filter((relay) => relayStatus[relay])
     connectedRelays.forEach((relay) => {
@@ -98,10 +106,12 @@ const getNostrEvents = async (filter?: NostrFilter): Promise<NostrEvent[]> => {
         const nostrEvent = <NostrEvent>event
 
         // ts-expect-error
-        events.push(nostrEvent)
+        eventsById[nostrEvent.id] = nostrEvent
 
-        if (events.length === limit) {
-          resolve(events)
+        fetchedCount++
+
+        if (fetchedCount === limit) {
+          resolve(Array.from(Object.values(eventsById)))
           sub.unsub()
         }
       })
@@ -113,27 +123,21 @@ const getNostrEvents = async (filter?: NostrFilter): Promise<NostrEvent[]> => {
   })
 }
 
-export const getProfile = async (pubkey: string) => {
-  return getNostrEvent({
-    kinds: [0],
-    authors: ["cbf904c0702a361911c46d79379a6a502bc3bd0b4c56d25389e62d3ebf4a7db8"],
-  })
-}
-
 const getNostrEvent = async (filter?: NostrFilter): Promise<NostrEvent> => {
   return new Promise((resolve) => {
     const connectedRelays = relays.filter((relay) => relayStatus[relay])
     connectedRelays.forEach((relay) => {
       const relayObj = relayStatus[relay]
-      console.log("relay", relayObj)
 
       const sub = relayObj.sub([filter])
 
       sub.on("event", (event) => {
-        console.log("?event", event)
         const nostrEvent = <NostrEvent>event
 
-        resolve(nostrEvent)
+        const { content: stringifedContent, ...rest } = nostrEvent
+        const content = JSON.parse(stringifedContent)
+
+        resolve({ content, ...rest })
         sub.unsub()
       })
 
@@ -143,4 +147,20 @@ const getNostrEvent = async (filter?: NostrFilter): Promise<NostrEvent> => {
       })
     })
   })
+}
+
+export const getProfile = async (
+  pubkey: string
+): Promise<{ profile: NostrProfileEvent; contactList: NostrContactListEvent }> => {
+  const profile = (await getNostrEvent({
+    kinds: [nostrEventKinds.profile],
+    authors: [pubkey],
+  })) as NostrProfileEvent
+
+  const contactList = (await getNostrEvent({
+    kinds: [nostrEventKinds.contactList],
+    authors: [pubkey],
+  })) as NostrContactListEvent
+
+  return { profile, contactList }
 }

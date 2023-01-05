@@ -3,7 +3,7 @@ import { Text } from "@ui-kitten/components"
 
 import { useSelector } from "react-redux"
 
-import type { RootState } from "../redux/notesSlice"
+import type { RootState } from "state/store"
 import { Avatar } from "./Avatar"
 import { timeSince } from "../utils/time"
 

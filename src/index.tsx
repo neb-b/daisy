@@ -7,8 +7,8 @@ import { EvaIconsPack } from "@ui-kitten/eva-icons"
 import { NavigationContainer } from "@react-navigation/native"
 import { Provider, useSelector } from "react-redux"
 
-import type { RootState } from "redux/store"
-import { store } from "redux/store"
+import type { RootState } from "state/store"
+import { store } from "state/store"
 import { HomeStackNavigator } from "navigation/StackNavigator"
 
 const ThemeWrapper = ({ children }) => {
