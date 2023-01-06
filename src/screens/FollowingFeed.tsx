@@ -69,8 +69,7 @@ export const FollowingFeedScreen = ({ navigation }) => {
                 style={{
                   paddingLeft: 10,
                   paddingRight: 15,
-                  paddingTop: 5,
-                  paddingBottom: 5,
+                  paddingTop: 10,
                 }}
               >
                 <NoteItem navigation={navigation} key={item} id={item} />

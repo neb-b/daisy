@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "nostr-mobile",
-    "slug": "nostr-mobile",
+    "name": "Daisy",
+    "slug": "Daisy",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
