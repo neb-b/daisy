@@ -6,7 +6,8 @@
     "start": "expo start",
     "start:tunnel": "expo start --tunnel",
     "devtools": "react-devtools",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "types": "tsc --noEmit"
   },
   "dependencies": {
     "@eva-design/eva": "2.1.1",

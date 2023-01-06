@@ -55,7 +55,10 @@ export const getEventsFromContactList = async (
   pubkeys: string[]
 ): Promise<{ notes: NostrEvent[]; profiles: Record<string, NostrProfileEvent> }> => {
   return new Promise(async (resolve) => {
-    const notes = await getNostrEvents({ authors: pubkeys, kinds: [1] })
+    const notes = await getNostrEvents({
+      authors: pubkeys,
+      kinds: [1],
+    })
 
     const profilePubkeysSet = new Set<string>()
     notes.forEach((message) => {
@@ -74,8 +77,9 @@ export const getEventsFromContactList = async (
       let user = userMetadata
 
       try {
-        const userProfileInfo = JSON.parse(content)
-        user = { ...user, ...userProfileInfo }
+        const userInfo = JSON.parse(content) as NostrProfileContent
+        // @ts-expect-error
+        user = { ...user, content: userInfo }
       } catch (e) {}
 
       userProfileInfos[profileEvent.pubkey] = user
@@ -83,6 +87,24 @@ export const getEventsFromContactList = async (
 
     resolve({ notes, profiles: userProfileInfos })
   })
+}
+
+export const subscribeToContactList = (
+  pubkeys: string[]
+  // handleEvent: (NostrEvent) => void
+): (() => void) => {
+  const unsub = subscribeToNostrEvents(
+    {
+      authors: pubkeys,
+      kinds: [1],
+      since: Date.now() / 1000,
+    },
+    (event) => {
+      console.log("new event", event)
+    }
+  )
+
+  return unsub
 }
 
 const getNostrEvents = async (filter?: NostrFilter): Promise<NostrEvent[]> => {
@@ -123,6 +145,27 @@ const getNostrEvents = async (filter?: NostrFilter): Promise<NostrEvent[]> => {
   })
 }
 
+const subscriptions = {}
+const subscribeToNostrEvents = (filter: NostrFilter, handleEvent: (NostrEvent) => void): (() => void) => {
+  const connectedRelays = relays.filter((relay) => relayStatus[relay])
+  connectedRelays.forEach((relay) => {
+    const relayObj = relayStatus[relay]
+    const sub = relayObj.sub([filter])
+    subscriptions[relay] = sub
+
+    sub.on("event", handleEvent)
+
+    sub.on("eose", () => {
+      subscriptions[relay] = null
+      sub.unsub()
+    })
+  })
+
+  return () => {
+    Object.values(subscriptions).forEach((sub: { unsub: () => void }) => sub.unsub())
+  }
+}
+
 const getNostrEvent = async (filter?: NostrFilter): Promise<NostrEvent> => {
   return new Promise((resolve) => {
     const connectedRelays = relays.filter((relay) => relayStatus[relay])
@@ -151,11 +194,11 @@ const getNostrEvent = async (filter?: NostrFilter): Promise<NostrEvent> => {
 
 export const getProfile = async (
   pubkey: string
-): Promise<{ profile: NostrProfileEvent; contactList: NostrContactListEvent }> => {
+): Promise<{ profile: NostrProfile; contactList: NostrContactListEvent }> => {
   const profile = (await getNostrEvent({
     kinds: [nostrEventKinds.profile],
     authors: [pubkey],
-  })) as NostrProfileEvent
+  })) as NostrProfile
 
   const contactList = (await getNostrEvent({
     kinds: [nostrEventKinds.contactList],

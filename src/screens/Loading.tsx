@@ -30,6 +30,7 @@ export const LoadingScreen = ({ navigation, route }) => {
       await sleep(2000)
 
       const { profile, contactList } = await getProfile(pub)
+
       dispatch(updateProfilesByPubkey({ [pub]: profile }))
       dispatch(updateContactListByPubkey({ [pub]: contactList }))
 

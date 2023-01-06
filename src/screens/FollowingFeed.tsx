@@ -14,7 +14,7 @@ import {
 
 import type { RootState } from "state/store"
 import { updateNotesAndProfiles, updateFeedByChannelId } from "state/notesSlice"
-import { getEventsFromContactList } from "core/nostr"
+import { getEventsFromContactList, subscribeToContactList } from "core/nostr"
 
 import { NoteItem } from "components/Note"
 import { NewNote } from "components/NewNote"
@@ -41,6 +41,9 @@ export const FollowingFeedScreen = ({ navigation }) => {
       const { notes, profiles } = await getEventsFromContactList(jsonContactList)
       dispatch(updateNotesAndProfiles({ notes, profiles }))
       dispatch(updateFeedByChannelId({ following: notes.map((note) => note.id) }))
+
+      const unsub = subscribeToContactList(jsonContactList)
+      return () => unsub()
     }
 
     fetchNotes()

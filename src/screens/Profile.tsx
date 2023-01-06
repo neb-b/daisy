@@ -24,6 +24,7 @@ export const ProfileScreen = ({ navigation, route }) => {
   } = route
   const { profilesByPubkey } = useSelector((state: RootState) => state.notes)
   const profile = profilesByPubkey[pubkey]
+  const profileContent = profile?.content
 
   const navigateBack = () => {
     navigation.goBack()
@@ -38,11 +39,13 @@ export const ProfileScreen = ({ navigation, route }) => {
         <Divider />
         <Layout style={styles.center}>
           <View style={{ padding: 20 }}>
-            <Avatar picture={profile?.picture} pubkey={pubkey} size={100} />
-            {profile.name && (
-              <Text style={{ fontWeight: "bold", fontSize: 32, marginTop: 24 }}>{profile.name}</Text>
+            <Avatar picture={profileContent?.picture} pubkey={pubkey} size={100} />
+            {profileContent?.name && (
+              <Text style={{ fontWeight: "bold", fontSize: 32, marginTop: 24 }}>{profileContent.name}</Text>
             )}
-            {profile.about && <Text style={{ marginTop: 12, fontSize: 16 }}>{profile.about}</Text>}
+            {profileContent?.about && (
+              <Text style={{ marginTop: 12, fontSize: 16 }}>{profileContent.about}</Text>
+            )}
 
             <Text style={{ marginTop: 24 }}>pubkey: {pubkey}</Text>
           </View>

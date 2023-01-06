@@ -11,6 +11,7 @@ export const NoteItem = ({ id, navigation, style = {} }) => {
   const { profilesByPubkey, notesById } = useSelector((state: RootState) => state.notes)
   const note = notesById[id]
   const profile = profilesByPubkey[note?.pubkey]
+  const profileContent = profile?.content
 
   let reply
   if (note?.tags.length > 1) {
@@ -44,10 +45,12 @@ export const NoteItem = ({ id, navigation, style = {} }) => {
             })
           }
         >
-          <Avatar picture={profile?.picture} pubkey={note.pubkey} />
+          <Avatar picture={profileContent?.picture} pubkey={note.pubkey} />
         </Pressable>
         <View style={{ flex: 1, marginLeft: 5 }}>
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>{profile?.name || note.pubkey.slice(0, 6)}</Text>
+          <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+            {profileContent?.name || note.pubkey.slice(0, 6)}
+          </Text>
           <Text>{timeSince(note.created_at)}</Text>
           {reply && (
             <View
