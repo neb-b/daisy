@@ -109,7 +109,7 @@ export const subscribeToContactList = (
 
 const getNostrEvents = async (filter?: NostrFilter): Promise<NostrEvent[]> => {
   return new Promise((resolve) => {
-    const limit = filter?.limit || 10
+    const limit = filter?.limit || 60
     const eventsById: Record<string, NostrEvent> = {}
     let fetchedCount = 0
 
