@@ -45,7 +45,7 @@ export const SettingsScreen = ({ navigation }) => {
             <Text>{user.pubkey}</Text>
           </SettingsCard>
           <SettingsCard title="Private key">
-            <Text>{user.pubkey}</Text>
+            <Text>{user.privateKey}</Text>
           </SettingsCard>
         </ScrollView>
       </SafeAreaView>

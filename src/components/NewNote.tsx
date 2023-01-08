@@ -21,7 +21,7 @@ type Props = {
 export const NewNote: React.FC<Props> = ({ closeModal }) => {
   const dispatch = useDispatch()
   const { settings: settingsState } = useSelector((state: RootState) => state)
-  const [content, setContent] = React.useState("test publish from daisy")
+  const [content, setContent] = React.useState("test publish from daisy 🤙")
 
   const RightAccessory = () => (
     <Button appearance="ghost" onPress={closeModal}>

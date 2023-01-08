@@ -1,4 +1,4 @@
-import { relayInit, getEventHash, signEvent } from "nostr-tools"
+import { relayInit, getEventHash, signEvent, generatePrivateKey, getPublicKey } from "nostr-tools"
 
 const nostrEventKinds = {
   profile: 0,
@@ -199,25 +199,33 @@ export const publishNote = async (user, eventData): Promise<void> => {
     kind: 1,
     pubkey: user.pubkey,
     created_at: Math.floor(Date.now() / 1000),
+    tags: [],
     ...eventData,
   }
 
   event.id = getEventHash(event)
   event.sig = signEvent(event, user.privateKey)
+  console.log("publishing event", event)
+
+  const publish = async (relay, event: NostrEvent): Promise<void> => {
+    const pub = relay.publish(event)
+    pub.on("ok", () => {
+      console.log(`${relay.url} has accepted our event`)
+    })
+    pub.on("seen", () => {
+      console.log(`we saw the event on ${relay.url}`)
+    })
+    pub.on("failed", (reason) => {
+      console.log(`failed to publish to ${relay.url}: ${reason}`)
+    })
+
+    await relay.close()
+  }
 
   const connectedRelays = relays.filter((relay) => relayStatus[relay])
   connectedRelays.forEach((relay) => {
     const relayObj = relayStatus[relay]
-    const pub = relayObj.publish(event)
-    pub.on("ok", () => {
-      console.log(`${relayObj.url} has accepted our event`)
-    })
-    pub.on("seen", () => {
-      console.log(`we saw the event on ${relayObj.url}`)
-    })
-    pub.on("failed", (reason) => {
-      console.log(`failed to publish to ${relayObj.url}: ${reason}`)
-    })
+    publish(relayObj, event)
   })
 }
 
