@@ -11,13 +11,17 @@ import { PersistGate } from "redux-persist/integration/react"
 import type { RootState } from "state/store"
 import { store, persistor } from "state/store"
 import { HomeStackNavigator } from "navigation/StackNavigator"
+import { dark } from "theme/dark"
+import { mapping } from "theme/mapping"
 
 const ThemeWrapper = ({ children }) => {
   const { theme } = useSelector((state: RootState) => state.settings)
   const isDark = theme === "dark"
 
+  const themConfig = isDark ? { ...eva.dark, ...dark } : { ...eva.light }
+
   return (
-    <ThemeProvider {...eva} theme={isDark ? eva.dark : eva.light}>
+    <ThemeProvider {...eva} customMapping={mapping} theme={themConfig}>
       <IconRegistry icons={EvaIconsPack} />
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       {children}

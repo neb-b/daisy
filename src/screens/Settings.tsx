@@ -14,23 +14,22 @@ import {
   Icon,
   Text,
   Toggle,
+  Card,
+  useTheme,
 } from "@ui-kitten/components"
 
 const BackIcon = (props) => <Icon {...props} name="arrow-back" />
 
 export const SettingsScreen = ({ navigation }) => {
   const dispatch = useDispatch()
-  const { theme } = useSelector((state: RootState) => state.settings)
-
-  const BackAction = () => <TopNavigationAction icon={BackIcon} onPress={() => navigation.goBack()} />
+  const { user } = useSelector((state: RootState) => state.settings)
 
   return (
     <Layout style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <TopNavigation title="Settings" alignment="center" accessoryLeft={BackAction} />
-        <Divider />
+        <TopNavigation title="Settings" alignment="center" />
         <ScrollView>
-          <View style={{ padding: 20 }}>
+          {/* <SettingsCard title="Display">
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Text style={{ flex: 1, fontWeight: "600", fontSize: 18 }}>Dark Mode</Text>
               <Toggle
@@ -40,10 +39,26 @@ export const SettingsScreen = ({ navigation }) => {
                 }}
               />
             </View>
-          </View>
-          <Divider />
+          </SettingsCard> */}
+
+          <SettingsCard title="Pubkey">
+            <Text>{user.pubkey}</Text>
+          </SettingsCard>
+          <SettingsCard title="Private key">
+            <Text>{user.pubkey}</Text>
+          </SettingsCard>
         </ScrollView>
       </SafeAreaView>
     </Layout>
+  )
+}
+
+const SettingsCard = ({ title, children }) => {
+  const theme = useTheme()
+  return (
+    <View style={{ marginLeft: 16, marginRight: 16, marginBottom: 16 }}>
+      <Text style={{ fontWeight: "400", fontSize: 16, marginLeft: 16, marginBottom: 8 }}>{title}</Text>
+      <Card style={{ backgroundColor: theme["background-basic-color-3"], borderRadius: 20 }}>{children}</Card>
+    </View>
   )
 }
