@@ -26,9 +26,11 @@ export const FollowingFeedScreen = ({ navigation }) => {
   const [creatingNote, setCreatingNote] = React.useState(false)
 
   const followingFeed = feedByChannelId["following"] || []
-  const profilePubkey = settingsState.pub
+  const profilePubkey = settingsState.user.pubkey
   const profile = profilesByPubkey[profilePubkey]
   const contactList = contactListByPubkey[profilePubkey]?.tags.map((tag) => tag[1])
+
+  console.log("logged in: ", profilePubkey)
 
   const stringifiedContactList = JSON.stringify(contactList)
   React.useEffect(() => {

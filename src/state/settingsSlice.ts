@@ -5,13 +5,15 @@ type theme = "light" | "dark" | "system"
 
 export interface SettingsState {
   theme: theme
-  pub: string
-  priv: string
+  user: {
+    pubkey?: string
+    privateKey?: string
+  }
 }
 
 const initialState = {
   theme: "dark",
-  pub: "cbf904c0702a361911c46d79379a6a502bc3bd0b4c56d25389e62d3ebf4a7db8",
+  user: {},
 } as SettingsState
 
 export const settingsSlice = createSlice({
@@ -21,7 +23,10 @@ export const settingsSlice = createSlice({
     updateTheme(state, action: PayloadAction<theme>) {
       state.theme = action.payload
     },
+    updateUser(state, action: PayloadAction<SettingsState["user"]>) {
+      state.user = action.payload
+    },
   },
 })
 
-export const { updateTheme } = settingsSlice.actions
+export const { updateTheme, updateUser } = settingsSlice.actions

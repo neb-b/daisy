@@ -13,7 +13,7 @@ export const relays = [
   "wss://nostr.fmt.wiz.biz",
   "wss://relay.nostr.bg",
   "wss://nostr.oxtr.dev",
-  "wss://nostr.v0l.io",
+  // "wss://nostr.v0l.io",
 ]
 
 const relayStatus = {}
@@ -27,6 +27,7 @@ const connectToRelay = async (relayEndpoint, successCallback) => {
   await relay.connect()
 
   relay.on("connect", () => {
+    console.log("connected: ", relay.url)
     relayStatus[relayEndpoint] = relay
     successCallback(relay)
   })
@@ -156,6 +157,7 @@ const subscribeToNostrEvents = (filter: NostrFilter, handleEvent: (NostrEvent) =
     sub.on("event", handleEvent)
 
     sub.on("eose", () => {
+      console.log("getNostrEvents eose: ", relay)
       subscriptions[relay] = null
       sub.unsub()
     })
@@ -185,7 +187,7 @@ const getNostrEvent = async (filter?: NostrFilter): Promise<NostrEvent> => {
       })
 
       sub.on("eose", () => {
-        console.log("EOSE")
+        console.log("getNostrEvent eose: ", relay)
         sub.unsub()
       })
     })

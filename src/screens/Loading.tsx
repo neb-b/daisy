@@ -20,7 +20,9 @@ import { sleep } from "utils/sleep"
 export const LoadingScreen = ({ navigation, route }) => {
   const dispatch = useDispatch()
   const { reset } = navigation
-  const { pub } = useSelector((state: RootState) => state.settings)
+  const {
+    user: { pubkey },
+  } = useSelector((state: RootState) => state.settings)
 
   React.useEffect(() => {
     const startup = async () => {
@@ -29,10 +31,17 @@ export const LoadingScreen = ({ navigation, route }) => {
       // figure out a better way to wait until connected to a relay
       await sleep(2000)
 
-      const { profile, contactList } = await getProfile(pub)
+      if (!pubkey) {
+        reset({
+          index: 0,
+          routes: [{ name: "Auth" }],
+        })
+      }
 
-      dispatch(updateProfilesByPubkey({ [pub]: profile }))
-      dispatch(updateContactListByPubkey({ [pub]: contactList }))
+      const { profile, contactList } = await getProfile(pubkey)
+
+      dispatch(updateProfilesByPubkey({ [pubkey]: profile }))
+      dispatch(updateContactListByPubkey({ [pubkey]: contactList }))
 
       reset({
         index: 0,
@@ -41,7 +50,7 @@ export const LoadingScreen = ({ navigation, route }) => {
     }
 
     startup()
-  }, [reset, pub])
+  }, [reset, pubkey])
 
   return (
     <Layout style={{ flex: 1 }}>

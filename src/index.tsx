@@ -1,14 +1,15 @@
 import React from "react"
 import { StatusBar } from "react-native"
 
-import { ApplicationProvider as ThemeProvider, IconRegistry } from "@ui-kitten/components"
+import { ApplicationProvider as ThemeProvider, IconRegistry, Text } from "@ui-kitten/components"
 import * as eva from "@eva-design/eva"
 import { EvaIconsPack } from "@ui-kitten/eva-icons"
 import { NavigationContainer } from "@react-navigation/native"
 import { Provider, useSelector } from "react-redux"
+import { PersistGate } from "redux-persist/integration/react"
 
 import type { RootState } from "state/store"
-import { store } from "state/store"
+import { store, persistor } from "state/store"
 import { HomeStackNavigator } from "navigation/StackNavigator"
 
 const ThemeWrapper = ({ children }) => {
@@ -28,9 +29,11 @@ const App = () => {
   return (
     <Provider store={store}>
       <ThemeWrapper>
-        <NavigationContainer>
-          <HomeStackNavigator />
-        </NavigationContainer>
+        <PersistGate loading={<Text>Loading...</Text>} persistor={persistor}>
+          <NavigationContainer>
+            <HomeStackNavigator />
+          </NavigationContainer>
+        </PersistGate>
       </ThemeWrapper>
     </Provider>
   )
