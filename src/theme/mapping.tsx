@@ -1,22 +1,22 @@
 export const mapping = {
   components: {
-    Card: {
+    Button: {
       meta: {
         scope: "all",
         parameters: {},
         variantGroups: {},
         states: {},
         appearances: {
-          surface: {
+          primary: {
             default: true,
           },
         },
       },
       appearances: {
-        surface: {
+        primary: {
           mapping: {
             borderRadius: 10,
-            // backgroundColor: "background-basic-color-1",
+            color: "background-basic-color-1",
           },
         },
       },

@@ -1,4 +1,4 @@
-import { relayInit } from "nostr-tools"
+import { relayInit, getEventHash, signEvent } from "nostr-tools"
 
 const nostrEventKinds = {
   profile: 0,
@@ -110,7 +110,7 @@ export const subscribeToContactList = (
 
 const getNostrEvents = async (filter?: NostrFilter): Promise<NostrEvent[]> => {
   return new Promise((resolve) => {
-    const limit = filter?.limit || 60
+    const limit = filter?.limit || 5
     const eventsById: Record<string, NostrEvent> = {}
     let fetchedCount = 0
 
@@ -190,6 +190,33 @@ const getNostrEvent = async (filter?: NostrFilter): Promise<NostrEvent> => {
         console.log("getNostrEvent eose: ", relay)
         sub.unsub()
       })
+    })
+  })
+}
+
+export const publishNote = async (user, eventData): Promise<void> => {
+  let event = {
+    kind: 1,
+    pubkey: user.pubkey,
+    created_at: Math.floor(Date.now() / 1000),
+    ...eventData,
+  }
+
+  event.id = getEventHash(event)
+  event.sig = signEvent(event, user.privateKey)
+
+  const connectedRelays = relays.filter((relay) => relayStatus[relay])
+  connectedRelays.forEach((relay) => {
+    const relayObj = relayStatus[relay]
+    const pub = relayObj.publish(event)
+    pub.on("ok", () => {
+      console.log(`${relayObj.url} has accepted our event`)
+    })
+    pub.on("seen", () => {
+      console.log(`we saw the event on ${relayObj.url}`)
+    })
+    pub.on("failed", (reason) => {
+      console.log(`failed to publish to ${relayObj.url}: ${reason}`)
     })
   })
 }

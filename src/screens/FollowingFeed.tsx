@@ -30,8 +30,6 @@ export const FollowingFeedScreen = ({ navigation }) => {
   const profile = profilesByPubkey[profilePubkey]
   const contactList = contactListByPubkey[profilePubkey]?.tags.map((tag) => tag[1])
 
-  console.log("logged in: ", profilePubkey)
-
   const stringifiedContactList = JSON.stringify(contactList)
   React.useEffect(() => {
     const fetchNotes = async () => {
