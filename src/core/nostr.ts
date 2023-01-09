@@ -1,4 +1,12 @@
-import { relayInit, getEventHash, signEvent, generatePrivateKey, getPublicKey } from "nostr-tools"
+import {
+  relayInit,
+  getEventHash,
+  signEvent,
+  generatePrivateKey,
+  getPublicKey,
+  validateEvent,
+  verifySignature,
+} from "nostr-tools"
 
 const nostrEventKinds = {
   profile: 0,
@@ -10,7 +18,7 @@ const nostrEventKinds = {
 export const relays = [
   "wss://relay.damus.io",
   "wss://nostr-relay.wlvs.space",
-  "wss://nostr.fmt.wiz.biz",
+  // "wss://nostr.fmt.wiz.biz",
   "wss://relay.nostr.bg",
   "wss://nostr.oxtr.dev",
   // "wss://nostr.v0l.io",
@@ -205,27 +213,24 @@ export const publishNote = async (user, eventData): Promise<void> => {
 
   event.id = getEventHash(event)
   event.sig = signEvent(event, user.privateKey)
-  console.log("publishing event", event)
-
-  const publish = async (relay, event: NostrEvent): Promise<void> => {
-    const pub = relay.publish(event)
-    pub.on("ok", () => {
-      console.log(`${relay.url} has accepted our event`)
-    })
-    pub.on("seen", () => {
-      console.log(`we saw the event on ${relay.url}`)
-    })
-    pub.on("failed", (reason) => {
-      console.log(`failed to publish to ${relay.url}: ${reason}`)
-    })
-
-    await relay.close()
-  }
 
   const connectedRelays = relays.filter((relay) => relayStatus[relay])
+
   connectedRelays.forEach((relay) => {
     const relayObj = relayStatus[relay]
-    publish(relayObj, event)
+    const pub = relayObj.publish(event)
+    pub.on("ok", () => {
+      console.log(`${relayObj.url} has accepted our event`)
+      relayObj.close()
+    })
+    pub.on("seen", () => {
+      console.log(`we saw the event on ${relayObj.url}`)
+      relayObj.close()
+    })
+    pub.on("failed", (reason) => {
+      console.log(`failed to publish to ${relayObj.url}: ${reason}`)
+      relayObj.close()
+    })
   })
 }
 

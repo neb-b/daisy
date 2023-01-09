@@ -13,6 +13,8 @@ export const NoteItem = ({ id, navigation, style = {} }) => {
   const profile = profilesByPubkey[note?.pubkey]
   const profileContent = profile?.content
 
+  // console.log("note", note)
+
   let reply
   if (note?.tags.length > 1) {
     // todo: figure out tags
