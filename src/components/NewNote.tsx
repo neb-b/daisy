@@ -11,7 +11,7 @@ import {
   Text,
 } from "@ui-kitten/components"
 import { useSelector, useDispatch } from "react-redux"
-import type { RootState } from "state/store"
+import type { RootState } from "store"
 import { publishNote } from "core/nostr"
 
 type Props = {

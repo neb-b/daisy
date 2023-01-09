@@ -11,9 +11,9 @@ import {
   Text,
 } from "@ui-kitten/components"
 import { useSelector, useDispatch } from "react-redux"
-import type { RootState } from "state/store"
-import { updateProfilesByPubkey, updateContactListByPubkey } from "state/notesSlice"
-import { updateUser } from "state/settingsSlice"
+import type { RootState } from "store"
+import { updateProfilesByPubkey, updateContactListByPubkey } from "store/notesSlice"
+import { updateUser } from "store/settingsSlice"
 import { getProfile } from "core/nostr"
 import { generatePrivateKey, getPublicKey, nip19 } from "nostr-tools"
 import * as secp from "@noble/secp256k1"

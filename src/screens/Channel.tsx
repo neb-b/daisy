@@ -12,8 +12,8 @@ import {
   TopNavigationAction,
 } from "@ui-kitten/components"
 
-import type { RootState } from "state/store"
-import { updateNotesAndProfiles, updateFeedByChannelId } from "state/notesSlice"
+import type { RootState } from "store"
+import { updateNotesAndProfiles, updateFeedByChannelId } from "store/notesSlice"
 
 import { NoteItem } from "components/Note"
 import { MessageInput } from "components/MessageInput"

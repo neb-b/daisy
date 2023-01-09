@@ -6,6 +6,7 @@ import {
   getPublicKey,
   validateEvent,
   verifySignature,
+  Relay,
 } from "nostr-tools"
 
 const nostrEventKinds = {
@@ -15,48 +16,38 @@ const nostrEventKinds = {
   reaction: 7,
 }
 
-export const relays = [
+export const defaultRelays = [
   "wss://relay.damus.io",
   "wss://nostr-relay.wlvs.space",
   // "wss://nostr.fmt.wiz.biz",
   "wss://relay.nostr.bg",
   "wss://nostr.oxtr.dev",
-  // "wss://nostr.v0l.io",
+  "wss://nostr.v0l.io",
 ]
 
-const relayStatus = {}
+export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
+  return new Promise(async (resolve) => {
+    const relay = relayInit(relayEndpoint)
+    await relay.connect()
+    let connected = false
 
-const connectToRelay = async (relayEndpoint, successCallback) => {
-  if (relayStatus[relayEndpoint]) {
-    return
-  }
+    relay.on("connect", () => {
+      console.log("connected to: ", relay.url)
+      connected = true
+      return resolve({ relay, success: true })
+    })
+    relay.on("error", () => {
+      console.log("error with: ", relay.url)
+      relay.close()
+      return resolve({ relay, success: false })
+    })
 
-  const relay = relayInit(relayEndpoint)
-  await relay.connect()
+    setTimeout(() => {
+      if (connected) return
 
-  relay.on("connect", () => {
-    console.log("connected: ", relay.url)
-    relayStatus[relayEndpoint] = relay
-    successCallback(relay)
-  })
-  relay.on("error", () => {
-    console.log(`failed to connect to ${relay.url}`)
-    relayStatus[relayEndpoint] = false
-  })
-}
-
-export const initRelays = async () => {
-  let connectedToOneRelay = false
-
-  return new Promise((resolve) => {
-    relays.forEach((relay) =>
-      connectToRelay(relay, (relay) => {
-        if (!connectedToOneRelay) {
-          connectedToOneRelay = true
-          resolve(relay)
-        }
-      })
-    )
+      relay.close()
+      return resolve({ relay, success: false })
+    }, 1000)
   })
 }
 

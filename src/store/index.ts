@@ -1,8 +1,9 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit"
+import { useDispatch as useReactReduxDispatch } from "react-redux"
+import thunkMiddleware from "redux-thunk"
+
 import { notesSlice } from "./notesSlice"
 import { settingsSlice } from "./settingsSlice"
-import type { NotesState } from "./notesSlice"
-import type { SettingsState } from "./settingsSlice"
 
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { persistStore, persistReducer } from "redux-persist"
@@ -13,14 +14,15 @@ const persistConfig = {
   whitelist: ["settings"],
 }
 
-export interface RootState {
-  notes: NotesState
-  settings: SettingsState
+const settingsPersistConfig = {
+  key: "settings",
+  storage: AsyncStorage,
+  blacklist: ["relays"],
 }
 
 const rootReducer = combineReducers({
   notes: notesSlice.reducer,
-  settings: settingsSlice.reducer,
+  settings: persistReducer(settingsPersistConfig, settingsSlice.reducer),
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
@@ -33,4 +35,9 @@ export const store = configureStore({
     }),
 })
 
+export type RootState = ReturnType<typeof store.getState>
 export const persistor = persistStore(store)
+
+export type AppDispatch = typeof store.dispatch
+export type GetState = () => RootState
+export const useDispatch: () => AppDispatch = useReactReduxDispatch

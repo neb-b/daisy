@@ -13,7 +13,7 @@ import {
 
 import { useSelector } from "react-redux"
 
-import type { RootState } from "state/store"
+import type { RootState } from "store"
 import { Avatar } from "components/Avatar"
 
 const BackIcon = (props) => <Icon {...props} name="arrow-back" />

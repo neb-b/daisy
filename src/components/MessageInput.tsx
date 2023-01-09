@@ -23,7 +23,7 @@ export const MessageInput = () => (
     >
       <Input
         style={{ borderRadius: 20, height: 40, flex: 1, marginRight: 8 }}
-        placeholder="message"
+        placeholder="Send a reply..."
         textStyle={{ flex: 1, fontSize: 18 }}
       />
       <Button
