@@ -13,7 +13,7 @@ import {
 } from "@ui-kitten/components"
 
 import type { RootState } from "store"
-import { updateNotesAndProfiles, updateFeedByChannelId } from "store/notesSlice"
+// import { updateNotesAndProfiles, updateFeedByChannelId } from "store/notesSlice"
 import { MessageInput } from "components/MessageInput"
 import { Avatar } from "components/Avatar"
 

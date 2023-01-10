@@ -41,6 +41,29 @@ export const useFeed = (feedId: string) => {
     .map((note) => note.id)
 }
 
+export const useNote = (noteId: string): NostrNoteEvent & { repostedBy?: string } => {
+  const { notesById } = useSelector((state: RootState) => state.notes)
+  const note = notesById[noteId]
+
+  if (!note) {
+    console.log("note not found in useNote")
+    return
+  }
+
+  if (note.kind === 1) {
+    return note
+  }
+
+  if (note.kind === 6) {
+    const repostedId = note.tags[0][1]
+    const repostedNote = notesById[repostedId]
+    return {
+      repostedBy: note.pubkey,
+      ...repostedNote,
+    }
+  }
+}
+
 export const useRelays = () => {
   const { relays } = useSelector((state: RootState) => state.settings)
 

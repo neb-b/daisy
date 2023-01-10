@@ -13,7 +13,7 @@ import {
 } from "@ui-kitten/components"
 
 import type { RootState } from "store"
-import { updateNotesAndProfiles, updateFeedByChannelId } from "store/notesSlice"
+// import { updateNotesAndProfiles, updateFeedByChannelId } from "store/notesSlice"
 
 import { NoteItem } from "components/Note"
 import { MessageInput } from "components/MessageInput"
@@ -26,55 +26,57 @@ const BackIcon = (props) => <Icon {...props} name="arrow-back" />
 export const ChannelScreen = ({ navigation }) => {
   const dispatch = useDispatch()
   const notesState = useSelector((state: RootState) => state.notes)
-  const { notesById, feedByChannelId, loading } = notesState
+  // const { notesById, feedByChannelId, loading } = notesState
 
-  const notesInFeed = feedByChannelId[CHANNEL]?.map((id) => notesById[id]).sort(
-    (a, b) => a.created_at - b.created_at
-  )
+  // const notesInFeed = feedByChannelId[CHANNEL]?.map((id) => notesById[id]).sort(
+  //   (a, b) => a.created_at - b.created_at
+  // )
 
-  const navigateBack = () => {
-    navigation.goBack()
-  }
+  // const navigateBack = () => {
+  //   navigation.goBack()
+  // }
 
-  const BackAction = () => <TopNavigationAction icon={BackIcon} onPress={navigateBack} />
+  // const BackAction = () => <TopNavigationAction icon={BackIcon} onPress={navigateBack} />
 
-  return (
-    <Layout style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <TopNavigation title="Channel" alignment="center" accessoryLeft={BackAction} />
-        <Divider />
+  return null
 
-        {loading && (
-          <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-            <Text>Loading...</Text>
-          </View>
-        )}
-        {notesInFeed && notesInFeed.length > 0 && (
-          <FlatList
-            inverted
-            data={notesInFeed}
-            renderItem={({ item }) => {
-              return (
-                <View
-                  style={{
-                    paddingLeft: 10,
-                    paddingRight: 15,
-                    paddingTop: 5,
-                    paddingBottom: 5,
-                    // flexWrap: "wrap",
-                  }}
-                >
-                  <NoteItem id={item.id} navigation={navigation} />
-                </View>
-              )
-            }}
-            keyExtractor={(message) => message.id}
-            contentContainerStyle={{ flexDirection: "column-reverse" }}
-          />
-        )}
+  // return (
+  //   <Layout style={{ flex: 1 }}>
+  //     <SafeAreaView style={{ flex: 1 }}>
+  //       <TopNavigation title="Channel" alignment="center" accessoryLeft={BackAction} />
+  //       <Divider />
 
-        <MessageInput />
-      </SafeAreaView>
-    </Layout>
-  )
+  //       {loading && (
+  //         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+  //           <Text>Loading...</Text>
+  //         </View>
+  //       )}
+  //       {notesInFeed && notesInFeed.length > 0 && (
+  //         <FlatList
+  //           inverted
+  //           data={notesInFeed}
+  //           renderItem={({ item }) => {
+  //             return (
+  //               <View
+  //                 style={{
+  //                   paddingLeft: 10,
+  //                   paddingRight: 15,
+  //                   paddingTop: 5,
+  //                   paddingBottom: 5,
+  //                   // flexWrap: "wrap",
+  //                 }}
+  //               >
+  //                 <NoteItem id={item.id} navigation={navigation} />
+  //               </View>
+  //             )
+  //           }}
+  //           keyExtractor={(message) => message.id}
+  //           contentContainerStyle={{ flexDirection: "column-reverse" }}
+  //         />
+  //       )}
+
+  //       <MessageInput />
+  //     </SafeAreaView>
+  //   </Layout>
+  // )
 }

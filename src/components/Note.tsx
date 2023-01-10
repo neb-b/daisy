@@ -1,35 +1,16 @@
 import { View, Pressable } from "react-native"
-import { Text } from "@ui-kitten/components"
+import { Text, Icon } from "@ui-kitten/components"
 
-import { useSelector } from "react-redux"
-
-import type { RootState } from "store"
+import { useNote, useProfile } from "store/hooks"
 import { Avatar } from "./Avatar"
 import { timeSince } from "../utils/time"
 
 export const NoteItem = ({ id, navigation, style = {} }) => {
-  const { profilesByPubkey, notesById } = useSelector((state: RootState) => state.notes)
-  const note = notesById[id]
-  const profile = profilesByPubkey[note?.pubkey]
+  const note = useNote(id)
+  const profile = useProfile(note?.pubkey)
   const profileContent = profile?.content
 
-  // console.log("note", note)
-
-  let reply
-  if (note?.tags.length > 1) {
-    // todo: figure out tags
-    // will this always be a reply?
-    const possibleReplyTag = note.tags[1]
-
-    if (possibleReplyTag && possibleReplyTag[0] === "e") {
-      const replyId = possibleReplyTag[1]
-      reply = notesById[replyId]
-
-      if (reply) {
-        reply.user = profilesByPubkey[reply.pubkey]
-      }
-    }
-  }
+  if (!note) return null
 
   return (
     <View
@@ -39,6 +20,7 @@ export const NoteItem = ({ id, navigation, style = {} }) => {
         ...style,
       }}
     >
+      {note.repostedBy && <RepostAuthor pubkey={note.repostedBy} />}
       <View style={{ flexDirection: "row" }}>
         <Pressable
           onPress={() =>
@@ -54,24 +36,6 @@ export const NoteItem = ({ id, navigation, style = {} }) => {
             {profileContent?.name || note.pubkey.slice(0, 6)}
           </Text>
           <Text>{timeSince(note.created_at)}</Text>
-          {reply && (
-            <View
-              style={{
-                paddingLeft: 10,
-                borderLeftWidth: 1,
-                borderLeftColor: "#ddd",
-                marginBottom: 10,
-                marginTop: 10,
-              }}
-            >
-              <Text style={{ fontWeight: "bold" }}>
-                {reply?.name || reply?.pubkey.slice(0, 6) || "unknown user"}
-              </Text>
-              <Text style={{ marginTop: 5 }}>
-                {reply.content.length > 45 ? `${reply.content.slice(0, 45)}...` : reply.content}
-              </Text>
-            </View>
-          )}
           <Text style={{ fontSize: 20, marginTop: 5, paddingRight: 13, flexWrap: "wrap" }}>
             {note.content}
           </Text>
@@ -80,3 +44,49 @@ export const NoteItem = ({ id, navigation, style = {} }) => {
     </View>
   )
 }
+
+const RepostAuthor = ({ pubkey }) => {
+  const profile = useProfile(pubkey)
+  const repostAuthor = profile?.content?.name || pubkey.slice(0, 6)
+
+  return (
+    <View>
+      {/* <Icon name="flip-2-outline" styled={{ height: 32, width: 32 }} /> */}
+      <Text style={{ marginLeft: 4, marginBottom: 4 }}>{repostAuthor} reposted</Text>
+    </View>
+  )
+}
+
+// let reply
+// if (note?.tags.length > 1) {
+//   // todo: figure out tags
+//   // will this always be a reply?
+//   const possibleReplyTag = note.tags[1]
+
+//   if (possibleReplyTag && possibleReplyTag[0] === "e") {
+//     const replyId = possibleReplyTag[1]
+//     reply = notesById[replyId]
+
+//     if (reply) {
+//       reply.user = profilesByPubkey[reply.pubkey]
+//     }
+//   }
+// }
+// {reply && (
+//   <View
+//     style={{
+//       paddingLeft: 10,
+//       borderLeftWidth: 1,
+//       borderLeftColor: "#ddd",
+//       marginBottom: 10,
+//       marginTop: 10,
+//     }}
+//   >
+//     <Text style={{ fontWeight: "bold" }}>
+//       {reply?.name || reply?.pubkey.slice(0, 6) || "unknown user"}
+//     </Text>
+//     <Text style={{ marginTop: 5 }}>
+//       {reply.content.length > 45 ? `${reply.content.slice(0, 45)}...` : reply.content}
+//     </Text>
+//   </View>
+// )}

@@ -13,6 +13,7 @@ const nostrEventKinds = {
   profile: 0,
   note: 1,
   contactList: 3,
+  repost: 6,
   reaction: 7,
 }
 
@@ -25,7 +26,8 @@ export const defaultRelays = [
   // "wss://nostr.v0l.io",
 ]
 
-const GET_EVENTS_LIMIT = 50
+const GET_EVENTS_LIMIT = 3
+const TIMEOUT = 2000
 
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
   return new Promise(async (resolve) => {
@@ -60,14 +62,39 @@ export const getEventsFromContactList = async (
   const pubkeys = contactList.tags.map((tag) => tag[1])
 
   return new Promise(async (resolve) => {
+    //
+    // Fetch notes
+    // Then fetch reposts
+    // Then fetch profiles from notes and reposts
+    //
+
     const notes = await getNostrEvents(relays, {
       authors: pubkeys,
-      kinds: [1],
+      kinds: [nostrEventKinds.note, nostrEventKinds.repost],
     })
 
+    const repostIdsSet = new Set<string>()
+    notes.forEach((event) => {
+      if (event.kind === 6) {
+        const repostedEventId = event.tags[0][1]
+        repostIdsSet.add(repostedEventId)
+      }
+    })
+
+    const repostEvents = (await getNostrEvents(relays, {
+      kinds: [1],
+      limit: repostIdsSet.size,
+      ids: Array.from(repostIdsSet),
+    })) as NostrProfileEvent[]
+
     const profilePubkeysSet = new Set<string>()
-    notes.forEach((message) => {
-      profilePubkeysSet.add(message.pubkey)
+    notes.forEach((event) => {
+      if (event.kind === 1) {
+        profilePubkeysSet.add(event.pubkey)
+      }
+    })
+    repostEvents.forEach((event) => {
+      profilePubkeysSet.add(event.pubkey)
     })
 
     const profilesEvents = (await getNostrEvents(relays, {
@@ -90,7 +117,7 @@ export const getEventsFromContactList = async (
       userProfileInfos[profileEvent.pubkey] = user
     })
 
-    resolve({ notes, profiles: userProfileInfos })
+    resolve({ notes: [...notes, ...repostEvents], profiles: userProfileInfos })
   })
 }
 
@@ -105,7 +132,7 @@ export const subscribeToContactList = (
     relays,
     {
       authors: pubkeys,
-      kinds: [1],
+      kinds: [nostrEventKinds.note, nostrEventKinds.repost],
       since: Date.now() / 1000,
     },
     handleEvent
@@ -159,7 +186,7 @@ const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<No
 
         resolve(Array.from(Object.values(eventsById)))
         sub.unsub()
-      }, 1000)
+      }, TIMEOUT)
     })
   })
 }
@@ -217,24 +244,24 @@ export const publishNote = async (user, eventData): Promise<void> => {
   event.id = getEventHash(event)
   event.sig = signEvent(event, user.privateKey)
 
-  const connectedRelays = relays.filter((relay) => relayStatus[relay])
+  // const connectedRelays = relays.filter((relay) => relayStatus[relay])
 
-  connectedRelays.forEach((relay) => {
-    const relayObj = relayStatus[relay]
-    const pub = relayObj.publish(event)
-    pub.on("ok", () => {
-      console.log(`${relayObj.url} has accepted our event`)
-      relayObj.close()
-    })
-    pub.on("seen", () => {
-      console.log(`we saw the event on ${relayObj.url}`)
-      relayObj.close()
-    })
-    pub.on("failed", (reason) => {
-      console.log(`failed to publish to ${relayObj.url}: ${reason}`)
-      relayObj.close()
-    })
-  })
+  // connectedRelays.forEach((relay) => {
+  //   const relayObj = relayStatus[relay]
+  //   const pub = relayObj.publish(event)
+  //   pub.on("ok", () => {
+  //     console.log(`${relayObj.url} has accepted our event`)
+  //     relayObj.close()
+  //   })
+  //   pub.on("seen", () => {
+  //     console.log(`we saw the event on ${relayObj.url}`)
+  //     relayObj.close()
+  //   })
+  //   pub.on("failed", (reason) => {
+  //     console.log(`failed to publish to ${relayObj.url}: ${reason}`)
+  //     relayObj.close()
+  //   })
+  // })
 }
 
 export const getProfile = async (

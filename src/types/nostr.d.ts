@@ -5,6 +5,7 @@ declare enum NostrEventKind {
   Contacts = 3,
   DM = 4,
   Deleted = 5,
+  Repost = 6,
 }
 
 declare interface NostrBaseEvent {
@@ -28,7 +29,11 @@ declare interface NostrContactListEvent extends NostrBaseEvent {
   kind: 3
 }
 
-declare type NostrEvent = NostrNoteEvent | NostrProfileEvent | NostrContactListEvent
+declare interface NostrRepostEvent extends NostrBaseEvent {
+  kind: 6
+}
+
+declare type NostrEvent = NostrNoteEvent | NostrProfileEvent | NostrContactListEvent | NostrRepostEvent
 
 declare type NostrProfileContent = {
   picture?: string

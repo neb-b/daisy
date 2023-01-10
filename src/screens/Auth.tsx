@@ -12,7 +12,7 @@ import {
 } from "@ui-kitten/components"
 import { useSelector, useDispatch } from "react-redux"
 import type { RootState } from "store"
-import { updateProfilesByPubkey, updateContactListByPubkey } from "store/notesSlice"
+import { updateProfilesByPubkey } from "store/notesSlice"
 import { updateUser } from "store/settingsSlice"
 import { getProfile } from "core/nostr"
 import { generatePrivateKey, getPublicKey, nip19 } from "nostr-tools"
@@ -30,11 +30,10 @@ export const AuthScreen = ({ navigation, route }) => {
   }
 
   const fetchProfile = async (pubkey: string) => {
-    const { profile, contactList } = await getProfile(pubkey)
-
-    dispatch(updateProfilesByPubkey({ [pubkey]: profile }))
-    dispatch(updateContactListByPubkey({ [pubkey]: contactList }))
-    reset({ index: 0, routes: [{ name: "Home" }] })
+    // const { profile, contactList } = await getProfile(pubkey)
+    // dispatch(updateProfilesByPubkey({ [pubkey]: profile }))
+    // dispatch(updateContactListByPubkey({ [pubkey]: contactList }))
+    // reset({ index: 0, routes: [{ name: "Home" }] })
   }
 
   const handlePrivateKeySubmit = () => {
