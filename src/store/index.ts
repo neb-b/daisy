@@ -14,15 +14,9 @@ const persistConfig = {
   whitelist: ["settings"],
 }
 
-const settingsPersistConfig = {
-  key: "settings",
-  storage: AsyncStorage,
-  blacklist: ["relays"],
-}
-
 const rootReducer = combineReducers({
   notes: notesSlice.reducer,
-  settings: persistReducer(settingsPersistConfig, settingsSlice.reducer),
+  settings: settingsSlice.reducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

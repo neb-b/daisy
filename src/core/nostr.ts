@@ -18,11 +18,11 @@ const nostrEventKinds = {
 
 export const defaultRelays = [
   "wss://relay.damus.io",
-  "wss://nostr-relay.wlvs.space",
+  // "wss://nostr-relay.wlvs.space",
   // "wss://nostr.fmt.wiz.biz",
   "wss://relay.nostr.bg",
   "wss://nostr.oxtr.dev",
-  "wss://nostr.v0l.io",
+  // "wss://nostr.v0l.io",
 ]
 
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
@@ -167,13 +167,11 @@ const subscribeToNostrEvents = (filter: NostrFilter, handleEvent: (NostrEvent) =
   }
 }
 
-const getNostrEvent = async (filter?: NostrFilter): Promise<NostrEvent> => {
+const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent> => {
+  console.log("filter", filter)
   return new Promise((resolve) => {
-    const connectedRelays = relays.filter((relay) => relayStatus[relay])
-    connectedRelays.forEach((relay) => {
-      const relayObj = relayStatus[relay]
-
-      const sub = relayObj.sub([filter])
+    relays.forEach((relay) => {
+      const sub = relay.sub([{ ...filter }])
 
       sub.on("event", (event) => {
         const nostrEvent = <NostrEvent>event
@@ -226,14 +224,16 @@ export const publishNote = async (user, eventData): Promise<void> => {
 }
 
 export const getProfile = async (
+  relays: Relay[],
   pubkey: string
 ): Promise<{ profile: NostrProfile; contactList: NostrContactListEvent }> => {
-  const profile = (await getNostrEvent({
+  console.log("GET NOSTR EVENT")
+  const profile = (await getNostrEvent(relays, {
     kinds: [nostrEventKinds.profile],
     authors: [pubkey],
   })) as NostrProfile
 
-  const contactList = (await getNostrEvent({
+  const contactList = (await getNostrEvent(relays, {
     kinds: [nostrEventKinds.contactList],
     authors: [pubkey],
   })) as NostrContactListEvent

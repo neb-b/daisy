@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
 import type { Relay } from "nostr-tools"
-import type { AppDispatch, GetState } from "store"
+import type { AppDispatch, RootState } from "store"
 import { defaultRelays, connectToRelay } from "core/nostr"
 
 type theme = "light" | "dark" | "system"

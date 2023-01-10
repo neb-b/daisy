@@ -1,5 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
+import type { AppDispatch, GetState } from "store"
+import { getProfile } from "core/nostr"
 
 export interface NotesState {
   loading: boolean
@@ -57,3 +59,14 @@ export const {
   updateNotesAndProfiles,
   updateFeedByChannelId,
 } = notesSlice.actions
+
+export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
+  const {
+    settings: { relays },
+  } = getState()
+
+  const { profile, contactList } = await getProfile(relays, pubkey)
+
+  dispatch(updateProfilesByPubkey({ [pubkey]: profile }))
+  dispatch(updateContactListByPubkey({ [pubkey]: contactList }))
+}
