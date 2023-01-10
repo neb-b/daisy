@@ -17,7 +17,7 @@ declare interface NostrBaseEvent {
 }
 
 declare interface NostrNoteEvent extends NostrBaseEvent {
-  kind: 42
+  kind: 1
 }
 
 declare interface NostrProfileEvent extends NostrBaseEvent {

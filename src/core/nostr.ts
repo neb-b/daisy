@@ -25,6 +25,8 @@ export const defaultRelays = [
   // "wss://nostr.v0l.io",
 ]
 
+const GET_EVENTS_LIMIT = 50
+
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
   return new Promise(async (resolve) => {
     const relay = relayInit(relayEndpoint)
@@ -52,10 +54,13 @@ export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; suc
 }
 
 export const getEventsFromContactList = async (
-  pubkeys: string[]
+  relays: Relay[],
+  contactList: { tags: string[][] }
 ): Promise<{ notes: NostrEvent[]; profiles: Record<string, NostrProfileEvent> }> => {
+  const pubkeys = contactList.tags.map((tag) => tag[1])
+
   return new Promise(async (resolve) => {
-    const notes = await getNostrEvents({
+    const notes = await getNostrEvents(relays, {
       authors: pubkeys,
       kinds: [1],
     })
@@ -65,7 +70,7 @@ export const getEventsFromContactList = async (
       profilePubkeysSet.add(message.pubkey)
     })
 
-    const profilesEvents = (await getNostrEvents({
+    const profilesEvents = (await getNostrEvents(relays, {
       kinds: [nostrEventKinds.profile],
       authors: Array.from(profilePubkeysSet),
       limit: profilePubkeysSet.size,
@@ -90,34 +95,35 @@ export const getEventsFromContactList = async (
 }
 
 export const subscribeToContactList = (
-  pubkeys: string[]
-  // handleEvent: (NostrEvent) => void
-): (() => void) => {
+  relays,
+  contactList: { tags: string[][] },
+  handleEvent: (NostrEvent) => void
+) => {
+  const pubkeys = contactList.tags.map((tag) => tag[1])
+
   const unsub = subscribeToNostrEvents(
+    relays,
     {
       authors: pubkeys,
       kinds: [1],
       since: Date.now() / 1000,
     },
-    (event) => {
-      console.log("new event", event)
-    }
+    handleEvent
   )
 
-  return unsub
+  // TODO: return unsub
+  // return unsub
 }
 
-const getNostrEvents = async (filter?: NostrFilter): Promise<NostrEvent[]> => {
+const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent[]> => {
   return new Promise((resolve) => {
-    const limit = filter?.limit || 5
+    const limit = filter?.limit || GET_EVENTS_LIMIT
     const eventsById: Record<string, NostrEvent> = {}
     let fetchedCount = 0
+    let timedOut = false
 
-    const connectedRelays = relays.filter((relay) => relayStatus[relay])
-    connectedRelays.forEach((relay) => {
-      const relayObj = relayStatus[relay]
-
-      const sub = relayObj.sub([
+    relays.forEach((relay) => {
+      const sub = relay.sub([
         {
           limit,
           ...filter,
@@ -133,6 +139,10 @@ const getNostrEvents = async (filter?: NostrFilter): Promise<NostrEvent[]> => {
         fetchedCount++
 
         if (fetchedCount === limit) {
+          if (timedOut) {
+            return
+          }
+
           resolve(Array.from(Object.values(eventsById)))
           sub.unsub()
         }
@@ -141,34 +151,38 @@ const getNostrEvents = async (filter?: NostrFilter): Promise<NostrEvent[]> => {
       sub.on("eose", () => {
         sub.unsub()
       })
+
+      setTimeout(() => {
+        // If a timeout happens, return what has been received so far
+        if (fetchedCount === limit) return
+        timedOut = true
+
+        resolve(Array.from(Object.values(eventsById)))
+        sub.unsub()
+      }, 1000)
     })
   })
 }
 
-const subscriptions = {}
-const subscribeToNostrEvents = (filter: NostrFilter, handleEvent: (NostrEvent) => void): (() => void) => {
-  const connectedRelays = relays.filter((relay) => relayStatus[relay])
-  connectedRelays.forEach((relay) => {
-    const relayObj = relayStatus[relay]
-    const sub = relayObj.sub([filter])
-    subscriptions[relay] = sub
+const subscribeToNostrEvents = (relays: Relay[], filter: NostrFilter, handleEvent: (NostrEvent) => void) => {
+  relays.forEach((relay) => {
+    const sub = relay.sub([{ ...filter }])
 
     sub.on("event", handleEvent)
 
     sub.on("eose", () => {
       console.log("getNostrEvents eose: ", relay)
-      subscriptions[relay] = null
       sub.unsub()
     })
   })
 
-  return () => {
-    Object.values(subscriptions).forEach((sub: { unsub: () => void }) => sub.unsub())
-  }
+  // TODO: return unsubscribe function
+  // return () => {
+  //   Object.values(subscriptions).forEach((sub: { unsub: () => void }) => sub.unsub())
+  // }
 }
 
 const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent> => {
-  console.log("filter", filter)
   return new Promise((resolve) => {
     relays.forEach((relay) => {
       const sub = relay.sub([{ ...filter }])
@@ -227,7 +241,6 @@ export const getProfile = async (
   relays: Relay[],
   pubkey: string
 ): Promise<{ profile: NostrProfile; contactList: NostrContactListEvent }> => {
-  console.log("GET NOSTR EVENT")
   const profile = (await getNostrEvent(relays, {
     kinds: [nostrEventKinds.profile],
     authors: [pubkey],

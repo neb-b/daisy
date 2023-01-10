@@ -1,21 +1,21 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
 import type { AppDispatch, GetState } from "store"
-import { getProfile } from "core/nostr"
+import { getProfile, getEventsFromContactList, subscribeToContactList } from "core/nostr"
 
 export interface NotesState {
   loading: boolean
   notesById: Record<string, NostrNoteEvent>
   profilesByPubkey: Record<string, NostrProfile>
-  contactListByPubkey: Record<string, NostrContactListEvent>
-  feedByChannelId: Record<string, string[]>
+  contactListsByPubkey: Record<string, NostrContactListEvent>
+  feedsById: Record<string, string[]>
 }
 
 const initialState = {
   notesById: {},
   profilesByPubkey: {},
-  feedByChannelId: {},
-  contactListByPubkey: {},
+  feedsById: {},
+  contactListsByPubkey: {},
   loading: false,
 } as NotesState
 
@@ -29,9 +29,9 @@ export const notesSlice = createSlice({
     updateProfilesByPubkey(state, action: PayloadAction<Record<string, NostrProfile>>) {
       state.profilesByPubkey = { ...state.profilesByPubkey, ...action.payload }
     },
-    updateContactListByPubkey(state, action: PayloadAction<Record<string, NostrContactListEvent>>) {
+    updateContactListsByPubkey(state, action: PayloadAction<Record<string, NostrContactListEvent>>) {
       // @ts-expect-error wtf
-      state.contactListByPubkey = { ...state.profilesByPubkey, ...action.payload }
+      state.contactListsByPubkey = { ...state.profilesByPubkey, ...action.payload }
     },
     updateNotesAndProfiles(
       state,
@@ -46,8 +46,17 @@ export const notesSlice = createSlice({
       state.profilesByPubkey = { ...state.profilesByPubkey, ...profiles }
       state.loading = false
     },
-    updateFeedByChannelId(state, action: PayloadAction<Record<string, string[]>>) {
-      state.feedByChannelId = { ...state.feedByChannelId, ...action.payload }
+    updateFeedsById(state, action: PayloadAction<Record<string, string[]>>) {
+      state.feedsById = { ...state.feedsById, ...action.payload }
+    },
+    addNoteToFeedById(state, action: PayloadAction<{ feedId: string; noteId: string }>) {
+      const { feedId, noteId } = action.payload
+
+      const currentFeed = state.feedsById[feedId]
+      const currentFeedSet = new Set(currentFeed)
+      currentFeedSet.add(noteId)
+
+      state.feedsById[feedId] = Array.from(currentFeedSet)
     },
   },
 })
@@ -55,9 +64,10 @@ export const notesSlice = createSlice({
 export const {
   updateNotesById,
   updateProfilesByPubkey,
-  updateContactListByPubkey,
+  updateContactListsByPubkey,
   updateNotesAndProfiles,
-  updateFeedByChannelId,
+  updateFeedsById,
+  addNoteToFeedById,
 } = notesSlice.actions
 
 export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
@@ -68,5 +78,28 @@ export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, 
   const { profile, contactList } = await getProfile(relays, pubkey)
 
   dispatch(updateProfilesByPubkey({ [pubkey]: profile }))
-  dispatch(updateContactListByPubkey({ [pubkey]: contactList }))
+  dispatch(updateContactListsByPubkey({ [pubkey]: contactList }))
+}
+
+export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
+  const { settings: settingsState, notes: notesState } = getState()
+  const { contactListsByPubkey } = notesState
+
+  const contactList = contactListsByPubkey[settingsState.user.pubkey]
+
+  const { notes, profiles } = await getEventsFromContactList(settingsState.relays, contactList)
+  dispatch(updateNotesAndProfiles({ notes, profiles }))
+  dispatch(updateFeedsById({ following: notes.map((note) => note.id) }))
+
+  subscribeToContactList(settingsState.relays, contactList, (nostrEvent: NostrEvent) => {
+    if (nostrEvent.kind === 1) {
+      dispatch(
+        updateNotesById({
+          [nostrEvent.id]: nostrEvent,
+        })
+      )
+
+      dispatch(addNoteToFeedById({ feedId: "following", noteId: nostrEvent.id }))
+    }
+  })
 }
