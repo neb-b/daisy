@@ -31,25 +31,34 @@ const TIMEOUT = 2000
 
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
   return new Promise(async (resolve) => {
-    const relay = relayInit(relayEndpoint)
-    await relay.connect()
     let connected = false
+    let relay
+    try {
+      relay = relayInit(relayEndpoint)
+      await relay.connect()
 
-    relay.on("connect", () => {
-      console.log("connected to: ", relay.url)
-      connected = true
-      return resolve({ relay, success: true })
-    })
-    relay.on("error", () => {
-      console.log("error with: ", relay.url)
-      relay.close()
-      return resolve({ relay, success: false })
-    })
+      relay.on("connect", () => {
+        console.log("connected to: ", relay.url)
+        connected = true
+        return resolve({ relay, success: true })
+      })
+      relay.on("error", () => {
+        console.log("error with: ", relay.url)
+        relay.close()
+        return resolve({ relay, success: false })
+      })
+    } catch (e) {
+      console.log("error with init relay", relayEndpoint, e)
+      // @ts-expect-error
+      resolve({ relay: { url: relayEndpoint }, success: false })
+    }
 
     setTimeout(() => {
       if (connected) return
 
-      relay.close()
+      if (relay) {
+        relay.close()
+      }
       return resolve({ relay, success: false })
     }, 1000)
   })

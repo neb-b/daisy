@@ -7,6 +7,7 @@ import { EvaIconsPack } from "@ui-kitten/eva-icons"
 import { NavigationContainer } from "@react-navigation/native"
 import { Provider, useSelector } from "react-redux"
 import { PersistGate } from "redux-persist/integration/react"
+import { SafeAreaProvider } from "react-native-safe-area-context"
 
 import type { RootState } from "store"
 import { store, persistor } from "store"
@@ -32,13 +33,15 @@ const ThemeWrapper = ({ children }) => {
 const App = () => {
   return (
     <Provider store={store}>
-      <ThemeWrapper>
-        <PersistGate loading={<Text>Loading...</Text>} persistor={persistor}>
-          <NavigationContainer>
-            <HomeStackNavigator />
-          </NavigationContainer>
-        </PersistGate>
-      </ThemeWrapper>
+      <SafeAreaProvider>
+        <ThemeWrapper>
+          <PersistGate loading={<Text>Loading...</Text>} persistor={persistor}>
+            <NavigationContainer>
+              <HomeStackNavigator />
+            </NavigationContainer>
+          </PersistGate>
+        </ThemeWrapper>
+      </SafeAreaProvider>
     </Provider>
   )
 }
