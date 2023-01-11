@@ -34,10 +34,13 @@ export const settingsSlice = createSlice({
     updateRelays(state, action: PayloadAction<Relay[]>) {
       state.relays = action.payload
     },
+    logout: (state) => {
+      state.user = {}
+    },
   },
 })
 
-export const { updateRelays, updateTheme, updateUser } = settingsSlice.actions
+export const { updateRelays, updateTheme, updateUser, logout } = settingsSlice.actions
 
 export const initRelays = () => async (dispatch: AppDispatch) => {
   const promises = defaultRelays.map((relay) => connectToRelay(relay))

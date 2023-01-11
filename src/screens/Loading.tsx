@@ -38,7 +38,7 @@ export const LoadingScreen = ({ navigation, route }) => {
     if (hasProfile) {
       reset({ index: 0, routes: [{ name: "Home" }] })
     }
-  }, [hasProfile])
+  }, [reset, hasProfile])
 
   return (
     <Layout style={{ flex: 1 }}>
