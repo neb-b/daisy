@@ -26,7 +26,7 @@ export const defaultRelays = [
   // "wss://nostr.v0l.io",
 ]
 
-const GET_EVENTS_LIMIT = 10
+const GET_EVENTS_LIMIT = 25
 const TIMEOUT = 2000
 
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
