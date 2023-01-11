@@ -9,6 +9,8 @@ export const NoteItem = ({ id, navigation, style = {} }) => {
   const note = useNote(id)
   const profile = useProfile(note?.pubkey)
   const profileContent = profile?.content
+  const replyProfile = useProfile(note?.reply?.pubkey)
+  const replyProfileContent = replyProfile?.content
 
   if (!note) return null
 
@@ -36,6 +38,28 @@ export const NoteItem = ({ id, navigation, style = {} }) => {
             {profileContent?.name || note.pubkey.slice(0, 6)}
           </Text>
           <Text>{timeSince(note.created_at)}</Text>
+
+          {note.reply && (
+            <View
+              style={{
+                paddingLeft: 10,
+                borderLeftWidth: 1,
+                borderLeftColor: "#ddd",
+                marginBottom: 10,
+                marginTop: 10,
+              }}
+            >
+              <Text style={{ fontWeight: "bold" }}>
+                {replyProfileContent?.name || note.reply.pubkey.slice(0, 6) || "unknown user"}
+              </Text>
+              <Text style={{ marginTop: 5 }}>
+                {note.reply.content.length > 70
+                  ? `${note.reply.content.slice(0, 70)}...`
+                  : note.reply.content}
+              </Text>
+            </View>
+          )}
+
           <Text style={{ fontSize: 20, marginTop: 5, paddingRight: 13, flexWrap: "wrap" }}>
             {note.content}
           </Text>
@@ -72,21 +96,3 @@ const RepostAuthor = ({ pubkey }) => {
 //     }
 //   }
 // }
-// {reply && (
-//   <View
-//     style={{
-//       paddingLeft: 10,
-//       borderLeftWidth: 1,
-//       borderLeftColor: "#ddd",
-//       marginBottom: 10,
-//       marginTop: 10,
-//     }}
-//   >
-//     <Text style={{ fontWeight: "bold" }}>
-//       {reply?.name || reply?.pubkey.slice(0, 6) || "unknown user"}
-//     </Text>
-//     <Text style={{ marginTop: 5 }}>
-//       {reply.content.length > 45 ? `${reply.content.slice(0, 45)}...` : reply.content}
-//     </Text>
-//   </View>
-// )}

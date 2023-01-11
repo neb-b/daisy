@@ -26,7 +26,7 @@ export const defaultRelays = [
   // "wss://nostr.v0l.io",
 ]
 
-const GET_EVENTS_LIMIT = 50
+const GET_EVENTS_LIMIT = 10
 const TIMEOUT = 2000
 
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
@@ -74,10 +74,16 @@ export const getEventsFromContactList = async (
     })
 
     const repostIdsSet = new Set<string>()
+    const repliesSet = new Set<string>()
     notes.forEach((event) => {
       if (event.kind === 6) {
-        const repostedEventId = event.tags[0][1]
-        repostIdsSet.add(repostedEventId)
+        const repostEventId = event.tags.find((tag) => tag[0] === "e")?.[1]
+        repostIdsSet.add(repostEventId)
+      } else {
+        const replyToId = event.tags.find((tag) => tag[0] === "e")?.[1]
+        if (replyToId) {
+          repliesSet.add(replyToId)
+        }
       }
     })
 
@@ -87,6 +93,15 @@ export const getEventsFromContactList = async (
       ids: Array.from(repostIdsSet),
     })) as NostrProfileEvent[]
 
+    console.log("repostEvents", repostEvents)
+
+    const replyEvents = (await getNostrEvents(relays, {
+      kinds: [1],
+      limit: repliesSet.size,
+      ids: Array.from(repliesSet),
+    })) as NostrProfileEvent[]
+
+    // Get profiles from all the events
     const profilePubkeysSet = new Set<string>()
     notes.forEach((event) => {
       if (event.kind === 1) {
@@ -94,6 +109,9 @@ export const getEventsFromContactList = async (
       }
     })
     repostEvents.forEach((event) => {
+      profilePubkeysSet.add(event.pubkey)
+    })
+    replyEvents.forEach((event) => {
       profilePubkeysSet.add(event.pubkey)
     })
 
@@ -117,7 +135,7 @@ export const getEventsFromContactList = async (
       userProfileInfos[profileEvent.pubkey] = user
     })
 
-    resolve({ notes: [...notes, ...repostEvents], profiles: userProfileInfos })
+    resolve({ notes: [...notes, ...replyEvents, ...repostEvents], profiles: userProfileInfos })
   })
 }
 

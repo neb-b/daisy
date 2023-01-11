@@ -41,27 +41,50 @@ export const useFeed = (feedId: string) => {
     .map((note) => note.id)
 }
 
-export const useNote = (noteId: string): NostrNoteEvent & { repostedBy?: string } => {
+export const useNote = (
+  noteId: string,
+  ignoreReplies: boolean = false
+): (NostrNoteEvent | NostrRepostEvent) & {
+  repostedBy?: string
+  reply?: NostrNoteEvent | NostrRepostEvent
+} => {
   const { notesById } = useSelector((state: RootState) => state.notes)
   const note = notesById[noteId]
 
   if (!note) {
-    console.log("note not found in useNote")
     return
   }
 
-  if (note.kind === 1) {
-    return note
-  }
-
+  // TODO: handle reposts of replies
   if (note.kind === 6) {
-    const repostedId = note.tags[0][1]
+    const repostedId = note.tags.find((tag) => tag[0] === "e")?.[1]
     const repostedNote = notesById[repostedId]
+
+    if (!repostedNote) {
+      return
+    }
+
     return {
       repostedBy: note.pubkey,
       ...repostedNote,
     }
   }
+
+  // Ignore replies
+  // This may happen if we are already requesting a reply
+  // Don't want to go forever
+  if (!ignoreReplies) {
+    const replyId = note.tags.find((tag) => tag[0] === "e")?.[1]
+    const reply = notesById[replyId]
+    if (replyId) {
+      return {
+        ...note,
+        reply,
+      }
+    }
+  }
+
+  return note
 }
 
 export const useRelays = () => {

@@ -5,7 +5,7 @@ import { getProfile, getEventsFromContactList, subscribeToContactList } from "co
 
 export interface NotesState {
   loading: boolean
-  notesById: Record<string, NostrNoteEvent>
+  notesById: Record<string, NostrNoteEvent | NostrRepostEvent>
   profilesByPubkey: Record<string, NostrProfile>
   contactListsByPubkey: Record<string, NostrContactListEvent>
   feedsById: Record<string, string[]>
@@ -47,7 +47,10 @@ export const notesSlice = createSlice({
       state.loading = false
     },
     updateFeedsById(state, action: PayloadAction<Record<string, string[]>>) {
-      state.feedsById = { ...state.feedsById, ...action.payload }
+      // TODO: handle pruning for other feed ids
+      const { following } = action.payload
+      const prunedFollowing = new Set(following)
+      state.feedsById = { ...state.feedsById, following: Array.from(prunedFollowing) }
     },
     addNoteToFeedById(state, action: PayloadAction<{ feedId: string; noteId: string }>) {
       const { feedId, noteId } = action.payload

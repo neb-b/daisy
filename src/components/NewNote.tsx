@@ -21,7 +21,7 @@ type Props = {
 export const NewNote: React.FC<Props> = ({ closeModal }) => {
   const dispatch = useDispatch()
   const { settings: settingsState } = useSelector((state: RootState) => state)
-  const [content, setContent] = React.useState("test publish from daisy 🤙")
+  const [content, setContent] = React.useState("")
 
   const RightAccessory = () => (
     <Button appearance="ghost" onPress={closeModal}>
@@ -44,12 +44,13 @@ export const NewNote: React.FC<Props> = ({ closeModal }) => {
         <View style={{ padding: 10 }}>
           <Text style={{ marginBottom: 5 }}>Message</Text>
           <Input
+            multiline
             placeholder="hello world..."
             value={content}
             onChangeText={(newContent) => setContent(newContent)}
           />
           <Button style={{ marginTop: 16, borderRadius: 10 }} onPress={handlePublish}>
-            Add
+            Publish
           </Button>
         </View>
       </View>
