@@ -45,12 +45,10 @@ export const AuthScreen = ({ navigation }) => {
           </Text>
           {!enteringPrivateKey && (
             <View style={{ flexDirection: "column" }}>
-              <Button onPress={handleSignup} style={{ marginBottom: 8 }}>
+              {/* <Button onPress={handleSignup} style={{ marginBottom: 8 }}>
                 Signup
-              </Button>
-              <Button appearance="ghost" onPress={() => setEnteringPrivateKey(true)}>
-                Enter private key
-              </Button>
+              </Button> */}
+              <Button onPress={() => setEnteringPrivateKey(true)}>Enter private key</Button>
             </View>
           )}
           {enteringPrivateKey && (

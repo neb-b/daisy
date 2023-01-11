@@ -8,7 +8,6 @@ threads
 
 profile
 
-- [ ] basic signup
 - [x] ui for follow on profile page
 - [ ] publish new contactlist on follow/unfollow
 
