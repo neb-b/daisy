@@ -61,7 +61,6 @@ export const useThread = (noteId: string) => {
   // }
 
   const otherNotesInThread = note.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
-  console.log("otherNotesInThread", otherNotesInThread)
   return otherNotesInThread
 }
 

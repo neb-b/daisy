@@ -9,7 +9,7 @@ import {
   Relay,
 } from "nostr-tools"
 
-const nostrEventKinds = {
+export const nostrEventKinds = {
   profile: 0,
   note: 1,
   contactList: 3,
@@ -19,14 +19,15 @@ const nostrEventKinds = {
 
 export const defaultRelays = [
   "wss://relay.damus.io",
-  // "wss://nostr-relay.wlvs.space",
+  "wss://nostr-relay.wlvs.space",
+  // "wss://nostr.oxtr.dev",
+  // "wss://brb.io",
+  // "wss://relay.nostr.bg",
   // "wss://nostr.fmt.wiz.biz",
-  "wss://relay.nostr.bg",
-  "wss://nostr.oxtr.dev",
   // "wss://nostr.v0l.io",
 ]
 
-const GET_EVENTS_LIMIT = 25
+const GET_EVENTS_LIMIT = 10
 const TIMEOUT = 2000
 
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
@@ -243,9 +244,19 @@ const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<Nos
         const nostrEvent = <NostrEvent>event
 
         const { content: stringifedContent, ...rest } = nostrEvent
-        const content = JSON.parse(stringifedContent)
 
-        resolve({ content, ...rest })
+        if (stringifedContent === "") {
+          resolve(nostrEvent)
+        } else {
+          try {
+            const content = JSON.parse(stringifedContent)
+            resolve({ content, ...rest })
+          } catch (e) {
+            console.log("error parsing content", e)
+            console.log("", nostrEvent)
+          }
+        }
+
         sub.unsub()
       })
 
@@ -260,13 +271,15 @@ const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<Nos
 export const publishNote = async (
   relays: Relay[],
   user: { pubkey: string; privateKey: string },
-  content
+  kind: number,
+  content = "",
+  tags = []
 ): Promise<NostrNoteEvent> => {
   let event = {
-    kind: 1,
+    kind,
     pubkey: user.pubkey,
     created_at: Math.floor(Date.now() / 1000),
-    tags: [],
+    tags,
     content,
   }
 
@@ -276,7 +289,6 @@ export const publishNote = async (
   event.sig = signEvent(event, user.privateKey)
 
   let returned = false
-  console.log("publishing", event)
   return new Promise((resolve) => {
     relays.forEach((relay) => {
       const pub = relay.publish(event)

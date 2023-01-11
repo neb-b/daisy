@@ -1,7 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
 import type { AppDispatch, GetState } from "store"
-import { getProfile, getEventsFromContactList, subscribeToContactList, publishNote } from "core/nostr"
+import {
+  getProfile,
+  getEventsFromContactList,
+  subscribeToContactList,
+  publishNote,
+  nostrEventKinds,
+} from "core/nostr"
 
 export interface NotesState {
   loading: boolean
@@ -121,3 +127,34 @@ export const doPublishNote = (content: string) => async (dispatch: AppDispatch, 
   dispatch(updateNotesById({ [note.id]: note }))
   dispatch(addNoteToFeedById({ feedId: "following", noteId: note.id }))
 }
+
+export const doToggleFollow =
+  (pubkey: string, isFollowing: boolean) => async (dispatch: AppDispatch, getState: GetState) => {
+    const { settings: settingsState, notes: notesState } = getState()
+    const { user, relays } = settingsState
+    const { contactListsByPubkey } = notesState
+    const contactList = contactListsByPubkey[user.pubkey]
+
+    if (!contactList) {
+      console.log("unable to find contactList")
+      return
+    }
+
+    if (!user.pubkey || !user.privateKey) {
+      console.log("no user found")
+      return
+    }
+
+    let newContactList = Object.assign({}, contactList)
+
+    if (isFollowing) {
+      newContactList.tags.push(["p", pubkey])
+    } else {
+      newContactList.tags = contactList.tags.filter((tag) => tag[1] !== pubkey)
+    }
+
+    // @ts-expect-error
+    const resolvedContactList = await publishNote(relays, user, nostrEventKinds.contactList, "", contactList)
+    // @ts-expect-error
+    dispatch(updateContactListsByPubkey({ [user.pubkey]: resolvedContactList }))
+  }

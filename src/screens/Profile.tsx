@@ -1,20 +1,12 @@
 import React from "react"
-import { View, Pressable, StyleSheet, SafeAreaView, FlatList, ScrollView } from "react-native"
-import {
-  Input,
-  Button,
-  Divider,
-  TopNavigation,
-  TopNavigationAction,
-  Layout,
-  Icon,
-  Text,
-} from "@ui-kitten/components"
+import { View } from "react-native"
+import { Input, Button, Divider, TopNavigation, TopNavigationAction, Icon, Text } from "@ui-kitten/components"
 
-import { useSelector } from "react-redux"
-
-import type { RootState } from "store"
+import { Layout } from "components/Layout"
 import { Avatar } from "components/Avatar"
+import { useDispatch } from "store"
+import { useUser, useProfile, useContactList } from "store/hooks"
+import { doToggleFollow } from "store/notesSlice"
 
 const BackIcon = (props) => <Icon {...props} name="arrow-back" />
 
@@ -22,41 +14,43 @@ export const ProfileScreen = ({ navigation, route }) => {
   const {
     params: { pubkey },
   } = route
-  const { profilesByPubkey } = useSelector((state: RootState) => state.notes)
-  const profile = profilesByPubkey[pubkey]
+  const dispatch = useDispatch()
+  const user = useUser()
+  const profile = useProfile(pubkey)
+  const contactList = useContactList(user?.pubkey)
   const profileContent = profile?.content
+
+  const isFollowing = contactList?.tags.find((tag) => tag[0] === "p" && tag[1] === pubkey)?.length > 0
 
   const navigateBack = () => {
     navigation.goBack()
   }
 
+  const handleToggleFollow = () => {
+    const newFollowState = !isFollowing
+    dispatch(doToggleFollow(pubkey, newFollowState))
+  }
+
   const BackAction = () => <TopNavigationAction icon={BackIcon} onPress={navigateBack} />
 
   return (
-    <Layout style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <TopNavigation title="Profile" alignment="center" accessoryLeft={BackAction} />
-        <Divider />
-        <Layout style={styles.center}>
-          <View style={{ padding: 20 }}>
-            <Avatar picture={profileContent?.picture} pubkey={pubkey} size={100} />
-            {profileContent?.name && (
-              <Text style={{ fontWeight: "bold", fontSize: 32, marginTop: 24 }}>{profileContent.name}</Text>
-            )}
-            {profileContent?.about && (
-              <Text style={{ marginTop: 12, fontSize: 16 }}>{profileContent.about}</Text>
-            )}
+    <Layout>
+      <TopNavigation title="Profile" alignment="center" accessoryLeft={BackAction} />
+      <Divider />
+      <View style={{ padding: 20 }}>
+        <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+          <Avatar picture={profileContent?.picture} pubkey={pubkey} size={100} />
+          <Button style={{ marginBottom: "auto" }} onPress={handleToggleFollow}>
+            {isFollowing ? "Unfollow" : "Follow"}
+          </Button>
+        </View>
+        {profileContent?.name && (
+          <Text style={{ fontWeight: "bold", fontSize: 32, marginTop: 24 }}>{profileContent.name}</Text>
+        )}
+        {profileContent?.about && <Text style={{ marginTop: 12, fontSize: 16 }}>{profileContent.about}</Text>}
 
-            <Text style={{ marginTop: 24 }}>pubkey: {pubkey}</Text>
-          </View>
-        </Layout>
-      </SafeAreaView>
+        <Text style={{ marginTop: 24 }}>pubkey: {pubkey}</Text>
+      </View>
     </Layout>
   )
 }
-
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-  },
-})

@@ -1,12 +1,21 @@
 mvp todo:
 
-- [ ] fix touch area for ios
+threads
+
 - [x] display fetched replies in a thread
 - [ ] fetch notes inside a thread
 - [ ] reply to a thread
+
+profile
+
+- [ ] basic signup
+- [x] ui for follow on profile page
+- [ ] publish new contactlist on follow/unfollow
+
+misc
+
+- [ ] android build
 - [ ] fix issue where can't click publish button
 - [ ] finish publish flow
-- [ ] basic signup
-- [ ] follow on profile page
 - [ ] ui lag/fetch more notes on following feed
-- [ ] android build
+- [ ] remove typescript expect-error comments

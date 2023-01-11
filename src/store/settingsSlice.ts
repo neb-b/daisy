@@ -45,5 +45,13 @@ export const { updateRelays, updateTheme, updateUser, logout } = settingsSlice.a
 export const initRelays = () => async (dispatch: AppDispatch) => {
   const promises = defaultRelays.map((relay) => connectToRelay(relay))
   const results = await Promise.all(promises)
-  return dispatch(updateRelays(results.filter((relay) => relay.success).map((relay) => relay.relay)))
+  return dispatch(
+    updateRelays(
+      results
+        .filter((relay) => {
+          return relay.success
+        })
+        .map((relay) => relay.relay)
+    )
+  )
 }
