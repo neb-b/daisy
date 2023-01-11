@@ -93,8 +93,6 @@ export const getEventsFromContactList = async (
       ids: Array.from(repostIdsSet),
     })) as NostrProfileEvent[]
 
-    console.log("repostEvents", repostEvents)
-
     const replyEvents = (await getNostrEvents(relays, {
       kinds: [1],
       limit: repliesSet.size,
@@ -250,36 +248,50 @@ const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<Nos
   })
 }
 
-export const publishNote = async (user, eventData): Promise<void> => {
+export const publishNote = async (
+  relays: Relay[],
+  user: { pubkey: string; privateKey: string },
+  content
+): Promise<NostrNoteEvent> => {
   let event = {
     kind: 1,
     pubkey: user.pubkey,
     created_at: Math.floor(Date.now() / 1000),
     tags: [],
-    ...eventData,
+    content,
   }
 
+  // @ts-expect-error
   event.id = getEventHash(event)
+  // @ts-expect-error
   event.sig = signEvent(event, user.privateKey)
 
-  // const connectedRelays = relays.filter((relay) => relayStatus[relay])
+  let returned = false
+  console.log("publishing", event)
+  return new Promise((resolve) => {
+    relays.forEach((relay) => {
+      const pub = relay.publish(event)
 
-  // connectedRelays.forEach((relay) => {
-  //   const relayObj = relayStatus[relay]
-  //   const pub = relayObj.publish(event)
-  //   pub.on("ok", () => {
-  //     console.log(`${relayObj.url} has accepted our event`)
-  //     relayObj.close()
-  //   })
-  //   pub.on("seen", () => {
-  //     console.log(`we saw the event on ${relayObj.url}`)
-  //     relayObj.close()
-  //   })
-  //   pub.on("failed", (reason) => {
-  //     console.log(`failed to publish to ${relayObj.url}: ${reason}`)
-  //     relayObj.close()
-  //   })
-  // })
+      pub.on("ok", () => {
+        if (!returned) {
+          // @ts-expect-error
+          resolve(event)
+          returned = true
+        }
+
+        console.log(`${relay.url} has accepted our event`)
+        relay.close()
+      })
+      pub.on("seen", () => {
+        console.log(`we saw the event on ${relay.url}`)
+        relay.close()
+      })
+      pub.on("failed", (reason) => {
+        console.log(`failed to publish to ${relay.url}: ${reason}`)
+        relay.close()
+      })
+    })
+  })
 }
 
 export const getProfile = async (

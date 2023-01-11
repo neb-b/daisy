@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
 import type { AppDispatch, GetState } from "store"
-import { getProfile, getEventsFromContactList, subscribeToContactList } from "core/nostr"
+import { getProfile, getEventsFromContactList, subscribeToContactList, publishNote } from "core/nostr"
 
 export interface NotesState {
   loading: boolean
@@ -105,4 +105,19 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
       dispatch(addNoteToFeedById({ feedId: "following", noteId: nostrEvent.id }))
     }
   })
+}
+
+export const doPublishNote = (content: string) => async (dispatch: AppDispatch, getState: GetState) => {
+  const { settings: settingsState } = getState()
+  const { user } = settingsState
+
+  if (!user.pubkey || !user.privateKey) {
+    console.log("no user found")
+    return
+  }
+
+  // @ts-expect-error
+  const note = await publishNote(settingsState.relays, settingsState.user, content)
+  dispatch(updateNotesById({ [note.id]: note }))
+  dispatch(addNoteToFeedById({ feedId: "following", noteId: note.id }))
 }

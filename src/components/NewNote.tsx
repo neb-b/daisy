@@ -10,9 +10,10 @@ import {
   Icon,
   Text,
 } from "@ui-kitten/components"
-import { useSelector, useDispatch } from "react-redux"
+import { useSelector } from "react-redux"
 import type { RootState } from "store"
-import { publishNote } from "core/nostr"
+import { useDispatch } from "store"
+import { doPublishNote } from "store/notesSlice"
 
 type Props = {
   closeModal: () => void
@@ -30,9 +31,7 @@ export const NewNote: React.FC<Props> = ({ closeModal }) => {
   )
 
   const handlePublish = () => {
-    publishNote(settingsState.user, {
-      content,
-    })
+    dispatch(doPublishNote(content))
   }
 
   return (
