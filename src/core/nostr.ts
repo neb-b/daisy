@@ -19,15 +19,16 @@ export const nostrEventKinds = {
 
 export const defaultRelays = [
   "wss://relay.damus.io",
-  "wss://nostr-relay.wlvs.space",
+  "wss://nostr.v0l.io",
+  "wss://nostr-pub.wellorder.net",
+  // "wss://nostr-relay.wlvs.space",
   // "wss://nostr.oxtr.dev",
   // "wss://brb.io",
   // "wss://relay.nostr.bg",
   // "wss://nostr.fmt.wiz.biz",
-  // "wss://nostr.v0l.io",
 ]
 
-const GET_EVENTS_LIMIT = 10
+const GET_EVENTS_LIMIT = 3
 const TIMEOUT = 2000
 
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
@@ -279,14 +280,19 @@ export const publishNote = async (
     kind,
     pubkey: user.pubkey,
     created_at: Math.floor(Date.now() / 1000),
-    tags,
     content,
+    tags,
   }
 
   // @ts-expect-error
   event.id = getEventHash(event)
   // @ts-expect-error
   event.sig = signEvent(event, user.privateKey)
+
+  // let ok = validateEvent(event)
+  // let veryOk = verifySignature(event)
+  // console.log("ok?", ok)
+  // console.log("veryOk?", veryOk)
 
   let returned = false
   return new Promise((resolve) => {

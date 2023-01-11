@@ -113,20 +113,22 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
   })
 }
 
-export const doPublishNote = (content: string) => async (dispatch: AppDispatch, getState: GetState) => {
-  const { settings: settingsState } = getState()
-  const { user } = settingsState
+export const doPublishNote =
+  (content: string, onSuccess: () => void) => async (dispatch: AppDispatch, getState: GetState) => {
+    const { settings: settingsState } = getState()
+    const { user } = settingsState
 
-  if (!user.pubkey || !user.privateKey) {
-    console.log("no user found")
-    return
+    if (!user.pubkey || !user.privateKey) {
+      console.log("no user found")
+      return
+    }
+
+    // @ts-expect-error
+    const note = await publishNote(settingsState.relays, settingsState.user, nostrEventKinds.note, content)
+    dispatch(updateNotesById({ [note.id]: note }))
+    dispatch(addNoteToFeedById({ feedId: "following", noteId: note.id }))
+    onSuccess()
   }
-
-  // @ts-expect-error
-  const note = await publishNote(settingsState.relays, settingsState.user, content)
-  dispatch(updateNotesById({ [note.id]: note }))
-  dispatch(addNoteToFeedById({ feedId: "following", noteId: note.id }))
-}
 
 export const doToggleFollow =
   (pubkey: string, isFollowing: boolean) => async (dispatch: AppDispatch, getState: GetState) => {

@@ -13,8 +13,9 @@ profile
 
 misc
 
-- [ ] android build
+- [x] finish publish flow
+- [ ] track relay errors/subscriptions better
 - [ ] fix issue where can't click publish button
-- [ ] finish publish flow
 - [ ] ui lag/fetch more notes on following feed
+- [ ] android build
 - [ ] remove typescript expect-error comments

@@ -1,17 +1,8 @@
 import React from "react"
-import { View } from "react-native"
-import {
-  Input,
-  Button,
-  Divider,
-  TopNavigation,
-  TopNavigationAction,
-  Layout,
-  Icon,
-  Text,
-} from "@ui-kitten/components"
-import { useSelector } from "react-redux"
-import type { RootState } from "store"
+import { View, ScrollView } from "react-native"
+import { Input, Button, Divider, TopNavigation, Text } from "@ui-kitten/components"
+
+import { Layout } from "components/Layout"
 import { useDispatch } from "store"
 import { doPublishNote } from "store/notesSlice"
 
@@ -21,7 +12,6 @@ type Props = {
 
 export const NewNote: React.FC<Props> = ({ closeModal }) => {
   const dispatch = useDispatch()
-  const { settings: settingsState } = useSelector((state: RootState) => state)
   const [content, setContent] = React.useState("")
 
   const RightAccessory = () => (
@@ -31,27 +21,30 @@ export const NewNote: React.FC<Props> = ({ closeModal }) => {
   )
 
   const handlePublish = () => {
-    dispatch(doPublishNote(content))
+    dispatch(doPublishNote(content, closeModal))
   }
 
   return (
-    <Layout style={{ flex: 1 }}>
-      <View>
+    <Layout>
+      <View style={{ flex: 1 }}>
         <TopNavigation title="New Note" alignment="center" accessoryRight={RightAccessory} />
         <Divider />
 
-        <View style={{ padding: 10 }}>
-          <Text style={{ marginBottom: 5 }}>Message</Text>
-          <Input
-            multiline
-            placeholder="hello world..."
-            value={content}
-            onChangeText={(newContent) => setContent(newContent)}
-          />
-          <Button style={{ marginTop: 16, borderRadius: 10 }} onPress={handlePublish}>
-            Publish
-          </Button>
-        </View>
+        <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
+          <View style={{ flex: 1, padding: 10 }}>
+            <Text style={{ marginBottom: 5 }}>Message</Text>
+            <Input
+              autoCapitalize="none"
+              multiline
+              placeholder="hello world..."
+              value={content}
+              onChangeText={(newContent) => setContent(newContent)}
+            />
+            <Button style={{ marginTop: 16, borderRadius: 10 }} onPress={handlePublish}>
+              Publish
+            </Button>
+          </View>
+        </ScrollView>
       </View>
     </Layout>
   )

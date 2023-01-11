@@ -42,6 +42,7 @@ export const settingsSlice = createSlice({
 
 export const { updateRelays, updateTheme, updateUser, logout } = settingsSlice.actions
 
+// TODO: if a relay has an issue unusb and remove from store
 export const initRelays = () => async (dispatch: AppDispatch) => {
   const promises = defaultRelays.map((relay) => connectToRelay(relay))
   const results = await Promise.all(promises)
