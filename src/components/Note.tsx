@@ -5,7 +5,14 @@ import { useNote, useProfile } from "store/hooks"
 import { Avatar } from "./Avatar"
 import { timeSince } from "../utils/time"
 
-export const NoteItem = ({ id, navigation, style = {} }) => {
+type Props = {
+  hideReply?: boolean
+  id: string
+  navigation: any
+  style?: object
+}
+
+export const Note: React.FC<Props> = ({ id, navigation, style = {}, hideReply = false }) => {
   const note = useNote(id)
   const profile = useProfile(note?.pubkey)
   const profileContent = profile?.content
@@ -39,7 +46,7 @@ export const NoteItem = ({ id, navigation, style = {} }) => {
           </Text>
           <Text>{timeSince(note.created_at)}</Text>
 
-          {note.reply && (
+          {!hideReply && note.reply && (
             <View
               style={{
                 paddingLeft: 10,

@@ -15,7 +15,7 @@ import {
 import type { RootState } from "store"
 // import { updateNotesAndProfiles, updateFeedByChannelId } from "store/notesSlice"
 
-import { NoteItem } from "components/Note"
+import { Note } from "components/Note"
 import { MessageInput } from "components/MessageInput"
 
 // const CHANNEL = "3561b3054737b1b126e607d574f230ca17ababe6ef803070e8967c3de607a620"
@@ -66,7 +66,7 @@ export const ChannelScreen = ({ navigation }) => {
   //                   // flexWrap: "wrap",
   //                 }}
   //               >
-  //                 <NoteItem id={item.id} navigation={navigation} />
+  //                 <Note id={item.id} navigation={navigation} />
   //               </View>
   //             )
   //           }}

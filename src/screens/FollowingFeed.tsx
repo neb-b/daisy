@@ -6,7 +6,7 @@ import { useDispatch } from "store"
 import { doPopulateFollowingFeed } from "store/notesSlice"
 import { useFeed } from "store/hooks"
 import { Layout } from "components/Layout"
-import { NoteItem } from "components/Note"
+import { Note } from "components/Note"
 import { NewNote } from "components/NewNote"
 
 export const FollowingFeedScreen = ({ navigation }) => {
@@ -35,7 +35,7 @@ export const FollowingFeedScreen = ({ navigation }) => {
                 paddingTop: 10,
               }}
             >
-              <NoteItem navigation={navigation} key={item} id={item} />
+              <Note navigation={navigation} key={item} id={item} />
             </Pressable>
           )}
           keyExtractor={(item) => item}

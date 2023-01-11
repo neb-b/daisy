@@ -1,27 +1,20 @@
 import React from "react"
-import { StyleSheet, View, SafeAreaView, FlatList } from "react-native"
-import { useSelector, useDispatch } from "react-redux"
-import {
-  Input,
-  Button,
-  Divider,
-  TopNavigation,
-  Layout,
-  Icon,
-  Text,
-  TopNavigationAction,
-} from "@ui-kitten/components"
+import { View, SafeAreaView, FlatList, Pressable } from "react-native"
+import { Divider, TopNavigation, Layout, Icon, TopNavigationAction } from "@ui-kitten/components"
 
-import { NoteItem } from "components/Note"
+import { Note } from "components/Note"
 import { MessageInput } from "components/MessageInput"
-//
+import { useThread } from "store/hooks"
+
 const BackIcon = (props) => <Icon {...props} name="arrow-back" />
 
 export const ThreadScreen = ({ navigation, route }) => {
   const {
     params: { id },
   } = route
-  //
+  const threadIds = useThread(id)
+
+  const thread = [...threadIds, id]
 
   const navigateBack = () => {
     navigation.goBack()
@@ -36,8 +29,22 @@ export const ThreadScreen = ({ navigation, route }) => {
         <Divider />
 
         <View style={{ flex: 1 }}>
-          <NoteItem id={id} navigation={navigation} style={{ padding: 16 }} />
-          <Divider />
+          <FlatList
+            data={thread}
+            renderItem={({ item }) => (
+              <Pressable
+                onPress={() => navigation.navigate("Thread", { id: item })}
+                style={{
+                  paddingLeft: 10,
+                  paddingRight: 15,
+                  paddingTop: 10,
+                }}
+              >
+                <Note hideReply navigation={navigation} key={item} id={item} />
+              </Pressable>
+            )}
+            keyExtractor={(item) => item}
+          />
         </View>
 
         <MessageInput />
