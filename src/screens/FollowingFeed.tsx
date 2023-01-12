@@ -15,9 +15,24 @@ export const FollowingFeedScreen = ({ navigation }) => {
   const followingFeed = useFeed("following")
 
   React.useEffect(() => {
-    console.log("fetch following")
     dispatch(doPopulateFollowingFeed())
   }, [])
+
+  const renderNote = React.useCallback(
+    ({ item }) => (
+      <Pressable
+        onPress={() => navigation.navigate("Thread", { id: item })}
+        style={{
+          paddingLeft: 10,
+          paddingRight: 15,
+          paddingTop: 10,
+        }}
+      >
+        <Note navigation={navigation} key={item} id={item} />
+      </Pressable>
+    ),
+    []
+  )
 
   return (
     <Layout>
@@ -25,22 +40,7 @@ export const FollowingFeedScreen = ({ navigation }) => {
       <Divider />
 
       {followingFeed?.length > 0 && (
-        <FlatList
-          data={followingFeed}
-          renderItem={({ item }) => (
-            <Pressable
-              onPress={() => navigation.navigate("Thread", { id: item })}
-              style={{
-                paddingLeft: 10,
-                paddingRight: 15,
-                paddingTop: 10,
-              }}
-            >
-              <Note navigation={navigation} key={item} id={item} />
-            </Pressable>
-          )}
-          keyExtractor={(item) => item}
-        />
+        <FlatList data={followingFeed} renderItem={renderNote} keyExtractor={(item) => item} />
       )}
 
       <Button

@@ -41,11 +41,12 @@ export const useFeed = (feedId: string) => {
 }
 
 export const useThread = (noteId: string) => {
-  const notesById = useSelector((state: RootState) => state.notes.notesById)
+  const { notesById, loadingById } = useSelector((state: RootState) => state.notes)
   const note = notesById[noteId]
+  const loading = loadingById[noteId]
 
   if (!note) {
-    return
+    return { notes: [], loading }
   }
 
   //
@@ -97,7 +98,7 @@ export const useThread = (noteId: string) => {
     })
   })
 
-  return [...Array.from(mergedReplies)]
+  const notes = [...Array.from(mergedReplies)]
     .reduce((acc, replyId) => {
       const reply = notesById[replyId]
       if (!reply) {
@@ -109,6 +110,8 @@ export const useThread = (noteId: string) => {
     }, [])
     .sort((a, b) => a.created_at - b.created_at)
     .map((note) => note.id)
+
+  return { notes, loading }
 
   // const val = {
   //   content: "I thought it was an old school movie camera this whole time 😂",

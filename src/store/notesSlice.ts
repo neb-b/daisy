@@ -16,6 +16,7 @@ export interface NotesState {
   profilesByPubkey: Record<string, NostrProfile>
   contactListsByPubkey: Record<string, NostrContactListEvent>
   feedsById: Record<string, string[]>
+  loadingById: Record<string, boolean>
 }
 
 const initialState = {
@@ -23,7 +24,7 @@ const initialState = {
   profilesByPubkey: {},
   feedsById: {},
   contactListsByPubkey: {},
-  loading: false,
+  loadingById: {},
 } as NotesState
 
 export const notesSlice = createSlice({
@@ -68,6 +69,9 @@ export const notesSlice = createSlice({
 
       state.feedsById[feedId] = Array.from(currentFeedSet)
     },
+    updateLoadingById(state, action: PayloadAction<Record<string, boolean>>) {
+      state.loadingById = { ...state.loadingById, ...action.payload }
+    },
   },
 })
 
@@ -78,6 +82,7 @@ export const {
   updateNotesAndProfiles,
   updateFeedsById,
   addNoteToFeedById,
+  updateLoadingById,
 } = notesSlice.actions
 
 export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
@@ -121,8 +126,14 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
 }
 
 export const doFetchReplies = (noteIds: string[]) => async (dispatch: AppDispatch, getState: GetState) => {
-  const { settings: settingsState, notes: notesState } = getState()
+  const { settings: settingsState } = getState()
+
+  const loadingState = noteIds.reduce((acc, noteId) => ({ ...acc, [noteId]: true }), {})
+  dispatch(updateLoadingById(loadingState))
+
   const replies = await getReplies(settingsState.relays, noteIds)
+  const finishedLoadingState = noteIds.reduce((acc, noteId) => ({ ...acc, [noteId]: false }), {})
+  dispatch(updateLoadingById(finishedLoadingState))
 
   if (!replies.length) {
     return
