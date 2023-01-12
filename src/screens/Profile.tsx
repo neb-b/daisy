@@ -6,7 +6,7 @@ import { Layout } from "components/Layout"
 import { Avatar } from "components/Avatar"
 import { useDispatch } from "store"
 import { useUser, useProfile, useContactList } from "store/hooks"
-import { doToggleFollow } from "store/notesSlice"
+import { doFetchProfile, doToggleFollow } from "store/notesSlice"
 
 const BackIcon = (props) => <Icon {...props} name="arrow-back" />
 
@@ -18,20 +18,22 @@ export const ProfileScreen = ({ navigation, route }) => {
   const user = useUser()
   const profile = useProfile(pubkey)
   const contactList = useContactList(user?.pubkey)
+  const hasProfile = !!profile
   const profileContent = profile?.content
-
   const isFollowing = contactList?.tags.find((tag) => tag[0] === "p" && tag[1] === pubkey)?.length > 0
 
-  const navigateBack = () => {
-    navigation.goBack()
-  }
+  React.useEffect(() => {
+    if (!hasProfile) {
+      dispatch(doFetchProfile(pubkey))
+    }
+  }, [hasProfile, pubkey])
 
   const handleToggleFollow = () => {
     const newFollowState = !isFollowing
     dispatch(doToggleFollow(pubkey, newFollowState))
   }
 
-  const BackAction = () => <TopNavigationAction icon={BackIcon} onPress={navigateBack} />
+  const BackAction = () => <TopNavigationAction icon={BackIcon} onPress={() => navigation.goBack()} />
 
   return (
     <Layout>

@@ -99,7 +99,12 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
 
   const { notes, profiles } = await getEventsFromContactList(settingsState.relays, contactList)
 
-  dispatch(updateNotesAndProfiles({ notes, profiles }))
+  dispatch(
+    updateNotesAndProfiles({
+      notes,
+      profiles,
+    })
+  )
   dispatch(updateFeedsById({ following: notes.map((note) => note.id) }))
 
   // subscribeToContactList(settingsState.relays, contactList, (nostrEvent: NostrEvent) => {

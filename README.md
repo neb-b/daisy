@@ -5,11 +5,13 @@ threads
 - [x] display fetched replies in a thread
 - [x] fetch notes inside a thread
 - [ ] reply to a thread
+- [ ] thread navigation
 
 profile
 
 - [x] ui for follow on profile page
 - [x] publish new contactlist on follow/unfollow
+- [x] fetch profile if it doesn't exist
 
 misc
 

@@ -234,11 +234,12 @@ const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<No
 
       setTimeout(() => {
         // If a timeout happens, return what has been received so far
+        sub.unsub()
+
         if (fetchedCount === limit) return
         timedOut = true
 
         resolve(Array.from(Object.values(eventsById)))
-        sub.unsub()
       }, TIMEOUT)
     })
   })
