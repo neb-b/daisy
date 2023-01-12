@@ -115,9 +115,9 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
   // })
 }
 
-export const doFetchReplies = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
+export const doFetchReplies = (noteIds: string[]) => async (dispatch: AppDispatch, getState: GetState) => {
   const { settings: settingsState, notes: notesState } = getState()
-  const replies = await getReplies(settingsState.relays, noteId)
+  const replies = await getReplies(settingsState.relays, noteIds)
 
   if (!replies.length) {
     return

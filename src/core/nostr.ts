@@ -66,18 +66,18 @@ export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; suc
   })
 }
 
-export const getReplies = async (relays: Relay[], eventId: string): Promise<NostrEvent[]> => {
+export const getReplies = async (relays: Relay[], eventIds: string[]): Promise<NostrEvent[]> => {
   return new Promise(async (resolve) => {
     const replies = await getNostrEvents(relays, {
       kinds: [nostrEventKinds.note],
-      "#e": [eventId],
+      "#e": eventIds,
     })
 
     const additionalRepliesToFetch = new Set()
     replies.forEach((reply) => {
       const { tags } = reply
       tags.forEach((tag) => {
-        if (tag[0] === "e" && tag[1] !== eventId) {
+        if (tag[0] === "e" && !eventIds.includes(tag[1])) {
           additionalRepliesToFetch.add(tag[1])
         }
       })

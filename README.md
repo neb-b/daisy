@@ -13,8 +13,9 @@ profile
 
 misc
 
-- [x] finish publish flow
+- [ ] don't fetch data if already fetched (i think)
 - [ ] track relay errors/subscriptions better
+- [x] finish publish flow
 - [x] fix issue where can't click publish button
 - [x] fix issue with toucharea insets
 - [ ] ui lag/fetch more notes on following feed

@@ -17,17 +17,25 @@ export const ThreadScreen = ({ navigation, route }) => {
   const dispatch = useDispatch()
   const thread = useThread(id)
   const note = useNote(id)
-  const replyTags = note?.reply?.tags.reduce((acc, tag) => {
-    if (tag[0] === "e") {
-      acc.push(tag[1])
-    }
+  // const replyTags = note?.reply?.tags.reduce((tag, acc) => {
+  //   if (tag[0] === "e") {
+  //     acc.push(tag[1])
+  //   }
 
-    return acc
-  }, [])
+  //   return acc
+  // }, [])
 
+  // replyTags.push(id)
+
+  // const stringifiedReplyTags = replyTags?.join(",")
   React.useEffect(() => {
-    dispatch(doFetchReplies(id))
-  }, [id])
+    // const splitReplyTags = stringifiedReplyTags?.split(",")
+    // console.log("split", splitReplyTags)
+    dispatch(doFetchReplies([id]))
+  }, [
+    id,
+    // stringifiedReplyTags
+  ])
 
   const navigateBack = () => {
     navigation.goBack()
