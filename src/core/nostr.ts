@@ -29,7 +29,7 @@ export const defaultRelays = [
 ]
 
 const GET_EVENTS_LIMIT = 20
-const TIMEOUT = 2000
+const TIMEOUT = 500
 
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
   return new Promise(async (resolve) => {

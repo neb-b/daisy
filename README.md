@@ -15,7 +15,8 @@ misc
 
 - [x] finish publish flow
 - [ ] track relay errors/subscriptions better
-- [ ] fix issue where can't click publish button
+- [x] fix issue where can't click publish button
+- [x] fix issue with toucharea insets
 - [ ] ui lag/fetch more notes on following feed
 - [ ] android build
 - [ ] remove typescript expect-error comments

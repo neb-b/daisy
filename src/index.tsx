@@ -1,13 +1,13 @@
 import React from "react"
-import { StatusBar } from "react-native"
+import { StatusBar, View } from "react-native"
 
-import { ApplicationProvider as ThemeProvider, IconRegistry, Text } from "@ui-kitten/components"
+import { ApplicationProvider as ThemeProvider, IconRegistry, Text, useTheme } from "@ui-kitten/components"
 import * as eva from "@eva-design/eva"
 import { EvaIconsPack } from "@ui-kitten/eva-icons"
 import { NavigationContainer } from "@react-navigation/native"
 import { Provider, useSelector } from "react-redux"
 import { PersistGate } from "redux-persist/integration/react"
-import { SafeAreaProvider } from "react-native-safe-area-context"
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context"
 
 import type { RootState } from "store"
 import { store, persistor } from "store"
@@ -30,16 +30,29 @@ const ThemeWrapper = ({ children }) => {
   )
 }
 
+const AppWrapper = ({ children }) => {
+  const theme = useTheme()
+  const insets = useSafeAreaInsets()
+  const backgroundColor: string = theme[`background-basic-color-1`]
+  return (
+    <View style={{ flex: 1, backgroundColor, paddingTop: insets.top, paddingBottom: insets.bottom }}>
+      {children}
+    </View>
+  )
+}
+
 const App = () => {
   return (
     <Provider store={store}>
       <SafeAreaProvider>
         <ThemeWrapper>
-          <PersistGate loading={<Text>Loading...</Text>} persistor={persistor}>
-            <NavigationContainer>
-              <HomeStackNavigator />
-            </NavigationContainer>
-          </PersistGate>
+          <AppWrapper>
+            <PersistGate loading={<Text>Loading...</Text>} persistor={persistor}>
+              <NavigationContainer>
+                <HomeStackNavigator />
+              </NavigationContainer>
+            </PersistGate>
+          </AppWrapper>
         </ThemeWrapper>
       </SafeAreaProvider>
     </Provider>

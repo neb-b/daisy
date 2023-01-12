@@ -16,8 +16,14 @@ export const ThreadScreen = ({ navigation, route }) => {
   } = route
   const dispatch = useDispatch()
   const thread = useThread(id)
-  // const note = useNote(id)
-  // console.log("note", note)
+  const note = useNote(id)
+  const replyTags = note?.reply?.tags.reduce((acc, tag) => {
+    if (tag[0] === "e") {
+      acc.push(tag[1])
+    }
+
+    return acc
+  }, [])
 
   React.useEffect(() => {
     dispatch(doFetchReplies(id))

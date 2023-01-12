@@ -50,24 +50,34 @@ export const useThread = (noteId: string) => {
     return
   }
 
+  //
+  // this probably needs recursion
+  //
+
   const initialIdsToFind = new Set<string>([noteId])
+
+  // find notes we have that are replies to this note
+  Object.values(notesById).forEach((note) => {
+    note.tags.forEach((tag) => {
+      if (tag[0] === "e" && tag[1] === noteId) {
+        initialIdsToFind.add(note.id)
+      }
+    })
+  })
+
+  // see if this note is a reply to anyone
   note.tags.find((tag) => {
     if (tag[0] === "e") {
       initialIdsToFind.add(tag[1])
     }
   })
 
-  const initialReplyIds = Array.from(initialIdsToFind)
-  // After getting the initial replies, we need to get the replies to those replies
-  // ... I think? I'm not sure how this works yet. There are still more replies out there
-
   const secondaryRepliesToFind = new Set<string>()
-  initialReplyIds.forEach((replyId) => {
+  Array.from(initialIdsToFind).forEach((replyId) => {
     const reply = notesById[replyId]
     if (!reply) {
       return
     }
-
     reply.tags.find((tag) => {
       if (tag[0] === "e") {
         secondaryRepliesToFind.add(tag[1])
@@ -75,9 +85,21 @@ export const useThread = (noteId: string) => {
     })
   })
 
-  const mergedReplies = new Set([...initialReplyIds, ...secondaryRepliesToFind])
+  // This should keep going until it doesn't find any, recursively
+  // I think
 
-  return Array.from(mergedReplies)
+  const mergedReplies = new Set([...initialIdsToFind, ...secondaryRepliesToFind])
+
+  // wtf lol
+  Object.values(notesById).forEach((note) => {
+    note.tags.forEach((tag) => {
+      if (tag[0] === "e" && mergedReplies.has(tag[1])) {
+        mergedReplies.add(note.id)
+      }
+    })
+  })
+
+  return [...Array.from(mergedReplies)]
     .reduce((acc, replyId) => {
       const reply = notesById[replyId]
       if (!reply) {
