@@ -1,6 +1,7 @@
 import React from "react"
-import { FlatList, Modal, Pressable } from "react-native"
+import { Modal, Pressable } from "react-native"
 import { Button, Divider, TopNavigation, Icon } from "@ui-kitten/components"
+import { FlashList } from "@shopify/flash-list"
 
 import { useDispatch } from "store"
 import { doPopulateFollowingFeed } from "store/notesSlice"
@@ -34,13 +35,20 @@ export const FollowingFeedScreen = ({ navigation }) => {
     []
   )
 
+  const keyExtractor = React.useCallback((item) => item, [])
+
   return (
     <Layout>
       <TopNavigation title="Feed" alignment="center" />
       <Divider />
 
       {followingFeed?.length > 0 && (
-        <FlatList data={followingFeed} renderItem={renderNote} keyExtractor={(item) => item} />
+        <FlashList
+          estimatedItemSize={190}
+          data={followingFeed}
+          renderItem={renderNote}
+          keyExtractor={keyExtractor}
+        />
       )}
 
       <Button

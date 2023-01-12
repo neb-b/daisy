@@ -1,12 +1,18 @@
-mvp todo:
+Daisy mvp todo:
+
+notes
+
+- [ ] images
+- [ ] links
+- [ ] tagging users
 
 threads
 
+- [ ] reply to a thread
+- [ ] deep thread navigation
+- [ ] better thread sorting
 - [x] display fetched replies in a thread
 - [x] fetch notes inside a thread
-- [ ] reply to a thread
-- [ ] thread navigation
-- [ ] better thread sorting
 
 profile
 
@@ -16,10 +22,12 @@ profile
 
 misc
 
+- [ ] subscribe to following
+- [ ] android build
+- [ ] remove typescript expect-error comments
+- [x] fetch more notes on following feed
 - [x] track relay errors/subscriptions better
 - [x] finish publish flow
 - [x] fix issue where can't click publish button
 - [x] fix issue with toucharea insets
-- [ ] ui lag/fetch more notes on following feed
-- [ ] android build
-- [ ] remove typescript expect-error comments
+- [x] ui lag on lists

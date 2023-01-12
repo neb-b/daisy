@@ -9,20 +9,22 @@ export const useUser = () => {
 }
 
 export const useProfile = (pubkey?: string) => {
+  const { profilesByPubkey } = useSelector((state: RootState) => state.notes)
+
   if (!pubkey) {
     return undefined
   }
 
-  const { profilesByPubkey } = useSelector((state: RootState) => state.notes)
   return profilesByPubkey[pubkey]
 }
 
 export const useContactList = (pubkey?: string) => {
+  const { contactListsByPubkey } = useSelector((state: RootState) => state.notes)
+
   if (!pubkey) {
     return undefined
   }
 
-  const { contactListsByPubkey } = useSelector((state: RootState) => state.notes)
   return contactListsByPubkey[pubkey]
 }
 

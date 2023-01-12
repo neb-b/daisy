@@ -28,7 +28,7 @@ export const defaultRelays = [
   // "wss://nostr.fmt.wiz.biz",
 ]
 
-const GET_EVENTS_LIMIT = 20
+const GET_EVENTS_LIMIT = 50
 const TIMEOUT = 1000
 
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
@@ -354,6 +354,7 @@ export const getProfile = async (
   relays: Relay[],
   pubkey: string
 ): Promise<{ profile: NostrProfile; contactList: NostrContactListEvent }> => {
+  console.log("getting profile")
   const profile = (await getNostrEvent(relays, {
     kinds: [nostrEventKinds.profile],
     authors: [pubkey],

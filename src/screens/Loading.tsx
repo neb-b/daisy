@@ -36,6 +36,7 @@ export const LoadingScreen = ({ navigation, route }) => {
 
   React.useEffect(() => {
     if (hasProfile) {
+      console.log("navigate")
       reset({ index: 0, routes: [{ name: "Home" }] })
     }
   }, [reset, hasProfile])

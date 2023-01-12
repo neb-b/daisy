@@ -1,6 +1,7 @@
 import React from "react"
-import { View, SafeAreaView, FlatList, Pressable } from "react-native"
+import { View, SafeAreaView, Pressable } from "react-native"
 import { Divider, TopNavigation, Layout, Icon, TopNavigationAction, Spinner } from "@ui-kitten/components"
+import { FlashList } from "@shopify/flash-list"
 
 import { Note } from "components/Note"
 import { MessageInput } from "components/MessageInput"
@@ -43,6 +44,8 @@ export const ThreadScreen = ({ navigation, route }) => {
     []
   )
 
+  const keyExtractor = React.useCallback((item) => item, [])
+
   return (
     <Layout style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
@@ -57,7 +60,12 @@ export const ThreadScreen = ({ navigation, route }) => {
 
         {!loading && (
           <View style={{ flex: 1 }}>
-            <FlatList data={notes} renderItem={renderNote} keyExtractor={(item) => item} />
+            <FlashList
+              estimatedItemSize={190}
+              data={notes}
+              renderItem={renderNote}
+              keyExtractor={keyExtractor}
+            />
           </View>
         )}
 
