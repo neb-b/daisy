@@ -29,7 +29,7 @@ export const defaultRelays = [
 ]
 
 const GET_EVENTS_LIMIT = 20
-const TIMEOUT = 500
+const TIMEOUT = 1000
 
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
   return new Promise(async (resolve) => {
@@ -200,7 +200,7 @@ const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<No
     const limit = filter?.limit || GET_EVENTS_LIMIT
     const eventsById: Record<string, NostrEvent> = {}
     let fetchedCount = 0
-    let timedOut = false
+    let returned = false
 
     relays.forEach((relay) => {
       const sub = relay.sub([
@@ -219,12 +219,9 @@ const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<No
         fetchedCount++
 
         if (fetchedCount === limit) {
-          if (timedOut) {
-            return
-          }
-
           resolve(Array.from(Object.values(eventsById)))
           sub.unsub()
+          returned = true
         }
       })
 
@@ -233,11 +230,14 @@ const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<No
       })
 
       setTimeout(() => {
+        // If all data was already received do nothing
+        if (returned) {
+          return
+        }
+
         // If a timeout happens, return what has been received so far
         sub.unsub()
-
-        if (fetchedCount === limit) return
-        timedOut = true
+        returned = true
 
         resolve(Array.from(Object.values(eventsById)))
       }, TIMEOUT)

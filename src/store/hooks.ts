@@ -40,9 +40,7 @@ export const useFeed = (feedId: string) => {
     .map((note) => note.id)
 }
 
-// TODO: christ...
 export const useThread = (noteId: string) => {
-  console.log("getting notes for: ", noteId)
   const notesById = useSelector((state: RootState) => state.notes.notesById)
   const note = notesById[noteId]
 

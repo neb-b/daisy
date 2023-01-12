@@ -6,6 +6,7 @@ threads
 - [x] fetch notes inside a thread
 - [ ] reply to a thread
 - [ ] thread navigation
+- [ ] better thread sorting
 
 profile
 
@@ -15,8 +16,7 @@ profile
 
 misc
 
-- [ ] don't fetch data if already fetched (i think)
-- [ ] track relay errors/subscriptions better
+- [x] track relay errors/subscriptions better
 - [x] finish publish flow
 - [x] fix issue where can't click publish button
 - [x] fix issue with toucharea insets
