@@ -3,7 +3,7 @@ mvp todo:
 threads
 
 - [x] display fetched replies in a thread
-- [ ] fetch notes inside a thread
+- [x] fetch notes inside a thread
 - [ ] reply to a thread
 
 profile

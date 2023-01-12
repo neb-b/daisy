@@ -66,6 +66,32 @@ export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; suc
   })
 }
 
+export const getReplies = async (relays: Relay[], eventId: string): Promise<NostrEvent[]> => {
+  return new Promise(async (resolve) => {
+    const replies = await getNostrEvents(relays, {
+      kinds: [nostrEventKinds.note],
+      "#e": [eventId],
+    })
+
+    const additionalRepliesToFetch = new Set()
+    replies.forEach((reply) => {
+      const { tags } = reply
+      tags.forEach((tag) => {
+        if (tag[0] === "e" && tag[1] !== eventId) {
+          additionalRepliesToFetch.add(tag[1])
+        }
+      })
+    })
+
+    const additionalReplies = await getNostrEvents(relays, {
+      kinds: [nostrEventKinds.note],
+      "#e": Array.from(additionalRepliesToFetch),
+    })
+
+    resolve([...replies, ...additionalReplies])
+  })
+}
+
 export const getEventsFromContactList = async (
   relays: Relay[],
   contactList: { tags: string[][] }
@@ -99,13 +125,13 @@ export const getEventsFromContactList = async (
     })
 
     const repostEvents = (await getNostrEvents(relays, {
-      kinds: [1],
+      kinds: [nostrEventKinds.note],
       limit: repostIdsSet.size,
       ids: Array.from(repostIdsSet),
     })) as NostrProfileEvent[]
 
     const replyEvents = (await getNostrEvents(relays, {
-      kinds: [1],
+      kinds: [nostrEventKinds.note],
       limit: repliesSet.size,
       ids: Array.from(repliesSet),
     })) as NostrProfileEvent[]

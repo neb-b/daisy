@@ -3,16 +3,16 @@ import { Text, Icon } from "@ui-kitten/components"
 
 import { useNote, useProfile } from "store/hooks"
 import { Avatar } from "./Avatar"
-import { timeSince } from "../utils/time"
+import { timeSince, fullDateString } from "../utils/time"
 
 type Props = {
-  hideReply?: boolean
+  isThread?: boolean
   id: string
   navigation: any
   style?: object
 }
 
-export const Note: React.FC<Props> = ({ id, navigation, style = {}, hideReply = false }) => {
+export const Note: React.FC<Props> = ({ id, navigation, style = {}, isThread = false }) => {
   const note = useNote(id)
   const profile = useProfile(note?.pubkey)
   const profileContent = profile?.content
@@ -44,32 +44,19 @@ export const Note: React.FC<Props> = ({ id, navigation, style = {}, hideReply = 
           <Text style={{ fontSize: 18, fontWeight: "bold" }}>
             {profileContent?.name || note.pubkey.slice(0, 6)}
           </Text>
-          <Text>{timeSince(note.created_at)}</Text>
+          {!isThread && <Text>{timeSince(note.created_at)}</Text>}
 
-          {!hideReply && note.reply && (
-            <View
-              style={{
-                paddingLeft: 10,
-                borderLeftWidth: 1,
-                borderLeftColor: "#ddd",
-                marginBottom: 10,
-                marginTop: 10,
-              }}
-            >
-              <Text style={{ fontWeight: "bold" }}>
-                {replyProfileContent?.name || note.reply.pubkey.slice(0, 6) || "unknown user"}
-              </Text>
-              <Text style={{ marginTop: 5 }}>
-                {note.reply.content.length > 70
-                  ? `${note.reply.content.slice(0, 70)}...`
-                  : note.reply.content}
-              </Text>
-            </View>
+          {note.reply && (
+            <Text style={{}}>
+              Replying to {replyProfileContent?.name || note.reply.pubkey.slice(0, 6) || "unknown user"}
+            </Text>
           )}
 
           <Text style={{ fontSize: 20, marginTop: 5, paddingRight: 13, flexWrap: "wrap" }}>
             {note.content}
           </Text>
+
+          {isThread && <Text style={{}}>{fullDateString(note.created_at)}</Text>}
         </View>
       </View>
     </View>

@@ -7,6 +7,7 @@ import {
   subscribeToContactList,
   publishNote,
   nostrEventKinds,
+  getReplies,
 } from "core/nostr"
 
 export interface NotesState {
@@ -112,6 +113,19 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
   //     dispatch(addNoteToFeedById({ feedId: "following", noteId: nostrEvent.id }))
   //   }
   // })
+}
+
+export const doFetchReplies = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
+  const { settings: settingsState, notes: notesState } = getState()
+  const replies = await getReplies(settingsState.relays, noteId)
+
+  if (!replies.length) {
+    return
+  }
+
+  const repliesMap = replies.reduce((acc, reply) => ({ ...acc, [reply.id]: reply }), {})
+
+  dispatch(updateNotesById(repliesMap))
 }
 
 export const doPublishNote =

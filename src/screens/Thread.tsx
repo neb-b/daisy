@@ -4,7 +4,9 @@ import { Divider, TopNavigation, Layout, Icon, TopNavigationAction } from "@ui-k
 
 import { Note } from "components/Note"
 import { MessageInput } from "components/MessageInput"
-import { useThread } from "store/hooks"
+import { useThread, useNote } from "store/hooks"
+import { doFetchReplies } from "store/notesSlice"
+import { useDispatch } from "store"
 
 const BackIcon = (props) => <Icon {...props} name="arrow-back" />
 
@@ -12,9 +14,14 @@ export const ThreadScreen = ({ navigation, route }) => {
   const {
     params: { id },
   } = route
-  const threadIds = useThread(id)
+  const dispatch = useDispatch()
+  const thread = useThread(id)
+  // const note = useNote(id)
+  // console.log("note", note)
 
-  const thread = [...threadIds, id]
+  React.useEffect(() => {
+    dispatch(doFetchReplies(id))
+  }, [id])
 
   const navigateBack = () => {
     navigation.goBack()
@@ -40,7 +47,7 @@ export const ThreadScreen = ({ navigation, route }) => {
                   paddingTop: 10,
                 }}
               >
-                <Note hideReply navigation={navigation} key={item} id={item} />
+                <Note isThread navigation={navigation} key={item} id={item} />
               </Pressable>
             )}
             keyExtractor={(item) => item}
