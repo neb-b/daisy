@@ -19,7 +19,7 @@ export const nostrEventKinds = {
 
 export const defaultRelays = [
   "wss://relay.damus.io",
-  "wss://nostr.v0l.io",
+  // "wss://nostr.v0l.io",
   "wss://nostr-pub.wellorder.net",
   // "wss://nostr-relay.wlvs.space",
   // "wss://nostr.oxtr.dev",
@@ -28,7 +28,7 @@ export const defaultRelays = [
   // "wss://nostr.fmt.wiz.biz",
 ]
 
-const GET_EVENTS_LIMIT = 3
+const GET_EVENTS_LIMIT = 20
 const TIMEOUT = 2000
 
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
@@ -236,7 +236,7 @@ const subscribeToNostrEvents = (relays: Relay[], filter: NostrFilter, handleEven
   // }
 }
 
-const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent> => {
+const getNostrEvent = async (relays: Relay[], filter?: NostrFilter, onError): Promise<NostrEvent> => {
   return new Promise((resolve) => {
     relays.forEach((relay) => {
       const sub = relay.sub([{ ...filter }])
@@ -263,6 +263,7 @@ const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<Nos
 
       sub.on("eose", () => {
         console.log("getNostrEvent eose: ", relay)
+        onError(relay)
         sub.unsub()
       })
     })
@@ -289,10 +290,11 @@ export const publishNote = async (
   // @ts-expect-error
   event.sig = signEvent(event, user.privateKey)
 
-  // let ok = validateEvent(event)
-  // let veryOk = verifySignature(event)
-  // console.log("ok?", ok)
-  // console.log("veryOk?", veryOk)
+  console.log("event", event.tags)
+  let ok = validateEvent(event)
+  let veryOk = verifySignature(event)
+  console.log("ok?", ok)
+  console.log("veryOk?", veryOk)
 
   let returned = false
   return new Promise((resolve) => {

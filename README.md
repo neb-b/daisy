@@ -9,7 +9,7 @@ threads
 profile
 
 - [x] ui for follow on profile page
-- [ ] publish new contactlist on follow/unfollow
+- [x] publish new contactlist on follow/unfollow
 
 misc
 

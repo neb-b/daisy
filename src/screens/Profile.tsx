@@ -40,7 +40,11 @@ export const ProfileScreen = ({ navigation, route }) => {
       <View style={{ padding: 20 }}>
         <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
           <Avatar picture={profileContent?.picture} pubkey={pubkey} size={100} />
-          <Button style={{ marginBottom: "auto" }} onPress={handleToggleFollow}>
+          <Button
+            appearance={isFollowing ? "outline" : "primary"}
+            style={{ marginBottom: "auto" }}
+            onPress={handleToggleFollow}
+          >
             {isFollowing ? "Unfollow" : "Follow"}
           </Button>
         </View>

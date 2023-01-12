@@ -15,7 +15,7 @@ export const FollowingFeedScreen = ({ navigation }) => {
   const followingFeed = useFeed("following")
 
   React.useEffect(() => {
-    // dispatch(doPopulateFollowingFeed())
+    dispatch(doPopulateFollowingFeed())
   }, [])
 
   return (

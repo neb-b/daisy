@@ -97,20 +97,21 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
   const contactList = contactListsByPubkey[settingsState.user.pubkey]
 
   const { notes, profiles } = await getEventsFromContactList(settingsState.relays, contactList)
+
   dispatch(updateNotesAndProfiles({ notes, profiles }))
   dispatch(updateFeedsById({ following: notes.map((note) => note.id) }))
 
-  subscribeToContactList(settingsState.relays, contactList, (nostrEvent: NostrEvent) => {
-    if (nostrEvent.kind === 1) {
-      dispatch(
-        updateNotesById({
-          [nostrEvent.id]: nostrEvent,
-        })
-      )
+  // subscribeToContactList(settingsState.relays, contactList, (nostrEvent: NostrEvent) => {
+  //   if (nostrEvent.kind === 1) {
+  //     dispatch(
+  //       updateNotesById({
+  //         [nostrEvent.id]: nostrEvent,
+  //       })
+  //     )
 
-      dispatch(addNoteToFeedById({ feedId: "following", noteId: nostrEvent.id }))
-    }
-  })
+  //     dispatch(addNoteToFeedById({ feedId: "following", noteId: nostrEvent.id }))
+  //   }
+  // })
 }
 
 export const doPublishNote =
@@ -147,16 +148,22 @@ export const doToggleFollow =
       return
     }
 
-    let newContactList = Object.assign({}, contactList)
+    let newTags = contactList.tags.slice()
 
     if (isFollowing) {
-      newContactList.tags.push(["p", pubkey])
+      newTags.push(["p", pubkey])
     } else {
-      newContactList.tags = contactList.tags.filter((tag) => tag[1] !== pubkey)
+      newTags = newTags.filter((tag) => tag[1] !== pubkey)
     }
 
-    // @ts-expect-error
-    const resolvedContactList = await publishNote(relays, user, nostrEventKinds.contactList, "", contactList)
+    const resolvedContactList = await publishNote(
+      relays,
+      // @ts-expect-error
+      user,
+      nostrEventKinds.contactList,
+      "",
+      newTags
+    )
     // @ts-expect-error
     dispatch(updateContactListsByPubkey({ [user.pubkey]: resolvedContactList }))
   }
