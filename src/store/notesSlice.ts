@@ -3,7 +3,7 @@ import type { PayloadAction } from "@reduxjs/toolkit"
 import type { AppDispatch, GetState } from "store"
 import {
   getProfile,
-  getEventsFromContactList,
+  getEventsFromPubkeys,
   subscribeToContactList,
   publishNote,
   nostrEventKinds,
@@ -15,16 +15,17 @@ export interface NotesState {
   notesById: Record<string, NostrNoteEvent | NostrRepostEvent>
   profilesByPubkey: Record<string, NostrProfile>
   contactListsByPubkey: Record<string, NostrContactListEvent>
-  feedsById: Record<string, string[]>
-  loadingById: Record<string, boolean>
+  feedsByIdOrPubkey: Record<string, string[]>
+  feedsByPubkey: Record<string, string[]>
+  loadingByIdOrPubkey: Record<string, boolean>
 }
 
 const initialState = {
   notesById: {},
   profilesByPubkey: {},
-  feedsById: {},
+  feedsByIdOrPubkey: {},
   contactListsByPubkey: {},
-  loadingById: {},
+  loadingByIdOrPubkey: {},
 } as NotesState
 
 export const notesSlice = createSlice({
@@ -34,13 +35,16 @@ export const notesSlice = createSlice({
     updateNotesById(state, action: PayloadAction<Record<string, NostrNoteEvent>>) {
       state.notesById = { ...state.notesById, ...action.payload }
     },
+
     updateProfilesByPubkey(state, action: PayloadAction<Record<string, NostrProfile>>) {
       state.profilesByPubkey = { ...state.profilesByPubkey, ...action.payload }
     },
+
     updateContactListsByPubkey(state, action: PayloadAction<Record<string, NostrContactListEvent>>) {
       // @ts-expect-error wtf
       state.contactListsByPubkey = { ...state.profilesByPubkey, ...action.payload }
     },
+
     updateNotesAndProfiles(
       state,
       action: PayloadAction<{ notes: NostrEvent[]; profiles: Record<string, NostrProfile> }>
@@ -54,23 +58,22 @@ export const notesSlice = createSlice({
       state.profilesByPubkey = { ...state.profilesByPubkey, ...profiles }
       state.loading = false
     },
-    updateFeedsById(state, action: PayloadAction<Record<string, string[]>>) {
-      // TODO: handle pruning for other feed ids
-      const { following } = action.payload
-      const prunedFollowing = new Set(following)
-      state.feedsById = { ...state.feedsById, following: Array.from(prunedFollowing) }
+
+    updatefeedsByIdOrPubkey(state, action: PayloadAction<Record<string, string[]>>) {
+      state.feedsByIdOrPubkey = { ...state.feedsByIdOrPubkey, ...action.payload }
     },
+
     addNoteToFeedById(state, action: PayloadAction<{ feedId: string; noteId: string }>) {
       const { feedId, noteId } = action.payload
 
-      const currentFeed = state.feedsById[feedId]
+      const currentFeed = state.feedsByIdOrPubkey[feedId]
       const currentFeedSet = new Set(currentFeed)
       currentFeedSet.add(noteId)
 
-      state.feedsById[feedId] = Array.from(currentFeedSet)
+      state.feedsByIdOrPubkey[feedId] = Array.from(currentFeedSet)
     },
-    updateLoadingById(state, action: PayloadAction<Record<string, boolean>>) {
-      state.loadingById = { ...state.loadingById, ...action.payload }
+    updateloadingByIdOrPubkey(state, action: PayloadAction<Record<string, boolean>>) {
+      state.loadingByIdOrPubkey = { ...state.loadingByIdOrPubkey, ...action.payload }
     },
   },
 })
@@ -80,29 +83,28 @@ export const {
   updateProfilesByPubkey,
   updateContactListsByPubkey,
   updateNotesAndProfiles,
-  updateFeedsById,
+  updatefeedsByIdOrPubkey,
   addNoteToFeedById,
-  updateLoadingById,
+  updateloadingByIdOrPubkey,
 } = notesSlice.actions
 
 export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
   const {
     settings: { relays },
+    notes: { profilesByPubkey },
   } = getState()
 
-  const { profile, contactList } = await getProfile(relays, pubkey)
+  const hasProfile = profilesByPubkey[pubkey]
 
-  dispatch(updateProfilesByPubkey({ [pubkey]: profile }))
-  dispatch(updateContactListsByPubkey({ [pubkey]: contactList }))
-}
+  dispatch(updateloadingByIdOrPubkey({ [pubkey]: true }))
 
-export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
-  const { settings: settingsState, notes: notesState } = getState()
-  const { contactListsByPubkey } = notesState
+  if (!hasProfile) {
+    const { profile, contactList } = await getProfile(relays, pubkey)
+    dispatch(updateProfilesByPubkey({ [pubkey]: profile }))
+    dispatch(updateContactListsByPubkey({ [pubkey]: contactList }))
+  }
 
-  const contactList = contactListsByPubkey[settingsState.user.pubkey]
-
-  const { notes, profiles } = await getEventsFromContactList(settingsState.relays, contactList)
+  const { notes, profiles } = await getEventsFromPubkeys(relays, [pubkey])
 
   dispatch(
     updateNotesAndProfiles({
@@ -110,7 +112,29 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
       profiles,
     })
   )
-  dispatch(updateFeedsById({ following: notes.map((note) => note.id) }))
+  dispatch(updatefeedsByIdOrPubkey({ [pubkey]: Array.from(new Set(notes.map((note) => note.id))) }))
+  dispatch(updateloadingByIdOrPubkey({ [pubkey]: false }))
+}
+
+export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
+  const { settings: settingsState, notes: notesState } = getState()
+  const { contactListsByPubkey } = notesState
+  const contactList = contactListsByPubkey[settingsState.user.pubkey]
+  const pubkeys = contactList.tags.map((tag) => tag[1])
+
+  dispatch(updateloadingByIdOrPubkey({ following: true }))
+
+  const { notes, profiles } = await getEventsFromPubkeys(settingsState.relays, pubkeys)
+
+  dispatch(
+    updateNotesAndProfiles({
+      notes,
+      profiles,
+    })
+  )
+
+  dispatch(updatefeedsByIdOrPubkey({ following: Array.from(new Set(notes.map((note) => note.id))) }))
+  dispatch(updateloadingByIdOrPubkey({ following: false }))
 
   // subscribeToContactList(settingsState.relays, contactList, (nostrEvent: NostrEvent) => {
   //   if (nostrEvent.kind === 1) {
@@ -129,11 +153,11 @@ export const doFetchReplies = (noteIds: string[]) => async (dispatch: AppDispatc
   const { settings: settingsState } = getState()
 
   const loadingState = noteIds.reduce((acc, noteId) => ({ ...acc, [noteId]: true }), {})
-  dispatch(updateLoadingById(loadingState))
+  dispatch(updateloadingByIdOrPubkey(loadingState))
 
   const replies = await getReplies(settingsState.relays, noteIds)
   const finishedLoadingState = noteIds.reduce((acc, noteId) => ({ ...acc, [noteId]: false }), {})
-  dispatch(updateLoadingById(finishedLoadingState))
+  dispatch(updateloadingByIdOrPubkey(finishedLoadingState))
 
   if (!replies.length) {
     return

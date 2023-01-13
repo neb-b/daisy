@@ -1,4 +1,3 @@
-import React from "react"
 import { useSelector } from "react-redux"
 import type { RootState } from "./index"
 
@@ -28,25 +27,29 @@ export const useContactList = (pubkey?: string) => {
   return contactListsByPubkey[pubkey]
 }
 
-export const useFeed = (feedId: string) => {
-  const { feedsById, notesById } = useSelector((state: RootState) => state.notes)
+export const useFeed = (feedIdOrPubkey: string) => {
+  const { feedsByIdOrPubkey, notesById, loadingByIdOrPubkey } = useSelector((state: RootState) => state.notes)
+  const loading = loadingByIdOrPubkey[feedIdOrPubkey]
 
-  const feed = feedsById[feedId]
+  const feed = feedsByIdOrPubkey[feedIdOrPubkey]
 
   if (!feed) {
-    return undefined
+    return { notes: [], loading }
   }
 
-  return feed
-    .map((noteId) => notesById[noteId])
-    .sort((a, b) => b.created_at - a.created_at)
-    .map((note) => note.id)
+  return {
+    loading,
+    notes: feed
+      .map((noteId) => notesById[noteId])
+      .sort((a, b) => b.created_at - a.created_at)
+      .map((note) => note.id),
+  }
 }
 
 export const useThread = (noteId: string) => {
-  const { notesById, loadingById } = useSelector((state: RootState) => state.notes)
+  const { notesById, loadingByIdOrPubkey } = useSelector((state: RootState) => state.notes)
   const note = notesById[noteId]
-  const loading = loadingById[noteId]
+  const loading = loadingByIdOrPubkey[noteId]
 
   if (!note) {
     return { notes: [], loading }

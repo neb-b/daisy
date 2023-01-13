@@ -66,17 +66,17 @@ export const Note: React.FC<Props> = ({ id, navigation, style = {}, isThread = f
             )}
 
             <View style={{ marginTop: 5, paddingRight: 13, flexDirection: "row", flexWrap: "wrap" }}>
-              {note.content.split(urlRegex).map((text) => {
+              {note.content.split(urlRegex).map((text, i) => {
                 if (isImage(text)) {
                   return (
-                    <View key={text} style={{ width: "100%", height: 200 }}>
+                    <View key={i} style={{ width: "100%", height: 150 }}>
                       <Image src={text} />
                     </View>
                   )
                 }
 
                 return (
-                  <Text key={text} style={{ fontSize: 16, flexWrap: "wrap" }}>
+                  <Text key={i} style={{ fontSize: 16, flexWrap: "wrap" }}>
                     {text}
                   </Text>
                 )

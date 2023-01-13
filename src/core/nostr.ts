@@ -8,6 +8,8 @@ import {
   verifySignature,
   Relay,
 } from "nostr-tools"
+import * as secp from "@noble/secp256k1"
+import { bech32 } from "bech32"
 
 export const nostrEventKinds = {
   profile: 0,
@@ -30,6 +32,12 @@ export const defaultRelays = [
 
 const GET_EVENTS_LIMIT = 50
 const TIMEOUT = 1000
+
+export const convertHexPubkey = (hexPubkey: string): string => {
+  const bytesPubkey = secp.utils.hexToBytes(hexPubkey)
+  const pubkey = bech32.encode("npub", bech32.toWords(bytesPubkey))
+  return pubkey
+}
 
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
   return new Promise(async (resolve) => {
@@ -92,12 +100,10 @@ export const getReplies = async (relays: Relay[], eventIds: string[]): Promise<N
   })
 }
 
-export const getEventsFromContactList = async (
+export const getEventsFromPubkeys = async (
   relays: Relay[],
-  contactList: { tags: string[][] }
+  pubkeys: string[]
 ): Promise<{ notes: NostrEvent[]; profiles: Record<string, NostrProfileEvent> }> => {
-  const pubkeys = contactList.tags.map((tag) => tag[1])
-
   return new Promise(async (resolve) => {
     //
     // Fetch notes
@@ -354,7 +360,6 @@ export const getProfile = async (
   relays: Relay[],
   pubkey: string
 ): Promise<{ profile: NostrProfile; contactList: NostrContactListEvent }> => {
-  console.log("getting profile")
   const profile = (await getNostrEvent(relays, {
     kinds: [nostrEventKinds.profile],
     authors: [pubkey],

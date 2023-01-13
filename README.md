@@ -2,7 +2,7 @@ Daisy mvp todo:
 
 notes
 
-- [ ] images
+- [x] images
 - [ ] links
 - [ ] tagging users
 
@@ -16,6 +16,8 @@ threads
 
 profile
 
+- [ ] fetch profile notes
+- [ ] link to your profile
 - [x] ui for follow on profile page
 - [x] publish new contactlist on follow/unfollow
 - [x] fetch profile if it doesn't exist

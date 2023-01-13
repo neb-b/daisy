@@ -1,6 +1,6 @@
 import React from "react"
 import { Modal, Pressable, View, Text } from "react-native"
-import { Button, Divider, TopNavigation, Icon } from "@ui-kitten/components"
+import { Button, Divider, TopNavigation, Icon, Spinner } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
 
 import { useDispatch } from "store"
@@ -13,7 +13,7 @@ import { NewNote } from "components/NewNote"
 export const FollowingFeedScreen = ({ navigation }) => {
   const dispatch = useDispatch()
   const [creatingNote, setCreatingNote] = React.useState(false)
-  const followingFeed = useFeed("following")
+  const { loading, notes } = useFeed("following")
 
   React.useEffect(() => {
     dispatch(doPopulateFollowingFeed())
@@ -35,18 +35,19 @@ export const FollowingFeedScreen = ({ navigation }) => {
       <TopNavigation title="Feed" alignment="center" />
       <Divider />
 
-      {followingFeed?.length > 0 && (
-        <FlashList
-          estimatedItemSize={190}
-          data={followingFeed}
-          renderItem={renderNote}
-          keyExtractor={keyExtractor}
-        />
+      {loading && (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <Spinner />
+        </View>
+      )}
+
+      {!loading && notes?.length > 0 && (
+        <FlashList estimatedItemSize={190} data={notes} renderItem={renderNote} keyExtractor={keyExtractor} />
       )}
 
       <Button
         onPress={() => setCreatingNote(true)}
-        style={{ position: "absolute", bottom: 8, right: 8, height: 50, width: 50, borderRadius: 50 / 2 }}
+        style={{ position: "absolute", bottom: 16, right: 16, height: 50, width: 50, borderRadius: 50 / 2 }}
         accessoryLeft={(props) => <Icon name="plus-outline" {...props} />}
       />
 
