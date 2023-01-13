@@ -1,9 +1,11 @@
-import { View, Pressable } from "react-native"
-import { Text, Divider } from "@ui-kitten/components"
+import React from "react"
+import { View, Pressable, Linking } from "react-native"
+import { Text, Divider, Button } from "@ui-kitten/components"
+import { WebView } from "react-native-webview"
 
 import { useNote, useProfile } from "store/hooks"
 import { timeSince, fullDateString } from "utils/time"
-import { isImage, urlRegex } from "utils/url"
+import { isImage, isUrl, urlRegex } from "utils/url"
 import { Image } from "./Image"
 import { Avatar } from "./Avatar"
 
@@ -15,6 +17,7 @@ type Props = {
 }
 
 export const Note: React.FC<Props> = ({ id, navigation, style = {}, isThread = false }) => {
+  const [webview, setWebview] = React.useState("")
   const note = useNote(id)
   const profile = useProfile(note?.pubkey)
   const profileContent = profile?.content
@@ -75,6 +78,19 @@ export const Note: React.FC<Props> = ({ id, navigation, style = {}, isThread = f
                   )
                 }
 
+                if (isUrl(text)) {
+                  return (
+                    <Button
+                      appearance="ghost"
+                      key={i}
+                      onPress={() => Linking.openURL(text)}
+                      style={{ padding: 0 }}
+                    >
+                      {text}
+                    </Button>
+                  )
+                }
+
                 return (
                   <Text key={i} style={{ fontSize: 16, flexWrap: "wrap" }}>
                     {text}
@@ -88,6 +104,7 @@ export const Note: React.FC<Props> = ({ id, navigation, style = {}, isThread = f
         </View>
       </View>
       <Divider />
+      {webview && <WebView source={{ uri: webview }} />}
     </>
   )
 }

@@ -46,7 +46,8 @@
     "redux": "^4.2.0",
     "redux-persist": "^6.0.0",
     "text-encoding": "0.7.0",
-    "typescript": "4.9.4"
+    "typescript": "4.9.4",
+    "react-native-webview": "11.23.1"
   },
   "devDependencies": {
     "@babel/core": "7.12.9",

@@ -81,7 +81,7 @@ export const getReplies = async (relays: Relay[], eventIds: string[]): Promise<N
       "#e": eventIds,
     })
 
-    const additionalRepliesToFetch = new Set()
+    const additionalRepliesToFetch = new Set<string>()
     replies.forEach((reply) => {
       const { tags } = reply
       tags.forEach((tag) => {
@@ -269,7 +269,7 @@ const subscribeToNostrEvents = (relays: Relay[], filter: NostrFilter, handleEven
   // }
 }
 
-const getNostrEvent = async (relays: Relay[], filter?: NostrFilter, onError): Promise<NostrEvent> => {
+const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent> => {
   return new Promise((resolve) => {
     relays.forEach((relay) => {
       const sub = relay.sub([{ ...filter }])
@@ -296,7 +296,6 @@ const getNostrEvent = async (relays: Relay[], filter?: NostrFilter, onError): Pr
 
       sub.on("eose", () => {
         console.log("getNostrEvent eose: ", relay)
-        onError(relay)
         sub.unsub()
       })
     })
@@ -323,11 +322,11 @@ export const publishNote = async (
   // @ts-expect-error
   event.sig = signEvent(event, user.privateKey)
 
-  console.log("event", event.tags)
-  let ok = validateEvent(event)
-  let veryOk = verifySignature(event)
-  console.log("ok?", ok)
-  console.log("veryOk?", veryOk)
+  // console.log("event", event.tags)
+  // let ok = validateEvent(event)
+  // let veryOk = verifySignature(event)
+  // console.log("ok?", ok)
+  // console.log("veryOk?", veryOk)
 
   let returned = false
   return new Promise((resolve) => {

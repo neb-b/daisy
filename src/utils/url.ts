@@ -1,5 +1,9 @@
 export const isImage = (url: string) => {
-  return url.match(/\.(jpeg|jpg|gif|png)$/) != null
+  return url.match(/\.(jpeg|jpg|gif|png)$/) !== null
+}
+
+export const isUrl = (url: string) => {
+  return url.match(urlRegex) !== null
 }
 
 export const urlRegex =

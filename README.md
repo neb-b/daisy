@@ -3,8 +3,8 @@ Daisy mvp todo:
 notes
 
 - [x] images
-- [ ] links
-- [ ] tagging users
+- [x] links
+- [ ] tags
 
 threads
 
@@ -16,8 +16,8 @@ threads
 
 profile
 
-- [ ] fetch profile notes
-- [ ] link to your profile
+- [ ] link to your profile in header
+- [x] fetch profile notes
 - [x] ui for follow on profile page
 - [x] publish new contactlist on follow/unfollow
 - [x] fetch profile if it doesn't exist
@@ -27,11 +27,17 @@ settings
 - [ ] copy keys
 - [ ] display bech32
 
+style
+
+- [ ] repost style
+- [ ] thread note view
+
 misc
 
 - [ ] subscribe to following
 - [ ] remove typescript expect-error comments
 - [ ] app icons + splash image
+- [ ] handle eose events
 - [x] android build
 - [x] fetch more notes on following feed
 - [x] track relay errors/subscriptions better
