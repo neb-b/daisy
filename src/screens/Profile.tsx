@@ -1,22 +1,15 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import {
-  Button,
-  Divider,
-  TopNavigation,
-  TopNavigationAction,
-  Icon,
-  Text,
-  Spinner,
-} from "@ui-kitten/components"
+import { Button, Divider, TopNavigationAction, Icon, Text, Spinner } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
 
 import { convertHexPubkey } from "core/nostr"
 import { Layout } from "components/Layout"
 import { Avatar } from "components/Avatar"
 import { Note } from "components/Note"
+import { TopNavigation } from "components/TopNavigation"
 import { useDispatch } from "store"
-import { useUser, useProfile, useContactList, useFeed } from "store/hooks"
+import { useUser, useProfile, useContactList, useProfileNotes } from "store/hooks"
 import { doFetchProfile, doToggleFollow } from "store/notesSlice"
 
 const BackIcon = (props) => <Icon {...props} name="arrow-back" />
@@ -29,7 +22,7 @@ export const ProfileScreen = ({ navigation, route }) => {
   const user = useUser()
   const profile = useProfile(pubkey)
   const contactList = useContactList(user?.pubkey)
-  const { notes, loading } = useFeed(pubkey)
+  const { notes, loading } = useProfileNotes(pubkey)
   const hasProfile = !!profile
   const profileContent = profile?.content
   const isFollowing = contactList?.tags.find((tag) => tag[0] === "p" && tag[1] === pubkey)?.length > 0
@@ -44,25 +37,19 @@ export const ProfileScreen = ({ navigation, route }) => {
     dispatch(doToggleFollow(pubkey, newFollowState))
   }
 
-  const BackAction = () => <TopNavigationAction icon={BackIcon} onPress={() => navigation.goBack()} />
-
   const renderNote = React.useCallback(({ item }) => {
     if (typeof item !== "string") {
       return item
     }
 
-    return (
-      <Pressable onPress={() => navigation.navigate("Thread", { id: item })} style={{}}>
-        <Note navigation={navigation} id={item} />
-      </Pressable>
-    )
+    return <Note id={item} />
   }, [])
 
   const header = (
     <>
       <View style={{ padding: 16, paddingTop: 0, flex: 1 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Avatar picture={profileContent?.picture} pubkey={pubkey} size={75} />
+          <Avatar pubkey={pubkey} size={75} />
           <Button
             appearance={isFollowing ? "outline" : "primary"}
             style={{ marginBottom: "auto" }}
@@ -87,7 +74,7 @@ export const ProfileScreen = ({ navigation, route }) => {
 
   return (
     <Layout>
-      <TopNavigation alignment="center" accessoryLeft={BackAction} />
+      <TopNavigation alignment="center" hideProfileLink />
 
       <View style={{ flex: 1 }}>
         <FlashList

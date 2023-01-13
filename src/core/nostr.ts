@@ -21,11 +21,11 @@ export const nostrEventKinds = {
 
 export const defaultRelays = [
   "wss://relay.damus.io",
-  // "wss://nostr.v0l.io",
+  "wss://nostr.v0l.io",
   "wss://nostr-pub.wellorder.net",
   // "wss://nostr-relay.wlvs.space",
   // "wss://nostr.oxtr.dev",
-  // "wss://brb.io",
+  "wss://brb.io",
   // "wss://relay.nostr.bg",
   // "wss://nostr.fmt.wiz.biz",
 ]

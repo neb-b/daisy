@@ -1,7 +1,7 @@
 import React from "react"
-import { View, Pressable, Linking } from "react-native"
+import { View, Linking, Pressable } from "react-native"
 import { Text, Divider, Button } from "@ui-kitten/components"
-import { WebView } from "react-native-webview"
+import { useNavigation } from "@react-navigation/native"
 
 import { useNote, useProfile } from "store/hooks"
 import { timeSince, fullDateString } from "utils/time"
@@ -12,12 +12,11 @@ import { Avatar } from "./Avatar"
 type Props = {
   isThread?: boolean
   id: string
-  navigation: any
   style?: object
 }
 
-export const Note: React.FC<Props> = ({ id, navigation, style = {}, isThread = false }) => {
-  const [webview, setWebview] = React.useState("")
+export const Note: React.FC<Props> = ({ id, style = {}, isThread = false }) => {
+  const navigation = useNavigation()
   const note = useNote(id)
   const profile = useProfile(note?.pubkey)
   const profileContent = profile?.content
@@ -28,83 +27,73 @@ export const Note: React.FC<Props> = ({ id, navigation, style = {}, isThread = f
 
   return (
     <>
-      <View
-        style={{
-          flexDirection: "column",
+      <Pressable onPress={() => navigation.navigate("Thread", { id })} style={{}}>
+        <View
+          style={{
+            flexDirection: "column",
 
-          paddingTop: 16,
-          paddingBottom: 16,
-          paddingLeft: 8,
-          paddingRight: 8,
-          ...style,
-        }}
-      >
-        {note.repostedBy && <RepostAuthor pubkey={note.repostedBy} />}
-        <View style={{ flexDirection: "row" }}>
-          <Pressable
-            onPress={() =>
-              navigation.navigate("Profile", {
-                pubkey: note.pubkey,
-              })
-            }
-          >
-            <Avatar picture={profileContent?.picture} pubkey={note.pubkey} />
-          </Pressable>
-          <View style={{ flex: 1, marginLeft: 5 }}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-                {profileContent?.name || note.pubkey.slice(0, 6)}
-              </Text>
-              {!isThread && (
+            paddingTop: 16,
+            paddingBottom: 16,
+            paddingLeft: 8,
+            paddingRight: 8,
+            ...style,
+          }}
+        >
+          {note.repostedBy && <RepostAuthor pubkey={note.repostedBy} />}
+          <View style={{ flexDirection: "row" }}>
+            <Avatar pubkey={note.pubkey} />
+            <View style={{ flex: 1, marginLeft: 5 }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                  {profileContent?.name || note.pubkey.slice(0, 6)}
+                </Text>
+
                 <Text appearance="hint" style={{ fontSize: 16, marginLeft: 4 }}>
                   {timeSince(note.created_at)}
                 </Text>
+              </View>
+
+              {note.reply && (
+                <Text appearance="hint" style={{ fontSize: 12 }}>
+                  Replying to {replyProfileContent?.name || note.reply.pubkey.slice(0, 6) || "unknown user"}
+                </Text>
               )}
-            </View>
 
-            {note.reply && (
-              <Text appearance="hint" style={{ fontSize: 12 }}>
-                Replying to {replyProfileContent?.name || note.reply.pubkey.slice(0, 6) || "unknown user"}
-              </Text>
-            )}
+              <View style={{ marginTop: 5, paddingRight: 13, flexDirection: "row", flexWrap: "wrap" }}>
+                {note.content.split(urlRegex).map((text, i) => {
+                  if (isImage(text)) {
+                    return (
+                      <View key={i} style={{ width: "100%", height: 150 }}>
+                        <Image src={text} />
+                      </View>
+                    )
+                  }
 
-            <View style={{ marginTop: 5, paddingRight: 13, flexDirection: "row", flexWrap: "wrap" }}>
-              {note.content.split(urlRegex).map((text, i) => {
-                if (isImage(text)) {
+                  if (isUrl(text)) {
+                    return (
+                      <Button
+                        appearance="ghost"
+                        key={i}
+                        onPress={() => Linking.openURL(text)}
+                        style={{ padding: 0 }}
+                      >
+                        {text}
+                      </Button>
+                    )
+                  }
+
                   return (
-                    <View key={i} style={{ width: "100%", height: 150 }}>
-                      <Image src={text} />
-                    </View>
-                  )
-                }
-
-                if (isUrl(text)) {
-                  return (
-                    <Button
-                      appearance="ghost"
-                      key={i}
-                      onPress={() => Linking.openURL(text)}
-                      style={{ padding: 0 }}
-                    >
+                    <Text key={i} style={{ fontSize: 16, flexWrap: "wrap" }}>
                       {text}
-                    </Button>
+                    </Text>
                   )
-                }
-
-                return (
-                  <Text key={i} style={{ fontSize: 16, flexWrap: "wrap" }}>
-                    {text}
-                  </Text>
-                )
-              })}
+                })}
+              </View>
             </View>
-
-            {isThread && <Text style={{}}>{fullDateString(note.created_at)}</Text>}
           </View>
         </View>
-      </View>
+      </Pressable>
       <Divider />
-      {webview && <WebView source={{ uri: webview }} />}
     </>
   )
 }

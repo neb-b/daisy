@@ -1,4 +1,5 @@
 import { useSelector } from "react-redux"
+import { nostrEventKinds } from "core/nostr"
 import type { RootState } from "./index"
 
 export const useUser = () => {
@@ -41,6 +42,34 @@ export const useFeed = (feedIdOrPubkey: string) => {
     loading,
     notes: feed
       .map((noteId) => notesById[noteId])
+      .sort((a, b) => b.created_at - a.created_at)
+      .map((note) => note.id),
+  }
+}
+
+export const useProfileNotes = (pubkey: string) => {
+  const { feedsByIdOrPubkey, notesById, loadingByIdOrPubkey } = useSelector((state: RootState) => state.notes)
+  const loading = loadingByIdOrPubkey[pubkey]
+
+  const feed = feedsByIdOrPubkey[pubkey]
+
+  if (!feed) {
+    return { notes: [], loading }
+  }
+
+  return {
+    loading,
+    notes: feed
+      .reduce((acc, noteId) => {
+        const note = notesById[noteId]
+
+        if (note.kind === nostrEventKinds.repost || note.pubkey === pubkey) {
+          // Only push note ids that I'm the author of
+          return [...acc, note]
+        }
+
+        return acc
+      }, [])
       .sort((a, b) => b.created_at - a.created_at)
       .map((note) => note.id),
   }

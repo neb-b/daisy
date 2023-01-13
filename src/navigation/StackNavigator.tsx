@@ -4,8 +4,6 @@ import { createStackNavigator } from "@react-navigation/stack"
 
 import { ProfileScreen } from "screens/Profile"
 import { SettingsScreen } from "screens/Settings"
-import { ChannelScreen } from "screens/Channel"
-import { DMScreen } from "screens/DM"
 import { ThreadScreen } from "screens/Thread"
 import { LoadingScreen } from "screens/Loading"
 import { AuthScreen } from "screens/Auth"
@@ -22,8 +20,6 @@ const HomeStackNavigator = () => {
       <Stack.Screen name="Auth" component={AuthScreen} />
       <Stack.Screen name="Home" component={BottomTabNavigator} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
-      <Stack.Screen name="Channel" component={ChannelScreen} />
-      <Stack.Screen name="DM" component={DMScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="Thread" component={ThreadScreen} />
     </Stack.Navigator>

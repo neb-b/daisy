@@ -16,7 +16,7 @@ threads
 
 profile
 
-- [ ] link to your profile in header
+- [x] link to your profile in header
 - [x] fetch profile notes
 - [x] ui for follow on profile page
 - [x] publish new contactlist on follow/unfollow
@@ -30,7 +30,6 @@ settings
 style
 
 - [ ] repost style
-- [ ] thread note view
 
 misc
 

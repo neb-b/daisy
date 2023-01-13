@@ -1,15 +1,14 @@
 import React from "react"
 import { View, SafeAreaView, Pressable } from "react-native"
-import { Divider, TopNavigation, Layout, Icon, TopNavigationAction, Spinner } from "@ui-kitten/components"
+import { Divider, Layout, Spinner } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
 
 import { Note } from "components/Note"
 import { MessageInput } from "components/MessageInput"
+import { TopNavigation } from "components/TopNavigation"
 import { useThread } from "store/hooks"
 import { doFetchReplies } from "store/notesSlice"
 import { useDispatch } from "store"
-
-const BackIcon = (props) => <Icon {...props} name="arrow-back" />
 
 export const ThreadScreen = ({ navigation, route }) => {
   const {
@@ -22,12 +21,6 @@ export const ThreadScreen = ({ navigation, route }) => {
     dispatch(doFetchReplies([id]))
   }, [id])
 
-  const navigateBack = () => {
-    navigation.goBack()
-  }
-
-  const BackAction = () => <TopNavigationAction icon={BackIcon} onPress={navigateBack} />
-
   const renderNote = React.useCallback(
     ({ item }) => (
       <Pressable
@@ -38,7 +31,7 @@ export const ThreadScreen = ({ navigation, route }) => {
           paddingTop: 10,
         }}
       >
-        <Note isThread navigation={navigation} key={item} id={item} />
+        <Note isThread key={item} id={item} />
       </Pressable>
     ),
     []
@@ -49,7 +42,7 @@ export const ThreadScreen = ({ navigation, route }) => {
   return (
     <Layout style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <TopNavigation title="Thread" alignment="center" accessoryLeft={BackAction} />
+        <TopNavigation hideProfileLink title="Thread" alignment="center" />
         <Divider />
 
         {loading && (
@@ -59,7 +52,7 @@ export const ThreadScreen = ({ navigation, route }) => {
         )}
 
         {!loading && (
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, marginBottom: 16 }}>
             <FlashList
               estimatedItemSize={190}
               data={notes}

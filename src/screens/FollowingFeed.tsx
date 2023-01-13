@@ -1,6 +1,6 @@
 import React from "react"
-import { Modal, Pressable, View, Text } from "react-native"
-import { Button, Divider, TopNavigation, Icon, Spinner } from "@ui-kitten/components"
+import { Modal, Pressable, View } from "react-native"
+import { Button, Divider, Icon, Spinner } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
 
 import { useDispatch } from "store"
@@ -9,6 +9,7 @@ import { useFeed } from "store/hooks"
 import { Layout } from "components/Layout"
 import { Note } from "components/Note"
 import { NewNote } from "components/NewNote"
+import { TopNavigation } from "components/TopNavigation"
 
 export const FollowingFeedScreen = ({ navigation }) => {
   const dispatch = useDispatch()
@@ -19,15 +20,7 @@ export const FollowingFeedScreen = ({ navigation }) => {
     dispatch(doPopulateFollowingFeed())
   }, [])
 
-  const renderNote = React.useCallback(
-    ({ item }) => (
-      <Pressable onPress={() => navigation.navigate("Thread", { id: item })} style={{}}>
-        <Note navigation={navigation} key={item} id={item} />
-      </Pressable>
-    ),
-    []
-  )
-
+  const renderNote = React.useCallback(({ item }) => <Note key={item} id={item} />, [])
   const keyExtractor = React.useCallback((item) => item, [])
 
   return (
