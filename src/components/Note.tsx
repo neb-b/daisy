@@ -1,9 +1,11 @@
 import { View, Pressable } from "react-native"
-import { Text, Icon } from "@ui-kitten/components"
+import { Text, Divider } from "@ui-kitten/components"
 
 import { useNote, useProfile } from "store/hooks"
+import { timeSince, fullDateString } from "utils/time"
+import { isImage, urlRegex } from "utils/url"
+import { Image } from "./Image"
 import { Avatar } from "./Avatar"
-import { timeSince, fullDateString } from "../utils/time"
 
 type Props = {
   isThread?: boolean
@@ -22,44 +24,71 @@ export const Note: React.FC<Props> = ({ id, navigation, style = {}, isThread = f
   if (!note) return null
 
   return (
-    <View
-      style={{
-        flexDirection: "column",
-        marginBottom: 10,
-        ...style,
-      }}
-    >
-      {note.repostedBy && <RepostAuthor pubkey={note.repostedBy} />}
-      <View style={{ flexDirection: "row" }}>
-        <Pressable
-          onPress={() =>
-            navigation.navigate("Profile", {
-              pubkey: note.pubkey,
-            })
-          }
-        >
-          <Avatar picture={profileContent?.picture} pubkey={note.pubkey} />
-        </Pressable>
-        <View style={{ flex: 1, marginLeft: 5 }}>
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-            {profileContent?.name || note.pubkey.slice(0, 6)}
-          </Text>
-          {!isThread && <Text>{timeSince(note.created_at)}</Text>}
+    <>
+      <View
+        style={{
+          flexDirection: "column",
 
-          {note.reply && (
-            <Text style={{}}>
-              Replying to {replyProfileContent?.name || note.reply.pubkey.slice(0, 6) || "unknown user"}
-            </Text>
-          )}
+          paddingTop: 16,
+          paddingBottom: 16,
+          paddingLeft: 8,
+          paddingRight: 8,
+          ...style,
+        }}
+      >
+        {note.repostedBy && <RepostAuthor pubkey={note.repostedBy} />}
+        <View style={{ flexDirection: "row" }}>
+          <Pressable
+            onPress={() =>
+              navigation.navigate("Profile", {
+                pubkey: note.pubkey,
+              })
+            }
+          >
+            <Avatar picture={profileContent?.picture} pubkey={note.pubkey} />
+          </Pressable>
+          <View style={{ flex: 1, marginLeft: 5 }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                {profileContent?.name || note.pubkey.slice(0, 6)}
+              </Text>
+              {!isThread && (
+                <Text appearance="hint" style={{ fontSize: 16, marginLeft: 4 }}>
+                  {timeSince(note.created_at)}
+                </Text>
+              )}
+            </View>
 
-          <Text style={{ fontSize: 20, marginTop: 5, paddingRight: 13, flexWrap: "wrap" }}>
-            {note.content}
-          </Text>
+            {note.reply && (
+              <Text appearance="hint" style={{ fontSize: 12 }}>
+                Replying to {replyProfileContent?.name || note.reply.pubkey.slice(0, 6) || "unknown user"}
+              </Text>
+            )}
 
-          {isThread && <Text style={{}}>{fullDateString(note.created_at)}</Text>}
+            <View style={{ marginTop: 5, paddingRight: 13, flexDirection: "row", flexWrap: "wrap" }}>
+              {note.content.split(urlRegex).map((text) => {
+                if (isImage(text)) {
+                  return (
+                    <View key={text} style={{ width: "100%", height: 200 }}>
+                      <Image src={text} />
+                    </View>
+                  )
+                }
+
+                return (
+                  <Text key={text} style={{ fontSize: 16, flexWrap: "wrap" }}>
+                    {text}
+                  </Text>
+                )
+              })}
+            </View>
+
+            {isThread && <Text style={{}}>{fullDateString(note.created_at)}</Text>}
+          </View>
         </View>
       </View>
-    </View>
+      <Divider />
+    </>
   )
 }
 

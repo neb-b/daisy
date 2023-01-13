@@ -30,6 +30,7 @@ export const useContactList = (pubkey?: string) => {
 
 export const useFeed = (feedId: string) => {
   const { feedsById, notesById } = useSelector((state: RootState) => state.notes)
+
   const feed = feedsById[feedId]
 
   if (!feed) {

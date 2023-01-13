@@ -21,14 +21,7 @@ export const FollowingFeedScreen = ({ navigation }) => {
 
   const renderNote = React.useCallback(
     ({ item }) => (
-      <Pressable
-        onPress={() => navigation.navigate("Thread", { id: item })}
-        style={{
-          paddingLeft: 10,
-          paddingRight: 15,
-          paddingTop: 10,
-        }}
-      >
+      <Pressable onPress={() => navigation.navigate("Thread", { id: item })} style={{}}>
         <Note navigation={navigation} key={item} id={item} />
       </Pressable>
     ),

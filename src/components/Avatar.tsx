@@ -6,7 +6,7 @@ type Props = {
   size?: number
 }
 
-export const Avatar: React.FC<Props> = ({ picture, pubkey, size = 30, ...rest }) => {
+export const Avatar: React.FC<Props> = ({ picture, pubkey, size = 40, ...rest }) => {
   return (
     <View
       style={{

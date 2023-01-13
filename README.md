@@ -20,11 +20,17 @@ profile
 - [x] publish new contactlist on follow/unfollow
 - [x] fetch profile if it doesn't exist
 
+settings
+
+- [ ] copy keys
+- [ ] display bech32
+
 misc
 
 - [ ] subscribe to following
-- [ ] android build
 - [ ] remove typescript expect-error comments
+- [ ] app icons + splash image
+- [x] android build
 - [x] fetch more notes on following feed
 - [x] track relay errors/subscriptions better
 - [x] finish publish flow

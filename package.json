@@ -42,6 +42,7 @@
     "react-native-stream": "0.1.9",
     "react-native-svg": "13.2.0",
     "react-redux": "^8.0.5",
+    "react-string-replace": "^1.1.0",
     "redux": "^4.2.0",
     "redux-persist": "^6.0.0",
     "text-encoding": "0.7.0",
