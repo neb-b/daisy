@@ -24,8 +24,8 @@ profile
 
 settings
 
-- [ ] copy keys
-- [ ] display bech32
+- [x] copy keys
+- [x] display bech32
 
 style
 

@@ -1,9 +1,9 @@
 import React from "react"
-import { View, Pressable } from "react-native"
-import { Button, Divider, TopNavigationAction, Icon, Text, Spinner } from "@ui-kitten/components"
+import { View } from "react-native"
+import { Button, Divider, Text, Spinner } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
+import { nip19 } from "nostr-tools"
 
-import { convertHexPubkey } from "core/nostr"
 import { Layout } from "components/Layout"
 import { Avatar } from "components/Avatar"
 import { Note } from "components/Note"
@@ -11,8 +11,6 @@ import { TopNavigation } from "components/TopNavigation"
 import { useDispatch } from "store"
 import { useUser, useProfile, useContactList, useProfileNotes } from "store/hooks"
 import { doFetchProfile, doToggleFollow } from "store/notesSlice"
-
-const BackIcon = (props) => <Icon {...props} name="arrow-back" />
 
 export const ProfileScreen = ({ navigation, route }) => {
   const {
@@ -26,7 +24,7 @@ export const ProfileScreen = ({ navigation, route }) => {
   const hasProfile = !!profile
   const profileContent = profile?.content
   const isFollowing = contactList?.tags.find((tag) => tag[0] === "p" && tag[1] === pubkey)?.length > 0
-  const npub = convertHexPubkey(pubkey)
+  const npub = nip19.npubEncode(pubkey)
 
   React.useEffect(() => {
     dispatch(doFetchProfile(pubkey))
