@@ -2,9 +2,9 @@ Daisy mvp todo:
 
 notes
 
+- [ ] tags
 - [x] images
 - [x] links
-- [ ] tags
 
 threads
 
@@ -32,10 +32,10 @@ style
 
 misc
 
-- [x] app icons + splash image
 - [ ] subscribe to following
-- [ ] remove typescript expect-error comments
 - [ ] general relay management
+- [ ] remove typescript expect-error comments
+- [x] app icons + splash image
 - [x] fix reposts
 - [x] android build
 - [x] fetch more notes on following feed
