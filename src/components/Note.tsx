@@ -1,10 +1,10 @@
 import React from "react"
 import { View, Linking, Pressable } from "react-native"
-import { Text, Divider, Button } from "@ui-kitten/components"
+import { Text, Divider, Button, useTheme, Icon } from "@ui-kitten/components"
 import { useNavigation } from "@react-navigation/native"
 
 import { useNote, useProfile } from "store/hooks"
-import { timeSince, fullDateString } from "utils/time"
+import { timeSince } from "utils/time"
 import { isImage, isUrl, urlRegex } from "utils/url"
 import { Image } from "./Image"
 import { Avatar } from "./Avatar"
@@ -39,7 +39,7 @@ export const Note: React.FC<Props> = ({ id, style = {}, isThread = false }) => {
             ...style,
           }}
         >
-          {note.repostedBy && <RepostAuthor pubkey={note.repostedBy} />}
+          {note.repostedBy && <RepostAuthor pubkey={note.pubkey} />}
           <View style={{ flexDirection: "row" }}>
             <Avatar pubkey={note.pubkey} />
             <View style={{ flex: 1, marginLeft: 5 }}>
@@ -99,13 +99,16 @@ export const Note: React.FC<Props> = ({ id, style = {}, isThread = false }) => {
 }
 
 const RepostAuthor = ({ pubkey }) => {
+  const theme = useTheme()
   const profile = useProfile(pubkey)
   const repostAuthor = profile?.content?.name || pubkey.slice(0, 6)
 
   return (
-    <View>
-      {/* <Icon name="flip-2-outline" styled={{ height: 32, width: 32 }} /> */}
-      <Text style={{ marginLeft: 4, marginBottom: 4 }}>{repostAuthor} reposted</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 20, marginBottom: 8 }}>
+      <Icon name="flip-2-outline" style={{ height: 16, width: 16, tintColor: theme["color-basic-600"] }} />
+      <Text appearance="hint" style={{ marginLeft: 8 }}>
+        {repostAuthor} reposted
+      </Text>
     </View>
   )
 }

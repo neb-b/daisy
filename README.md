@@ -29,14 +29,15 @@ settings
 
 style
 
-- [ ] repost style
+- [x] repost style
 
 misc
 
+- [ ] fix reposts
 - [ ] subscribe to following
 - [ ] remove typescript expect-error comments
 - [ ] app icons + splash image
-- [ ] handle eose events
+- [ ] handle eose events (general relay management)
 - [x] android build
 - [x] fetch more notes on following feed
 - [x] track relay errors/subscriptions better

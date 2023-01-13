@@ -77,7 +77,7 @@ export const ProfileScreen = ({ navigation, route }) => {
       <View style={{ flex: 1 }}>
         <FlashList
           estimatedItemSize={190}
-          data={[header, ...notes]}
+          data={[header, ...(loading ? [] : notes)]}
           renderItem={renderNote}
           keyExtractor={keyExtractor}
         />
