@@ -1,5 +1,5 @@
 import React from "react"
-import { Modal, Pressable } from "react-native"
+import { Modal, Pressable, View, Text } from "react-native"
 import { Button, Divider, TopNavigation, Icon } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
 
