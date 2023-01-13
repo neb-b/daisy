@@ -27,6 +27,7 @@ settings
 
 style
 
+- [x] link style
 - [x] repost style
 
 misc

@@ -8,6 +8,7 @@ import { timeSince } from "utils/time"
 import { isImage, isUrl, urlRegex } from "utils/url"
 import { Image } from "./Image"
 import { Avatar } from "./Avatar"
+import { Link } from "./Link"
 
 type Props = {
   isThread?: boolean
@@ -71,20 +72,17 @@ export const Note: React.FC<Props> = ({ id, style = {}, isThread = false }) => {
                   }
 
                   if (isUrl(text)) {
-                    return (
-                      <Button
-                        appearance="ghost"
-                        key={i}
-                        onPress={() => Linking.openURL(text)}
-                        style={{ padding: 0 }}
-                      >
-                        {text}
-                      </Button>
-                    )
+                    return <Link key={text} label={text} src={text} />
                   }
 
                   return (
-                    <Text key={i} style={{ fontSize: 16, flexWrap: "wrap" }}>
+                    <Text
+                      key={i}
+                      style={{
+                        fontSize: 16,
+                        flexWrap: "wrap",
+                      }}
+                    >
                       {text}
                     </Text>
                   )
