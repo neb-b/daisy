@@ -31,7 +31,7 @@ style
 
 misc
 
-- [ ] app icons + splash image
+- [x] app icons + splash image
 - [ ] subscribe to following
 - [ ] remove typescript expect-error comments
 - [ ] general relay management
