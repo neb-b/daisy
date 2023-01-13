@@ -25,7 +25,7 @@ export const defaultRelays = [
   "wss://nostr-pub.wellorder.net",
   // "wss://nostr-relay.wlvs.space",
   // "wss://nostr.oxtr.dev",
-  "wss://brb.io",
+  // "wss://brb.io",
   // "wss://relay.nostr.bg",
   // "wss://nostr.fmt.wiz.biz",
 ]
@@ -170,27 +170,6 @@ export const getEventsFromPubkeys = async (
   })
 }
 
-export const subscribeToContactList = (
-  relays,
-  contactList: { tags: string[][] },
-  handleEvent: (NostrEvent) => void
-) => {
-  const pubkeys = contactList.tags.map((tag) => tag[1])
-
-  const unsub = subscribeToNostrEvents(
-    relays,
-    {
-      authors: pubkeys,
-      kinds: [nostrEventKinds.note, nostrEventKinds.repost],
-      since: Date.now() / 1000,
-    },
-    handleEvent
-  )
-
-  // TODO: return unsub
-  // return unsub
-}
-
 const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent[]> => {
   return new Promise((resolve) => {
     const limit = filter?.limit || GET_EVENTS_LIMIT
@@ -241,7 +220,11 @@ const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<No
   })
 }
 
-const subscribeToNostrEvents = (relays: Relay[], filter: NostrFilter, handleEvent: (NostrEvent) => void) => {
+export const subscribeToNostrEvents = (
+  relays: Relay[],
+  filter: NostrFilter,
+  handleEvent: (NostrEvent) => void
+) => {
   relays.forEach((relay) => {
     const sub = relay.sub([{ ...filter }])
 

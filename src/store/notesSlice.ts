@@ -4,7 +4,7 @@ import type { AppDispatch, GetState } from "store"
 import {
   getProfile,
   getEventsFromPubkeys,
-  subscribeToContactList,
+  subscribeToNostrEvents,
   publishNote,
   nostrEventKinds,
   getReplies,
@@ -136,17 +136,35 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
   dispatch(updatefeedsByIdOrPubkey({ following: Array.from(new Set(notes.map((note) => note.id))) }))
   dispatch(updateloadingByIdOrPubkey({ following: false }))
 
-  // subscribeToContactList(settingsState.relays, contactList, (nostrEvent: NostrEvent) => {
-  //   if (nostrEvent.kind === 1) {
-  //     dispatch(
-  //       updateNotesById({
-  //         [nostrEvent.id]: nostrEvent,
-  //       })
-  //     )
+  const filter = {
+    authors: pubkeys,
+    kinds: [nostrEventKinds.note, nostrEventKinds.repost],
+    since: Math.floor(Date.now() / 1000),
+  }
 
-  //     dispatch(addNoteToFeedById({ feedId: "following", noteId: nostrEvent.id }))
-  //   }
-  // })
+  subscribeToNostrEvents(settingsState.relays, filter, (nostrEvent: NostrEvent) => {
+    if (nostrEvent.kind === nostrEventKinds.note) {
+      dispatch(
+        // @ts-expect-error
+        updateNotesById({
+          [nostrEvent.id]: nostrEvent,
+        })
+      )
+    } else if (nostrEvent.kind === nostrEventKinds.repost) {
+      try {
+        const repostedNote = JSON.parse(nostrEvent.content)
+        dispatch(
+          // @ts-expect-error
+          updateNotesById({
+            [nostrEvent.id]: nostrEvent,
+            [repostedNote.id]: repostedNote,
+          })
+        )
+      } catch (e) {}
+    }
+
+    dispatch(addNoteToFeedById({ feedId: "following", noteId: nostrEvent.id }))
+  })
 }
 
 export const doFetchReplies = (noteIds: string[]) => async (dispatch: AppDispatch, getState: GetState) => {

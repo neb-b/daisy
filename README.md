@@ -32,9 +32,9 @@ style
 
 misc
 
-- [ ] subscribe to following
 - [ ] general relay management
 - [ ] remove typescript expect-error comments
+- [x] subscribe to following
 - [x] app icons + splash image
 - [x] fix reposts
 - [x] android build
