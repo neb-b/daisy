@@ -27,7 +27,7 @@ export const Note: React.FC<Props> = ({ id, style = {}, isThread = false }) => {
 
   return (
     <>
-      <Pressable onPress={() => navigation.navigate("Thread", { id })} style={{}}>
+      <Pressable onPress={() => (isThread ? () => {} : navigation.navigate("Thread", { id }))} style={{}}>
         <View
           style={{
             flexDirection: "column",

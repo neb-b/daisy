@@ -1,5 +1,5 @@
 import React from "react"
-import { StatusBar, View } from "react-native"
+import { StatusBar, View, KeyboardAvoidingView } from "react-native"
 
 import { ApplicationProvider as ThemeProvider, IconRegistry, Text, useTheme } from "@ui-kitten/components"
 import * as eva from "@eva-design/eva"
@@ -36,7 +36,9 @@ const AppWrapper = ({ children }) => {
   const backgroundColor: string = theme[`background-basic-color-1`]
   return (
     <View style={{ flex: 1, backgroundColor, paddingTop: insets.top, paddingBottom: insets.bottom }}>
-      {children}
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+        {children}
+      </KeyboardAvoidingView>
     </View>
   )
 }

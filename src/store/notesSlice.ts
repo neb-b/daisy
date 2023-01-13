@@ -169,7 +169,8 @@ export const doFetchReplies = (noteIds: string[]) => async (dispatch: AppDispatc
 }
 
 export const doPublishNote =
-  (content: string, onSuccess: () => void) => async (dispatch: AppDispatch, getState: GetState) => {
+  (content: string, onSuccess: () => void, replyId?: string) =>
+  async (dispatch: AppDispatch, getState: GetState) => {
     const { settings: settingsState } = getState()
     const { user } = settingsState
 
@@ -178,11 +179,25 @@ export const doPublishNote =
       return
     }
 
-    // @ts-expect-error
-    const note = await publishNote(settingsState.relays, settingsState.user, nostrEventKinds.note, content)
+    let tags = []
+    if (replyId) {
+      tags.push(["e", replyId])
+    }
+
+    const note = await publishNote(
+      settingsState.relays,
+      // @ts-expect-error
+      settingsState.user,
+      nostrEventKinds.note,
+      content,
+      tags
+    )
+
     dispatch(updateNotesById({ [note.id]: note }))
     dispatch(addNoteToFeedById({ feedId: "following", noteId: note.id }))
-    onSuccess()
+    if (onSuccess) {
+      onSuccess()
+    }
   }
 
 export const doToggleFollow =

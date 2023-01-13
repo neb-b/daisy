@@ -1,7 +1,14 @@
+import React from "react"
 import { View } from "react-native"
 import { Input, Button, Divider, Icon, useTheme } from "@ui-kitten/components"
 
-export const MessageInput = () => {
+type Props = {
+  onSubmit: (value: string) => void
+  value: string
+  onChangeText: (value: string) => void
+}
+
+export const MessageInput = ({ onSubmit, value, onChangeText }: Props) => {
   const theme = useTheme()
 
   return (
@@ -15,11 +22,16 @@ export const MessageInput = () => {
         }}
       >
         <Input
-          style={{ borderRadius: 20, height: 40, flex: 1, marginRight: 8 }}
+          autoCapitalize="none"
+          multiline
+          value={value}
+          onChangeText={onChangeText}
+          style={{ flex: 1, borderRadius: 20, minHeight: 40, marginRight: 8 }}
           placeholder="Send a reply..."
           textStyle={{ flex: 1, fontSize: 18 }}
         />
         <Button
+          onPress={() => onSubmit(value)}
           style={{ height: 40, width: 40, borderRadius: 20 }}
           accessoryLeft={(props) => <Icon {...props} name="paper-plane-outline" />}
         />

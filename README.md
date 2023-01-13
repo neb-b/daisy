@@ -8,9 +8,7 @@ notes
 
 threads
 
-- [ ] reply to a thread
-- [ ] deep thread navigation
-- [ ] better thread sorting
+- [x] reply to a thread
 - [x] display fetched replies in a thread
 - [x] fetch notes inside a thread
 

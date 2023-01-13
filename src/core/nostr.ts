@@ -21,7 +21,7 @@ export const nostrEventKinds = {
 
 export const defaultRelays = [
   "wss://relay.damus.io",
-  "wss://nostr.v0l.io",
+  // "wss://nostr.v0l.io",
   "wss://nostr-pub.wellorder.net",
   // "wss://nostr-relay.wlvs.space",
   // "wss://nostr.oxtr.dev",
@@ -116,7 +116,6 @@ export const getEventsFromPubkeys = async (
       if (event.kind === 6) {
         try {
           const repostNote = JSON.parse(event.content)
-          console.log("repostNote", repostNote)
           repostEvents.push(repostNote)
         } catch (e) {}
       } else {
@@ -313,11 +312,12 @@ export const publishNote = async (
   // @ts-expect-error
   event.sig = signEvent(event, user.privateKey)
 
-  // console.log("event", event.tags)
+  // console.log("event", event)
   // let ok = validateEvent(event)
   // let veryOk = verifySignature(event)
   // console.log("ok?", ok)
   // console.log("veryOk?", veryOk)
+  // return
 
   let returned = false
   return new Promise((resolve) => {

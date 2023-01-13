@@ -1,13 +1,14 @@
 import React from "react"
-import { View, SafeAreaView, Pressable } from "react-native"
-import { Divider, Layout, Spinner } from "@ui-kitten/components"
+import { View, Pressable } from "react-native"
+import { Divider, Spinner } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
 
 import { Note } from "components/Note"
 import { MessageInput } from "components/MessageInput"
 import { TopNavigation } from "components/TopNavigation"
+import { Layout } from "components/Layout"
 import { useThread } from "store/hooks"
-import { doFetchReplies } from "store/notesSlice"
+import { doFetchReplies, doPublishNote } from "store/notesSlice"
 import { useDispatch } from "store"
 
 export const ThreadScreen = ({ navigation, route }) => {
@@ -16,6 +17,7 @@ export const ThreadScreen = ({ navigation, route }) => {
   } = route
   const dispatch = useDispatch()
   const { notes, loading } = useThread(id)
+  const [replyDraft, setReplyDraft] = React.useState("")
 
   React.useEffect(() => {
     dispatch(doFetchReplies([id]))
@@ -39,31 +41,33 @@ export const ThreadScreen = ({ navigation, route }) => {
 
   const keyExtractor = React.useCallback((item) => item, [])
 
+  const handleSubmit = (text: string) => {
+    dispatch(doPublishNote(text, () => setReplyDraft(""), id))
+  }
+
   return (
-    <Layout style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <TopNavigation hideProfileLink title="Thread" alignment="center" />
-        <Divider />
+    <Layout>
+      <TopNavigation hideProfileLink title="Thread" alignment="center" />
+      <Divider />
 
-        {loading && (
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Spinner />
-          </View>
-        )}
+      {loading && (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <Spinner />
+        </View>
+      )}
 
-        {!loading && (
-          <View style={{ flex: 1, marginBottom: 16 }}>
-            <FlashList
-              estimatedItemSize={190}
-              data={notes}
-              renderItem={renderNote}
-              keyExtractor={keyExtractor}
-            />
-          </View>
-        )}
+      {!loading && (
+        <View style={{ flex: 1, marginBottom: 16 }}>
+          <FlashList
+            estimatedItemSize={190}
+            data={notes}
+            renderItem={renderNote}
+            keyExtractor={keyExtractor}
+          />
+        </View>
+      )}
 
-        <MessageInput />
-      </SafeAreaView>
+      <MessageInput onSubmit={handleSubmit} value={replyDraft} onChangeText={setReplyDraft} />
     </Layout>
   )
 }
