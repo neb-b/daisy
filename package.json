@@ -47,7 +47,8 @@
     "redux-persist": "^6.0.0",
     "text-encoding": "0.7.0",
     "typescript": "4.9.4",
-    "expo-clipboard": "~4.0.1"
+    "expo-clipboard": "~4.0.1",
+    "expo-splash-screen": "~0.17.5"
   },
   "devDependencies": {
     "@babel/core": "7.12.9",

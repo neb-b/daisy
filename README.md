@@ -31,9 +31,9 @@ style
 
 misc
 
+- [ ] app icons + splash image
 - [ ] subscribe to following
 - [ ] remove typescript expect-error comments
-- [ ] app icons + splash image
 - [ ] general relay management
 - [x] fix reposts
 - [x] android build
