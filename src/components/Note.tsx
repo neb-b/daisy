@@ -39,7 +39,7 @@ export const Note: React.FC<Props> = ({ id, style = {}, isThread = false }) => {
             ...style,
           }}
         >
-          {note.repostedBy && <RepostAuthor pubkey={note.pubkey} />}
+          {note.repostedBy && <RepostAuthor pubkey={note.repostedBy} />}
           <View style={{ flexDirection: "row" }}>
             <Avatar pubkey={note.pubkey} />
             <View style={{ flex: 1, marginLeft: 5 }}>

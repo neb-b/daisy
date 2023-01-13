@@ -110,12 +110,15 @@ export const getEventsFromPubkeys = async (
       kinds: [nostrEventKinds.note, nostrEventKinds.repost],
     })
 
-    const repostIdsSet = new Set<string>()
+    const repostEvents = []
     const repliesSet = new Set<string>()
     notes.forEach((event) => {
       if (event.kind === 6) {
-        const repostEventId = event.tags.find((tag) => tag[0] === "e")?.[1]
-        repostIdsSet.add(repostEventId)
+        try {
+          const repostNote = JSON.parse(event.content)
+          console.log("repostNote", repostNote)
+          repostEvents.push(repostNote)
+        } catch (e) {}
       } else {
         const replyToId = event.tags.find((tag) => tag[0] === "e")?.[1]
         if (replyToId) {
@@ -123,12 +126,6 @@ export const getEventsFromPubkeys = async (
         }
       }
     })
-
-    const repostEvents = (await getNostrEvents(relays, {
-      kinds: [nostrEventKinds.note],
-      limit: repostIdsSet.size,
-      ids: Array.from(repostIdsSet),
-    })) as NostrProfileEvent[]
 
     const replyEvents = (await getNostrEvents(relays, {
       kinds: [nostrEventKinds.note],

@@ -33,11 +33,11 @@ style
 
 misc
 
-- [ ] fix reposts
 - [ ] subscribe to following
 - [ ] remove typescript expect-error comments
 - [ ] app icons + splash image
-- [ ] handle eose events (general relay management)
+- [ ] general relay management
+- [x] fix reposts
 - [x] android build
 - [x] fetch more notes on following feed
 - [x] track relay errors/subscriptions better
