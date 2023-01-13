@@ -16,6 +16,7 @@ export const Avatar: React.FC<Props> = ({ pubkey, size = 40, ...rest }) => {
   return (
     <Pressable
       onPress={() =>
+        // @ts-expect-error
         navigate("Profile", {
           pubkey,
         })

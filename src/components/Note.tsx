@@ -27,6 +27,7 @@ export const Note: React.FC<Props> = ({ id, style = {}, isThread = false }) => {
 
   return (
     <>
+      {/* @ts-expect-error */}
       <Pressable onPress={() => (isThread ? () => {} : navigation.navigate("Thread", { id }))} style={{}}>
         <View
           style={{
