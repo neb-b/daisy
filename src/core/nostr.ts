@@ -96,23 +96,32 @@ export const getReplies = async (relays: Relay[], eventIds: string[]): Promise<N
 export const getEventsFromPubkeys = async (
   relays: Relay[],
   pubkeys: string[]
-): Promise<{ notes: NostrEvent[]; profiles: Record<string, NostrProfileEvent>; related: NostrEvent[] }> => {
+): Promise<{
+  notes: NostrEvent[]
+  profiles: Record<string, NostrProfileEvent>
+  related: NostrEvent[]
+  reactions: Record<string, NostrReactionEvent[]>
+}> => {
   return new Promise(async (resolve) => {
     const notes = await getNostrEvents(relays, {
       authors: pubkeys,
       kinds: [nostrEventKinds.note, nostrEventKinds.repost],
     })
 
-    const { related, profiles } = await getRelatedEvents(relays, notes)
+    const { related, profiles, reactions } = await getRelatedEvents(relays, notes)
 
-    resolve({ notes, related, profiles })
+    resolve({ notes, related, profiles, reactions })
   })
 }
 
 const getRelatedEvents = async (
   relays: Relay[],
   notes: NostrEvent[]
-): Promise<{ related: NostrEvent[]; profiles: Record<string, NostrProfileEvent> }> => {
+): Promise<{
+  related: NostrEvent[]
+  profiles: Record<string, NostrProfileEvent>
+  reactions: Record<string, NostrReactionEvent[]>
+}> => {
   return new Promise(async (resolve) => {
     const alreadyFetchedReposts = []
     const repostsSet = new Set<string>()
@@ -135,6 +144,10 @@ const getRelatedEvents = async (
       }
     })
 
+    //
+    // TODO: fetch all events in parallel, and possibly fetch them together
+    // Maybe reactions should be fetched after all the notes are actually rendered
+    //
     const replyEvents = (await getNostrEvents(relays, {
       kinds: [nostrEventKinds.note],
       limit: repliesSet.size,
@@ -146,6 +159,15 @@ const getRelatedEvents = async (
       limit: repostsSet.size,
       ids: Array.from(repostsSet),
     })) as NostrProfileEvent[]
+
+    const reactionEvents = await getNostrEvents(relays, {
+      kinds: [nostrEventKinds.reaction],
+      "#e": [...repliesSet, ...repostsSet, ...notes.map((note) => note.id)],
+    })
+
+    const prunedReactionEvents = reactionEvents.filter((note: NostrEvent) => {
+      return note.content === "+" || note.content === "🤙"
+    })
 
     // Get profiles from all the events
     const profilePubkeysSet = new Set<string>()
@@ -184,9 +206,22 @@ const getRelatedEvents = async (
       userProfileInfos[profileEvent.pubkey] = user
     })
 
+    const reactionsById = {}
+    prunedReactionEvents.forEach((reaction) => {
+      const eventId = reaction.tags[0][1]
+      if (eventId) {
+        if (!reactionsById[eventId]) {
+          reactionsById[eventId] = [reaction]
+        } else {
+          reactionsById[eventId].push(reaction)
+        }
+      }
+    })
+
     resolve({
       related: [...alreadyFetchedReposts, ...repostEvents, ...replyEvents],
       profiles: userProfileInfos,
+      reactions: reactionsById,
     })
   })
 }

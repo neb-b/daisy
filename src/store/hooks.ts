@@ -189,6 +189,22 @@ export const useNote = (
   return note
 }
 
+export const useReactions = (noteId: string) => {
+  const { reactionsByNoteId } = useSelector((state: RootState) => state.notes)
+  const { user } = useSelector((state: RootState) => state.settings)
+
+  const reactions = reactionsByNoteId[noteId] || []
+  let liked = false
+
+  reactions.forEach((reaction) => {
+    if (reaction.pubkey === user.pubkey) {
+      liked = true
+    }
+  })
+
+  return { reactions, liked }
+}
+
 export const useRelays = () => {
   const { relays } = useSelector((state: RootState) => state.settings)
 

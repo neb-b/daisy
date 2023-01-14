@@ -12,6 +12,7 @@ import {
   getReplies,
 } from "core/nostr"
 
+// TODO: store reactions/replies by id of the note they're reacting to?
 export interface NotesState {
   loading: boolean
   notesById: Record<string, NostrNoteEvent | NostrRepostEvent>
@@ -21,6 +22,7 @@ export interface NotesState {
   feedsByPubkey: Record<string, string[]>
   loadingByIdOrPubkey: Record<string, boolean>
   subscriptionsById: Record<string, Sub[]>
+  reactionsByNoteId: Record<string, NostrReactionEvent[]>
 }
 
 const initialState = {
@@ -30,6 +32,7 @@ const initialState = {
   contactListsByPubkey: {},
   loadingByIdOrPubkey: {},
   subscriptionsById: {},
+  reactionsByNoteId: {},
 } as NotesState
 
 export const notesSlice = createSlice({
@@ -82,6 +85,9 @@ export const notesSlice = createSlice({
     updateSubscriptionsById(state, action: PayloadAction<Record<string, Sub[]>>) {
       state.subscriptionsById = { ...state.subscriptionsById, ...action.payload }
     },
+    updateReactionsByNoteId(state, action: PayloadAction<Record<string, NostrReactionEvent[]>>) {
+      state.reactionsByNoteId = { ...state.reactionsByNoteId, ...action.payload }
+    },
   },
 })
 
@@ -94,6 +100,7 @@ export const {
   addNoteToFeedById,
   updateloadingByIdOrPubkey,
   updateSubscriptionsById,
+  updateReactionsByNoteId,
 } = notesSlice.actions
 
 export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
@@ -112,7 +119,7 @@ export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, 
     dispatch(updateContactListsByPubkey({ [pubkey]: contactList }))
   }
 
-  const { notes, profiles, related } = await getEventsFromPubkeys(relays, [pubkey])
+  const { notes, profiles, related, reactions } = await getEventsFromPubkeys(relays, [pubkey])
 
   dispatch(
     updateNotesAndProfiles({
@@ -122,6 +129,7 @@ export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, 
   )
   dispatch(updatefeedsByIdOrPubkey({ [pubkey]: Array.from(new Set(notes.map((note) => note.id))) }))
   dispatch(updateloadingByIdOrPubkey({ [pubkey]: false }))
+  dispatch(updateReactionsByNoteId(reactions))
 }
 
 export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
@@ -132,7 +140,7 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
 
   dispatch(updateloadingByIdOrPubkey({ following: true }))
 
-  const { notes, profiles, related } = await getEventsFromPubkeys(settingsState.relays, pubkeys)
+  const { notes, profiles, related, reactions } = await getEventsFromPubkeys(settingsState.relays, pubkeys)
 
   dispatch(
     updateNotesAndProfiles({
@@ -141,6 +149,7 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
     })
   )
 
+  dispatch(updateReactionsByNoteId(reactions))
   dispatch(updatefeedsByIdOrPubkey({ following: Array.from(new Set(notes.map((note) => note.id))) }))
   dispatch(updateloadingByIdOrPubkey({ following: false }))
 
@@ -279,3 +288,20 @@ export const doToggleFollow =
     // @ts-expect-error
     dispatch(updateContactListsByPubkey({ [user.pubkey]: resolvedContactList }))
   }
+
+export const doLike = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
+  const { settings: settingsState, notes: notesState } = getState()
+  const { user, relays } = settingsState
+
+  if (!user.pubkey || !user.privateKey) {
+    console.log("no user found")
+    return
+  }
+
+  const reaction = await publishNote(relays, user, nostrEventKinds.reaction, "+", [["e", noteId]])
+  if (reaction.id) {
+    const currentReactions = notesState.reactionsByNoteId[noteId] || []
+
+    dispatch(updateReactionsByNoteId({ [noteId]: [...currentReactions, reaction] }))
+  }
+}

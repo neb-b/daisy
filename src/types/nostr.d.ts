@@ -33,6 +33,10 @@ declare interface NostrRepostEvent extends NostrBaseEvent {
   kind: 6
 }
 
+declare interface NostrReactionEvent extends NostrBaseEvent {
+  kind: 7
+}
+
 declare type NostrEvent = NostrNoteEvent | NostrProfileEvent | NostrContactListEvent | NostrRepostEvent
 
 declare type NostrProfileContent = {
