@@ -8,7 +8,7 @@ import { MessageInput } from "components/MessageInput"
 import { TopNavigation } from "components/TopNavigation"
 import { Layout } from "components/Layout"
 import { useThread } from "store/hooks"
-import { doFetchReplies, doPublishNote } from "store/notesSlice"
+import { doFetchRepliesInThread, doPublishNote } from "store/notesSlice"
 import { useDispatch } from "store"
 import { nostrEventKinds } from "core/nostr"
 
@@ -21,7 +21,7 @@ export const ThreadScreen = ({ navigation, route }) => {
   const [replyDraft, setReplyDraft] = React.useState("")
 
   React.useEffect(() => {
-    dispatch(doFetchReplies([id]))
+    dispatch(doFetchRepliesInThread(id))
   }, [id])
 
   const renderNote = React.useCallback(

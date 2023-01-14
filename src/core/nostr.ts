@@ -74,22 +74,7 @@ export const getReplies = async (relays: Relay[], eventIds: string[]): Promise<N
       "#e": eventIds,
     })
 
-    const additionalRepliesToFetch = new Set<string>()
-    replies.forEach((reply) => {
-      const { tags } = reply
-      tags.forEach((tag) => {
-        if (tag[0] === "e" && !eventIds.includes(tag[1])) {
-          additionalRepliesToFetch.add(tag[1])
-        }
-      })
-    })
-
-    const additionalReplies = await getNostrEvents(relays, {
-      kinds: [nostrEventKinds.note],
-      "#e": Array.from(additionalRepliesToFetch),
-    })
-
-    resolve([...replies, ...additionalReplies])
+    resolve([...replies])
   })
 }
 

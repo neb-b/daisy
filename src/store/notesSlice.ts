@@ -187,24 +187,30 @@ export const unsubscribeFromFollowingFeed = () => (dispatch: AppDispatch, getSta
   dispatch(updateSubscriptionsById({ following: [] }))
 }
 
-export const doFetchReplies = (noteIds: string[]) => async (dispatch: AppDispatch, getState: GetState) => {
-  const { settings: settingsState } = getState()
+export const doFetchRepliesInThread =
+  (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
+    const {
+      settings: settingsState,
+      notes: { notesById },
+    } = getState()
 
-  const loadingState = noteIds.reduce((acc, noteId) => ({ ...acc, [noteId]: true }), {})
-  dispatch(updateloadingByIdOrPubkey(loadingState))
+    dispatch(updateloadingByIdOrPubkey({ [noteId]: true }))
 
-  const replies = await getReplies(settingsState.relays, noteIds)
-  const finishedLoadingState = noteIds.reduce((acc, noteId) => ({ ...acc, [noteId]: false }), {})
-  dispatch(updateloadingByIdOrPubkey(finishedLoadingState))
+    const note = notesById[noteId]
+    const replyIds = note.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
 
-  if (!replies.length) {
-    return
+    const replies = await getReplies(settingsState.relays, [noteId, ...replyIds])
+
+    dispatch(updateloadingByIdOrPubkey({ [noteId]: false }))
+
+    if (!replies.length) {
+      return
+    }
+
+    const repliesMap = replies.reduce((acc, reply) => ({ ...acc, [reply.id]: reply }), {})
+
+    dispatch(updateNotesById(repliesMap))
   }
-
-  const repliesMap = replies.reduce((acc, reply) => ({ ...acc, [reply.id]: reply }), {})
-
-  dispatch(updateNotesById(repliesMap))
-}
 
 export const doPublishNote =
   ({

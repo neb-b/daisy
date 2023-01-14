@@ -14,7 +14,7 @@ notes
 threads
 
 - [ ] reply to specific note
-- [ ] better fetching of replies
+- [x] better fetching of replies
 - [x] reply to a thread
 - [x] display fetched replies in a thread
 - [x] fetch notes inside a thread
@@ -40,9 +40,6 @@ style
 misc
 
 - [ ] white flash on startup
-- [ ] speed improvements
-- [ ] general relay management
-- [ ] remove typescript expect-error comments
 - [x] fix follow/unfollow
 - [x] handle app close/open to refetch notes
 - [x] subscribe to following
@@ -58,4 +55,7 @@ misc
 
 maybe
 
+- [ ] speed improvements
+- [ ] general relay management
+- [ ] remove typescript expect-error comments
 - [ ] on scroll to bottom, fetch more notes? Or just fetch more total
