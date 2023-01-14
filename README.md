@@ -2,7 +2,6 @@ Daisy mvp todo:
 
 notes
 
-- [ ] likes?
 - [ ] fetch reply/repost/profile info on subscribed notes
 - [ ] fix repost handling for feeds - add repost data to notesById, but only add the original note to feedsByPubkeyOrId
 - [x] repost
@@ -52,3 +51,8 @@ misc
 - [x] fix issue where can't click publish button
 - [x] fix issue with toucharea insets
 - [x] ui lag on lists
+
+maybe
+
+- [ ] likes?
+- [ ] on scroll to bottom, fetch more notes? Or just fetch more total
