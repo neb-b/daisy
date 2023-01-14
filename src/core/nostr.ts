@@ -8,6 +8,7 @@ import {
   verifySignature,
   Relay,
 } from "nostr-tools"
+import type { Sub } from "nostr-tools"
 
 export const nostrEventKinds = {
   profile: 0,
@@ -222,9 +223,11 @@ export const subscribeToNostrEvents = (
   relays: Relay[],
   filter: NostrFilter,
   handleEvent: (NostrEvent) => void
-) => {
+): Sub[] => {
+  let subscriptions = []
   relays.forEach((relay) => {
     const sub = relay.sub([{ ...filter }])
+    subscriptions.push(sub)
 
     sub.on("event", handleEvent)
 
@@ -233,10 +236,7 @@ export const subscribeToNostrEvents = (
     })
   })
 
-  // TODO: return unsubscribe function
-  // return () => {
-  //   Object.values(subscriptions).forEach((sub: { unsub: () => void }) => sub.unsub())
-  // }
+  return subscriptions
 }
 
 const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent> => {

@@ -45,6 +45,7 @@ export const NoteActions: React.FC<Props> = ({ id, style = {}, isThread = false 
       doPublishNote({
         kind: nostrEventKinds.repost,
         content: JSON.stringify(note),
+        repostOf: id,
       })
     )
   }

@@ -1,6 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
 import type { AppDispatch, GetState } from "store"
+import type { Sub } from "nostr-tools"
+
 import {
   getProfile,
   getEventsFromPubkeys,
@@ -18,6 +20,7 @@ export interface NotesState {
   feedsByIdOrPubkey: Record<string, string[]>
   feedsByPubkey: Record<string, string[]>
   loadingByIdOrPubkey: Record<string, boolean>
+  subscriptionsById: Record<string, Sub[]>
 }
 
 const initialState = {
@@ -26,6 +29,7 @@ const initialState = {
   feedsByIdOrPubkey: {},
   contactListsByPubkey: {},
   loadingByIdOrPubkey: {},
+  subscriptionsById: {},
 } as NotesState
 
 export const notesSlice = createSlice({
@@ -75,6 +79,9 @@ export const notesSlice = createSlice({
     updateloadingByIdOrPubkey(state, action: PayloadAction<Record<string, boolean>>) {
       state.loadingByIdOrPubkey = { ...state.loadingByIdOrPubkey, ...action.payload }
     },
+    updateSubscriptionsById(state, action: PayloadAction<Record<string, Sub[]>>) {
+      state.subscriptionsById = { ...state.subscriptionsById, ...action.payload }
+    },
   },
 })
 
@@ -86,6 +93,7 @@ export const {
   updatefeedsByIdOrPubkey,
   addNoteToFeedById,
   updateloadingByIdOrPubkey,
+  updateSubscriptionsById,
 } = notesSlice.actions
 
 export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
@@ -142,7 +150,7 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
     since: Math.floor(Date.now() / 1000),
   }
 
-  subscribeToNostrEvents(settingsState.relays, filter, (nostrEvent: NostrEvent) => {
+  const subscriptions = subscribeToNostrEvents(settingsState.relays, filter, (nostrEvent: NostrEvent) => {
     if (nostrEvent.kind === nostrEventKinds.note) {
       dispatch(
         // @ts-expect-error
@@ -165,6 +173,19 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
 
     dispatch(addNoteToFeedById({ feedId: "following", noteId: nostrEvent.id }))
   })
+
+  dispatch(updateSubscriptionsById({ following: subscriptions }))
+}
+
+export const unsubscribeFromFollowingFeed = () => (dispatch: AppDispatch, getState: GetState) => {
+  const { notes: notesState } = getState()
+  const { subscriptionsById } = notesState
+
+  subscriptionsById.following.forEach((subscription) => {
+    subscription.unsub()
+  })
+
+  dispatch(updateSubscriptionsById({ following: [] }))
 }
 
 export const doFetchReplies = (noteIds: string[]) => async (dispatch: AppDispatch, getState: GetState) => {
@@ -191,11 +212,13 @@ export const doPublishNote =
     content,
     kind,
     replyId,
+    repostOf,
     onSuccess,
   }: {
     content: string
     kind: NostrEventKind
     replyId?: string
+    repostOf?: string
     onSuccess?: () => void
   }) =>
   async (dispatch: AppDispatch, getState: GetState) => {
@@ -210,6 +233,8 @@ export const doPublishNote =
     let tags = []
     if (replyId) {
       tags.push(["e", replyId])
+    } else if (repostOf) {
+      tags.push(["e", repostOf])
     }
 
     const note = await publishNote(

@@ -2,9 +2,9 @@ Daisy mvp todo:
 
 notes
 
-- [ ] tags
-- [ ] repost
-- [ ] share
+- [ ] fetch reply info on subscribed notes
+- [x] repost
+- [x] share
 - [x] images
 - [x] links
 - [x] mentions
@@ -38,6 +38,7 @@ misc
 - [ ] fix follow/unfollow
 - [ ] general relay management
 - [ ] remove typescript expect-error comments
+- [x] handle app close/open to refetch notes
 - [x] subscribe to following
 - [x] app icons + splash image
 - [x] fix reposts

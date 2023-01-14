@@ -1,20 +1,43 @@
 import React from "react"
-import { Modal, Pressable, View } from "react-native"
+import { Modal, AppState, View } from "react-native"
 import { Button, Divider, Icon, Spinner } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
 
 import { useDispatch } from "store"
-import { doPopulateFollowingFeed } from "store/notesSlice"
+import { doPopulateFollowingFeed, unsubscribeFromFollowingFeed } from "store/notesSlice"
 import { useFeed } from "store/hooks"
 import { Layout } from "components/Layout"
 import { Note } from "components/Note"
 import { NewNote } from "components/NewNote"
 import { TopNavigation } from "components/TopNavigation"
 
-export const FollowingFeedScreen = ({ navigation }) => {
+type MyAppState = "active" | "background" | "inactive"
+
+export const FollowingFeedScreen = () => {
   const dispatch = useDispatch()
   const [creatingNote, setCreatingNote] = React.useState(false)
   const { loading, notes } = useFeed("following")
+  const appState = React.useRef(AppState.currentState)
+  const [appVisible, setAppVisible] = React.useState(appState.current === "active")
+
+  React.useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextAppState: MyAppState) => {
+      if (!appVisible && nextAppState === "active") {
+        // TODO: only fetch new notes instead of repopulating the whole feed
+        // will need to detect if it was inactive or background I think
+        dispatch(doPopulateFollowingFeed())
+      } else if (appVisible && (nextAppState === "inactive" || nextAppState === "background")) {
+        dispatch(unsubscribeFromFollowingFeed())
+      }
+
+      appState.current = nextAppState
+      setAppVisible(appState.current === "active")
+    })
+
+    return () => {
+      subscription.remove()
+    }
+  }, [appVisible, setAppVisible, dispatch])
 
   React.useEffect(() => {
     dispatch(doPopulateFollowingFeed())
