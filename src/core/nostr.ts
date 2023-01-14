@@ -96,33 +96,37 @@ export const getReplies = async (relays: Relay[], eventIds: string[]): Promise<N
 export const getEventsFromPubkeys = async (
   relays: Relay[],
   pubkeys: string[]
-): Promise<{ notes: NostrEvent[]; profiles: Record<string, NostrProfileEvent> }> => {
+): Promise<{ notes: NostrEvent[]; profiles: Record<string, NostrProfileEvent>; related: NostrEvent[] }> => {
   return new Promise(async (resolve) => {
-    //
-    // Fetch notes
-    // Then fetch reposts
-    // Then fetch profiles from notes and reposts
-    //
-
     const notes = await getNostrEvents(relays, {
       authors: pubkeys,
       kinds: [nostrEventKinds.note, nostrEventKinds.repost],
     })
 
-    const repostEvents = []
+    const { related, profiles } = await getRelatedEvents(relays, notes)
+
+    resolve({ notes, related, profiles })
+  })
+}
+
+const getRelatedEvents = async (
+  relays: Relay[],
+  notes: NostrEvent[]
+): Promise<{ related: NostrEvent[]; profiles: Record<string, NostrProfileEvent> }> => {
+  return new Promise(async (resolve) => {
+    const alreadyFetchedReposts = []
+    const repostsSet = new Set<string>()
     const repliesSet = new Set<string>()
     notes.forEach((event) => {
       if (event.kind === 6) {
         try {
-          // TODO: this isn't right
-          // i'm not adding the original note
-          // maybe separate out reposts and feed items
-          // i don't want to add the repost note to the feed
-          // only the original note
-          // the repost just needs to be saved to notesById
+          // If the repost is encoded in the event, no need to fetch
           const repostNote = JSON.parse(event.content)
-          repostEvents.push(repostNote)
-        } catch (e) {}
+          alreadyFetchedReposts.push(repostNote)
+        } catch (e) {
+          const repostId = event.tags.find((tag) => tag[0] === "e")?.[1]
+          repostsSet.add(repostId)
+        }
       } else {
         const replyToId = event.tags.find((tag) => tag[0] === "e")?.[1]
         if (replyToId) {
@@ -137,12 +141,21 @@ export const getEventsFromPubkeys = async (
       ids: Array.from(repliesSet),
     })) as NostrProfileEvent[]
 
+    const repostEvents = (await getNostrEvents(relays, {
+      kinds: [nostrEventKinds.note],
+      limit: repostsSet.size,
+      ids: Array.from(repostsSet),
+    })) as NostrProfileEvent[]
+
     // Get profiles from all the events
     const profilePubkeysSet = new Set<string>()
     notes.forEach((event) => {
       if (event.kind === 1) {
         profilePubkeysSet.add(event.pubkey)
       }
+    })
+    alreadyFetchedReposts.forEach((event) => {
+      profilePubkeysSet.add(event.pubkey)
     })
     repostEvents.forEach((event) => {
       profilePubkeysSet.add(event.pubkey)
@@ -171,7 +184,10 @@ export const getEventsFromPubkeys = async (
       userProfileInfos[profileEvent.pubkey] = user
     })
 
-    resolve({ notes: [...notes, ...replyEvents, ...repostEvents], profiles: userProfileInfos })
+    resolve({
+      related: [...alreadyFetchedReposts, ...repostEvents, ...replyEvents],
+      profiles: userProfileInfos,
+    })
   })
 }
 
@@ -228,24 +244,17 @@ const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<No
 export const subscribeToNostrEvents = (
   relays: Relay[],
   filter: NostrFilter,
-  handleEvent: (NostrEvent) => void
+  handleEvent: (NostrEvent, related: NostrEvent[], profiles: Record<string, NostrProfileEvent>) => void
 ): Sub[] => {
   let subscriptions = []
   relays.forEach((relay) => {
     const sub = relay.sub([{ ...filter }])
     subscriptions.push(sub)
 
-    sub.on("event", (event: NostrEvent) => {
-      // TODO: fetch additional notes if needed
-      // const repliesSet = new Set<string>()
-      // const replyToId = event.tags.find((tag) => tag[0] === "e")?.[1]
-      // if (replyToId) {
-      //   repliesSet.add(replyToId)
-      // }
-      // if (repliesSet.size > 0) {
-      //   handleEvents([event])
-      // }
-      handleEvent(event)
+    sub.on("event", async (event: NostrEvent) => {
+      const { related, profiles } = await getRelatedEvents(relays, [event])
+
+      handleEvent(event, related, profiles)
     })
 
     sub.on("eose", () => {

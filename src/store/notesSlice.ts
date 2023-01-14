@@ -112,11 +112,11 @@ export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, 
     dispatch(updateContactListsByPubkey({ [pubkey]: contactList }))
   }
 
-  const { notes, profiles } = await getEventsFromPubkeys(relays, [pubkey])
+  const { notes, profiles, related } = await getEventsFromPubkeys(relays, [pubkey])
 
   dispatch(
     updateNotesAndProfiles({
-      notes,
+      notes: [...notes, ...related],
       profiles,
     })
   )
@@ -132,11 +132,11 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
 
   dispatch(updateloadingByIdOrPubkey({ following: true }))
 
-  const { notes, profiles } = await getEventsFromPubkeys(settingsState.relays, pubkeys)
+  const { notes, profiles, related } = await getEventsFromPubkeys(settingsState.relays, pubkeys)
 
   dispatch(
     updateNotesAndProfiles({
-      notes,
+      notes: [...notes, ...related],
       profiles,
     })
   )
@@ -150,29 +150,19 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
     since: Math.floor(Date.now() / 1000),
   }
 
-  const subscriptions = subscribeToNostrEvents(settingsState.relays, filter, (nostrEvent: NostrEvent) => {
-    if (nostrEvent.kind === nostrEventKinds.note) {
+  const subscriptions = subscribeToNostrEvents(
+    settingsState.relays,
+    filter,
+    (note: NostrEvent, related: NostrEvent[], profiles: Record<string, NostrProfile>) => {
       dispatch(
-        // @ts-expect-error
-        updateNotesById({
-          [nostrEvent.id]: nostrEvent,
+        updateNotesAndProfiles({
+          notes: [note, ...related],
+          profiles,
         })
       )
-    } else if (nostrEvent.kind === nostrEventKinds.repost) {
-      try {
-        const repostedNote = JSON.parse(nostrEvent.content)
-        dispatch(
-          // @ts-expect-error
-          updateNotesById({
-            [nostrEvent.id]: nostrEvent,
-            [repostedNote.id]: repostedNote,
-          })
-        )
-      } catch (e) {}
+      dispatch(addNoteToFeedById({ feedId: "following", noteId: note.id }))
     }
-
-    dispatch(addNoteToFeedById({ feedId: "following", noteId: nostrEvent.id }))
-  })
+  )
 
   dispatch(updateSubscriptionsById({ following: subscriptions }))
 }

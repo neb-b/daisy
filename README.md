@@ -2,8 +2,9 @@ Daisy mvp todo:
 
 notes
 
-- [ ] fetch reply/repost/profile info on subscribed notes
-- [ ] fix repost handling for feeds - add repost data to notesById, but only add the original note to feedsByPubkeyOrId
+- [ ] likes
+- [x] fetch reply/repost/profile info on subscribed notes
+- [x] fix repost handling for feeds - add repost data to notesById, but only add the original note to feedsByPubkeyOrId
 - [x] repost
 - [x] share
 - [x] images
@@ -12,6 +13,8 @@ notes
 
 threads
 
+- [ ] reply to specific note
+- [ ] better fetching of replies
 - [x] reply to a thread
 - [x] display fetched replies in a thread
 - [x] fetch notes inside a thread
@@ -54,5 +57,4 @@ misc
 
 maybe
 
-- [ ] likes?
 - [ ] on scroll to bottom, fetch more notes? Or just fetch more total
