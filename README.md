@@ -2,7 +2,9 @@ Daisy mvp todo:
 
 notes
 
-- [ ] fetch reply info on subscribed notes
+- [ ] likes?
+- [ ] fetch reply/repost/profile info on subscribed notes
+- [ ] fix repost handling for feeds - add repost data to notesById, but only add the original note to feedsByPubkeyOrId
 - [x] repost
 - [x] share
 - [x] images
@@ -38,6 +40,7 @@ misc
 - [ ] fix follow/unfollow
 - [ ] general relay management
 - [ ] remove typescript expect-error comments
+- [ ] speed improvements
 - [x] handle app close/open to refetch notes
 - [x] subscribe to following
 - [x] app icons + splash image
