@@ -301,7 +301,7 @@ export const doLike = (noteId: string) => async (dispatch: AppDispatch, getState
     return
   }
 
-  const nostrEvent = (await publishNote(relays, { pubkey, privateKey }, nostrEventKinds.reaction, "+", [
+  const nostrEvent = (await publishNote(relays, { pubkey, privateKey }, nostrEventKinds.reaction, "🤙", [
     ["e", noteId],
   ])) as unknown
 

@@ -166,7 +166,7 @@ const getRelatedEvents = async (
     })
 
     const prunedReactionEvents = reactionEvents.filter((note: NostrEvent) => {
-      return note.content === "+" || note.content === "🤙"
+      return note.content === "+" || note.content === "🤙" || note.content === "❤️"
     })
 
     // Get profiles from all the events
