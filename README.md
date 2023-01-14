@@ -39,11 +39,11 @@ style
 
 misc
 
-- [ ] fix follow/unfollow
 - [ ] white flash on startup
+- [ ] speed improvements
 - [ ] general relay management
 - [ ] remove typescript expect-error comments
-- [ ] speed improvements
+- [x] fix follow/unfollow
 - [x] handle app close/open to refetch notes
 - [x] subscribe to following
 - [x] app icons + splash image
