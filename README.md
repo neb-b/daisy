@@ -39,7 +39,7 @@ style
 
 misc
 
-- [ ] white flash on startup
+- [x] white flash on startup
 - [x] fix follow/unfollow
 - [x] handle app close/open to refetch notes
 - [x] subscribe to following
@@ -55,6 +55,7 @@ misc
 
 maybe
 
+- [ ] fetch profiles/reactions in threads
 - [ ] speed improvements
 - [ ] general relay management
 - [ ] remove typescript expect-error comments

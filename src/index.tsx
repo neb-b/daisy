@@ -34,6 +34,7 @@ const AppWrapper = ({ children }) => {
   const theme = useTheme()
   const insets = useSafeAreaInsets()
   const backgroundColor: string = theme[`background-basic-color-1`]
+
   return (
     <PersistGate loading={<View style={{ flex: 1, backgroundColor }} />} persistor={persistor}>
       <View style={{ flex: 1, backgroundColor, paddingTop: insets.top, paddingBottom: insets.bottom }}>
