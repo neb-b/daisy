@@ -10,6 +10,7 @@ import { Layout } from "components/Layout"
 import { useThread } from "store/hooks"
 import { doFetchReplies, doPublishNote } from "store/notesSlice"
 import { useDispatch } from "store"
+import { nostrEventKinds } from "core/nostr"
 
 export const ThreadScreen = ({ navigation, route }) => {
   const {
@@ -42,7 +43,14 @@ export const ThreadScreen = ({ navigation, route }) => {
   const keyExtractor = React.useCallback((item) => item, [])
 
   const handleSubmit = (text: string) => {
-    dispatch(doPublishNote(text, () => setReplyDraft(""), id))
+    dispatch(
+      doPublishNote({
+        kind: nostrEventKinds.note,
+        content: text,
+        onSuccess: () => setReplyDraft(""),
+        replyId: id,
+      })
+    )
   }
 
   return (

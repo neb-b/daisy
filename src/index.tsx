@@ -35,11 +35,13 @@ const AppWrapper = ({ children }) => {
   const insets = useSafeAreaInsets()
   const backgroundColor: string = theme[`background-basic-color-1`]
   return (
-    <View style={{ flex: 1, backgroundColor, paddingTop: insets.top, paddingBottom: insets.bottom }}>
-      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
-        {children}
-      </KeyboardAvoidingView>
-    </View>
+    <PersistGate loading={<View style={{ flex: 1, backgroundColor }} />} persistor={persistor}>
+      <View style={{ flex: 1, backgroundColor, paddingTop: insets.top, paddingBottom: insets.bottom }}>
+        <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+          {children}
+        </KeyboardAvoidingView>
+      </View>
+    </PersistGate>
   )
 }
 
@@ -49,11 +51,9 @@ const App = () => {
       <SafeAreaProvider>
         <ThemeWrapper>
           <AppWrapper>
-            <PersistGate loading={<Text>Loading...</Text>} persistor={persistor}>
-              <NavigationContainer>
-                <HomeStackNavigator />
-              </NavigationContainer>
-            </PersistGate>
+            <NavigationContainer>
+              <HomeStackNavigator />
+            </NavigationContainer>
           </AppWrapper>
         </ThemeWrapper>
       </SafeAreaProvider>

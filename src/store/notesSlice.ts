@@ -120,7 +120,7 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
   const { settings: settingsState, notes: notesState } = getState()
   const { contactListsByPubkey } = notesState
   const contactList = contactListsByPubkey[settingsState.user.pubkey]
-  const pubkeys = contactList.tags.map((tag) => tag[1])
+  const pubkeys = [settingsState.user.pubkey, ...contactList.tags.map((tag) => tag[1])]
 
   dispatch(updateloadingByIdOrPubkey({ following: true }))
 
@@ -187,7 +187,17 @@ export const doFetchReplies = (noteIds: string[]) => async (dispatch: AppDispatc
 }
 
 export const doPublishNote =
-  (content: string, onSuccess: () => void, replyId?: string) =>
+  ({
+    content,
+    kind,
+    replyId,
+    onSuccess,
+  }: {
+    content: string
+    kind: NostrEventKind
+    replyId?: string
+    onSuccess?: () => void
+  }) =>
   async (dispatch: AppDispatch, getState: GetState) => {
     const { settings: settingsState } = getState()
     const { user } = settingsState
@@ -206,7 +216,7 @@ export const doPublishNote =
       settingsState.relays,
       // @ts-expect-error
       settingsState.user,
-      nostrEventKinds.note,
+      kind,
       content,
       tags
     )

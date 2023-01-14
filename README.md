@@ -7,6 +7,7 @@ notes
 - [ ] share
 - [x] images
 - [x] links
+- [x] mentions
 
 threads
 
@@ -34,6 +35,7 @@ style
 
 misc
 
+- [ ] fix follow/unfollow
 - [ ] general relay management
 - [ ] remove typescript expect-error comments
 - [x] subscribe to following
