@@ -24,8 +24,12 @@ export const SettingsScreen = ({ navigation }) => {
       <TopNavigation title="Settings" alignment="center" />
       <Divider />
       <ScrollView style={{ paddingTop: 16, paddingLeft: 8, paddingRight: 8 }}>
-        <SettingsCard title="Public Account ID" value={nip19.npubEncode(user.pubkey)} />
-        <SettingsCard title="Secret Account Login Key" value={nip19.nsecEncode(user.privateKey)} />
+        {user.pubkey && user.privateKey && (
+          <>
+            <SettingsCard title="Public Account ID" value={nip19.npubEncode(user.pubkey)} />
+            <SettingsCard title="Secret Account Login Key" value={nip19.nsecEncode(user.privateKey)} />
+          </>
+        )}
 
         <View style={{ marginTop: 32 }}>
           <Button appearance="outline" onPress={handleLogout}>

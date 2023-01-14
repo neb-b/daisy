@@ -31,8 +31,7 @@ export const ProfileScreen = ({ route }) => {
   }, [hasProfile, pubkey])
 
   const handleToggleFollow = () => {
-    const newFollowState = !isFollowing
-    dispatch(doToggleFollow(pubkey, newFollowState))
+    dispatch(doToggleFollow(pubkey))
   }
 
   const renderNote = React.useCallback(({ item }) => {

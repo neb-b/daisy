@@ -2,7 +2,7 @@ Daisy mvp todo:
 
 notes
 
-- [ ] likes
+- [x] likes
 - [x] fetch reply/repost/profile info on subscribed notes
 - [x] fix repost handling for feeds - add repost data to notesById, but only add the original note to feedsByPubkeyOrId
 - [x] repost
@@ -40,6 +40,7 @@ style
 misc
 
 - [ ] fix follow/unfollow
+- [ ] white flash on startup
 - [ ] general relay management
 - [ ] remove typescript expect-error comments
 - [ ] speed improvements
