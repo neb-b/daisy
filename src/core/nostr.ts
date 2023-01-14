@@ -8,8 +8,6 @@ import {
   verifySignature,
   Relay,
 } from "nostr-tools"
-import * as secp from "@noble/secp256k1"
-import { bech32 } from "bech32"
 
 export const nostrEventKinds = {
   profile: 0,
@@ -21,7 +19,7 @@ export const nostrEventKinds = {
 
 export const defaultRelays = [
   "wss://relay.damus.io",
-  // "wss://nostr.v0l.io",
+  "wss://nostr.v0l.io",
   "wss://nostr-pub.wellorder.net",
   // "wss://nostr-relay.wlvs.space",
   // "wss://nostr.oxtr.dev",
@@ -231,7 +229,6 @@ export const subscribeToNostrEvents = (
     sub.on("event", handleEvent)
 
     sub.on("eose", () => {
-      console.log("getNostrEvents eose: ", relay)
       sub.unsub()
     })
   })
@@ -268,7 +265,6 @@ const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<Nos
       })
 
       sub.on("eose", () => {
-        console.log("getNostrEvent eose: ", relay)
         sub.unsub()
       })
     })

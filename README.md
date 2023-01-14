@@ -3,6 +3,8 @@ Daisy mvp todo:
 notes
 
 - [ ] tags
+- [ ] repost
+- [ ] share
 - [x] images
 - [x] links
 

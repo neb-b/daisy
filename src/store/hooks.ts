@@ -150,8 +150,7 @@ export const useThread = (noteId: string) => {
 }
 
 export const useNote = (
-  noteId: string,
-  ignoreReplies: boolean = false
+  noteId: string
 ): (NostrNoteEvent | NostrRepostEvent) & {
   repostedBy?: string
   reply?: NostrNoteEvent | NostrRepostEvent
@@ -178,17 +177,12 @@ export const useNote = (
     }
   }
 
-  // Ignore replies
-  // This may happen if we are already requesting a reply
-  // Don't want to go forever
-  if (!ignoreReplies) {
-    const replyId = note.tags.find((tag) => tag[0] === "e")?.[1]
-    const reply = notesById[replyId]
-    if (replyId) {
-      return {
-        ...note,
-        reply,
-      }
+  const replyId = note.tags.find((tag) => tag[0] === "e")?.[1]
+  const reply = notesById[replyId]
+  if (replyId) {
+    return {
+      ...note,
+      reply,
     }
   }
 
