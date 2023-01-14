@@ -114,6 +114,12 @@ export const getEventsFromPubkeys = async (
     notes.forEach((event) => {
       if (event.kind === 6) {
         try {
+          // TODO: this isn't right
+          // i'm not adding the original note
+          // maybe separate out reposts and feed items
+          // i don't want to add the repost note to the feed
+          // only the original note
+          // the repost just needs to be saved to notesById
           const repostNote = JSON.parse(event.content)
           repostEvents.push(repostNote)
         } catch (e) {}
@@ -229,7 +235,18 @@ export const subscribeToNostrEvents = (
     const sub = relay.sub([{ ...filter }])
     subscriptions.push(sub)
 
-    sub.on("event", handleEvent)
+    sub.on("event", (event: NostrEvent) => {
+      // TODO: fetch additional notes if needed
+      // const repliesSet = new Set<string>()
+      // const replyToId = event.tags.find((tag) => tag[0] === "e")?.[1]
+      // if (replyToId) {
+      //   repliesSet.add(replyToId)
+      // }
+      // if (repliesSet.size > 0) {
+      //   handleEvents([event])
+      // }
+      handleEvent(event)
+    })
 
     sub.on("eose", () => {
       sub.unsub()
