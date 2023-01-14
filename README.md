@@ -13,7 +13,6 @@ notes
 
 threads
 
-- [ ] reply to specific note
 - [x] better fetching of replies
 - [x] reply to a thread
 - [x] display fetched replies in a thread
@@ -55,6 +54,7 @@ misc
 
 maybe
 
+- [ ] reply to specific note
 - [ ] fetch profiles/reactions in threads
 - [ ] speed improvements
 - [ ] general relay management

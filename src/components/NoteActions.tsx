@@ -58,9 +58,9 @@ export const NoteActions: React.FC<Props> = ({ id, style = {}, isThread = false 
 
   return (
     <View style={{ flexDirection: "row", marginTop: 16, marginRight: 16, justifyContent: "space-between" }}>
-      <Pressable onPress={handleNavigate}>
+      {/* <Pressable onPress={handleNavigate}>
         <Icon {...iconProps} name="message-circle-outline" />
-      </Pressable>
+      </Pressable> */}
       <Pressable onPress={handleRepost}>
         <Icon {...iconProps} name="flip-2-outline" />
       </Pressable>
