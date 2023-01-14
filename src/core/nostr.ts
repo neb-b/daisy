@@ -26,7 +26,7 @@ export const defaultRelays = [
   // "wss://nostr-relay.wlvs.space",
   "wss://nostr.oxtr.dev",
   // "wss://relay.nostr.bg",
-  // "wss://nostr.fmt.wiz.biz",
+  "wss://nostr.fmt.wiz.biz",
 ]
 
 const GET_EVENTS_LIMIT = 50

@@ -84,69 +84,36 @@ export const useThread = (noteId: string) => {
     return { notes: [], loading }
   }
 
-  //
-  // this probably needs recursion
-  //
+  const searchForReplies = (acc: string[], noteId: string) => {
+    const note = notesById[noteId]
 
-  const initialIdsToFind = new Set<string>([noteId])
-
-  // find notes we have that are replies to this note
-  Object.values(notesById).forEach((note) => {
-    note.tags.forEach((tag) => {
-      if (tag[0] === "e" && tag[1] === noteId) {
-        initialIdsToFind.add(note.id)
-      }
-    })
-  })
-
-  // see if this note is a reply to anyone
-  note.tags.find((tag) => {
-    if (tag[0] === "e") {
-      initialIdsToFind.add(tag[1])
-    }
-  })
-
-  const secondaryRepliesToFind = new Set<string>()
-  Array.from(initialIdsToFind).forEach((replyId) => {
-    const reply = notesById[replyId]
-    if (!reply) {
-      return
-    }
-    reply.tags.find((tag) => {
-      if (tag[0] === "e") {
-        secondaryRepliesToFind.add(tag[1])
-      }
-    })
-  })
-
-  // This should keep going until it doesn't find any, recursively
-  // I think
-
-  const mergedReplies = new Set([...initialIdsToFind, ...secondaryRepliesToFind])
-
-  // wtf lol
-  Object.values(notesById).forEach((note) => {
-    note.tags.forEach((tag) => {
-      if (tag[0] === "e" && mergedReplies.has(tag[1])) {
-        mergedReplies.add(note.id)
-      }
-    })
-  })
-
-  const notes = [...Array.from(mergedReplies)]
-    .reduce((acc, replyId) => {
-      const reply = notesById[replyId]
-      if (!reply) {
-        return acc
-      }
-
-      acc.push(reply)
+    if (!note) {
       return acc
-    }, [])
+    }
+
+    const tags = note.tags || []
+    const replyIds = tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
+
+    if (replyIds.length > 0) {
+      acc.push(noteId)
+      acc.push(...replyIds.reduce(searchForReplies, []))
+    } else {
+      acc.push(noteId)
+    }
+
+    return acc
+  }
+
+  const originalEventReplies = note.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
+  const associatedReplies = originalEventReplies.reduce(searchForReplies, [])
+
+  const prunedReplies = Array.from(new Set(associatedReplies))
+  const notes = [...prunedReplies, noteId]
+    .map((id) => notesById[id])
     .sort((a, b) => a.created_at - b.created_at)
     .map((note) => note.id)
 
-  return { notes, loading }
+  return { notes: notes, loading }
 }
 
 export const useNote = (
