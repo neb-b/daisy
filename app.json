@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Daisy",
-    "slug": "daisy",
+    "name": "Nostr Daisy",
+    "slug": "nostr-daisy",
     "version": "0.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

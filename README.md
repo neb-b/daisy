@@ -64,3 +64,4 @@ maybe
 - [ ] on scroll to bottom, fetch more notes? Or just fetch more total
 - [ ] mistakenly think user tags are replies
 - [ ] use correct tags for replies inside threads
+- [ ] confirm before reposting
