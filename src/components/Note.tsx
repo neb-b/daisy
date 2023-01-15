@@ -67,7 +67,7 @@ export const Note: React.FC<Props> = ({ id, style = {}, isThread = false, isSimp
   )
 }
 
-const ReplyText = ({ pubkeysOrProfiles }) => {
+function ReplyText({ pubkeysOrProfiles }) {
   return (
     <Text appearance="hint" style={{ fontSize: 12 }}>
       Replying to{" "}
@@ -85,9 +85,8 @@ const ReplyText = ({ pubkeysOrProfiles }) => {
           if (index === 1) {
             if (pubkeysOrProfiles.length === 2) {
               return ` & ${name}`
-            } else {
-              return `, ${name}`
             }
+            return `, ${name}`
           }
 
           if (index === 2) {
@@ -99,7 +98,7 @@ const ReplyText = ({ pubkeysOrProfiles }) => {
   )
 }
 
-const RepostAuthor = ({ pubkey }) => {
+function RepostAuthor({ pubkey }) {
   const theme = useTheme()
   const profile = useProfile(pubkey)
   const repostAuthor = profile?.content?.name || pubkey.slice(0, 6)

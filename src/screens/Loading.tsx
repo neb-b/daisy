@@ -6,7 +6,7 @@ import { useDispatch } from "store"
 import { doFetchProfile } from "store/notesSlice"
 import { initRelays } from "store/settingsSlice"
 
-export const LoadingScreen = ({ navigation, route }) => {
+export function LoadingScreen({ navigation, route }) {
   const { reset } = navigation
   const dispatch = useDispatch()
   const { pubkey } = useUser()

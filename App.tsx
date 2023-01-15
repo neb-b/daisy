@@ -1,6 +1,6 @@
 import encoding from "text-encoding"
 
-global.TextDecoder = encoding.TextDecoder
-
 import App from "./src"
+
+global.TextDecoder = encoding.TextDecoder
 export default App

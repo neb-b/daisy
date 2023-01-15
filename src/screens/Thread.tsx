@@ -8,7 +8,7 @@ import { useThread } from "store/hooks"
 import { doFetchRepliesInThread } from "store/notesSlice"
 import { useDispatch } from "store"
 
-export const ThreadScreen = ({ navigation, route }) => {
+export function ThreadScreen({ navigation, route }) {
   const {
     params: { id },
   } = route

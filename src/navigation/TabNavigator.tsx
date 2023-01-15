@@ -7,8 +7,8 @@ import { SettingsScreen } from "screens/Settings"
 
 const { Navigator, Screen } = createBottomTabNavigator()
 
-const BottomTabBar = ({ navigation, state }) => (
-  <>
+function BottomTabBar({ navigation, state }) {
+  return <>
     <Divider />
     <BottomNavigation
       appearance="noIndicator"
@@ -19,11 +19,11 @@ const BottomTabBar = ({ navigation, state }) => (
       <BottomNavigationTab icon={(props) => <Icon {...props} name="settings-outline" />} />
     </BottomNavigation>
   </>
-)
+}
 
-export const BottomTabNavigator = () => (
-  <Navigator tabBar={(props) => <BottomTabBar {...props} />} screenOptions={{ headerShown: false }}>
+export function BottomTabNavigator() {
+  return <Navigator tabBar={(props) => <BottomTabBar {...props} />} screenOptions={{ headerShown: false }}>
     <Screen name="FollowingFeed" component={FollowingFeedScreen} />
     <Screen name="Settings" component={SettingsScreen} />
   </Navigator>
-)
+}

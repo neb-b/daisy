@@ -37,7 +37,7 @@ const initialState = {
 
 export const notesSlice = createSlice({
   name: "notes",
-  initialState: initialState,
+  initialState,
   reducers: {
     updateNotesById(state, action: PayloadAction<Record<string, NostrNoteEvent>>) {
       state.notesById = { ...state.notesById, ...action.payload }
@@ -192,7 +192,7 @@ export const doFetchRepliesInThread =
   (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
     const {
       settings: settingsState,
-      notes: { notesById, reactionsByNoteId },
+      notes: { notesById },
     } = getState()
 
     dispatch(updateloadingByIdOrPubkey({ [noteId]: true }))
@@ -235,7 +235,7 @@ export const doPublishNote =
       return
     }
 
-    let tags = []
+    const tags = []
     if (replyId) {
       tags.push(["e", replyId])
     } else if (repostOf) {

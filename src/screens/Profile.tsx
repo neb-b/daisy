@@ -12,7 +12,7 @@ import { useDispatch } from "store"
 import { useUser, useProfile, useContactList, useProfileNotes } from "store/hooks"
 import { doFetchProfile, doToggleFollow } from "store/notesSlice"
 
-export const ProfileScreen = ({ route }) => {
+export function ProfileScreen({ route }) {
   const {
     params: { pubkey },
   } = route

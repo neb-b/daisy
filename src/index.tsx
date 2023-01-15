@@ -15,7 +15,7 @@ import { HomeStackNavigator } from "navigation/StackNavigator"
 import { dark } from "theme/dark"
 import { mapping } from "theme/mapping"
 
-const ThemeWrapper = ({ children }) => {
+function ThemeWrapper({ children }) {
   const { theme } = useSelector((state: RootState) => state.settings)
   const isDark = theme === "dark"
 
@@ -30,7 +30,7 @@ const ThemeWrapper = ({ children }) => {
   )
 }
 
-const AppWrapper = ({ children }) => {
+function AppWrapper({ children }) {
   const theme = useTheme()
   const insets = useSafeAreaInsets()
   const backgroundColor: string = theme[`background-basic-color-1`]
@@ -46,7 +46,7 @@ const AppWrapper = ({ children }) => {
   )
 }
 
-const App = () => {
+function App() {
   return (
     <Provider store={store}>
       <SafeAreaProvider>

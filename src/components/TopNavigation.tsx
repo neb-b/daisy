@@ -7,7 +7,7 @@ import { Avatar } from "components/Avatar"
 
 type Props = { title?: string; hideProfileLink?: boolean; alignment: string }
 
-export const TopNavigation = ({ title, hideProfileLink }: Props) => {
+export function TopNavigation({ title, hideProfileLink }: Props) {
   const user = useUser()
   const { goBack } = useNavigation()
 

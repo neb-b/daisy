@@ -113,7 +113,7 @@ export const useThread = (noteId: string) => {
     .sort((a, b) => a.created_at - b.created_at)
     .map((note) => note.id)
 
-  return { notes: notes, loading }
+  return { notes, loading }
 }
 
 export const useNote = (

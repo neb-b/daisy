@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
 import type { Relay } from "nostr-tools"
-import type { AppDispatch, RootState } from "store"
+import type { AppDispatch } from "store"
 import { defaultRelays, connectToRelay } from "core/nostr"
 
 type theme = "light" | "dark" | "system"
@@ -23,7 +23,7 @@ const initialState = {
 
 export const settingsSlice = createSlice({
   name: "settings",
-  initialState: initialState,
+  initialState,
   reducers: {
     updateTheme(state, action: PayloadAction<theme>) {
       state.theme = action.payload
@@ -46,13 +46,5 @@ export const { updateRelays, updateTheme, updateUser, logout } = settingsSlice.a
 export const initRelays = () => async (dispatch: AppDispatch) => {
   const promises = defaultRelays.map((relay) => connectToRelay(relay))
   const results = await Promise.all(promises)
-  return dispatch(
-    updateRelays(
-      results
-        .filter((relay) => {
-          return relay.success
-        })
-        .map((relay) => relay.relay)
-    )
-  )
+  return dispatch(updateRelays(results.filter((relay) => relay.success).map((relay) => relay.relay)))
 }

@@ -18,11 +18,11 @@ export const NoteCreate: React.FC<Props> = ({ closeModal, id }) => {
   const [content, setContent] = React.useState("")
   const note = useNote(id)
 
-  const RightAccessory = () => (
-    <Button appearance="ghost" onPress={closeModal}>
+  function RightAccessory() {
+  return <Button appearance="ghost" onPress={closeModal}>
       <Text>Cancel</Text>
     </Button>
-  )
+}
 
   const handlePublish = () => {
     dispatch(doPublishNote({ content, kind: nostrEventKinds.note, replyId: id, onSuccess: closeModal }))

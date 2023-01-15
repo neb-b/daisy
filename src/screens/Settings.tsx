@@ -10,7 +10,7 @@ import { logout } from "store/settingsSlice"
 import { TopNavigation } from "components/TopNavigation"
 import { Layout } from "components/Layout"
 
-export const SettingsScreen = ({ navigation }) => {
+export function SettingsScreen({ navigation }) {
   const dispatch = useDispatch()
   const user = useUser()
 
@@ -41,7 +41,7 @@ export const SettingsScreen = ({ navigation }) => {
   )
 }
 
-const SettingsCard = ({ title, value }) => {
+function SettingsCard({ title, value }) {
   const [copied, setCopied] = React.useState(false)
   const theme = useTheme()
 

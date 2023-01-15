@@ -13,7 +13,7 @@ import { BottomTabNavigator } from "navigation/TabNavigator"
 // const Stack = createNativeStackNavigator()
 const Stack = createStackNavigator()
 
-const HomeStackNavigator = () => {
+function HomeStackNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Loading" component={LoadingScreen} />

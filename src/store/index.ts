@@ -2,11 +2,11 @@ import { configureStore, combineReducers } from "@reduxjs/toolkit"
 import { useDispatch as useReactReduxDispatch } from "react-redux"
 import thunkMiddleware from "redux-thunk"
 
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { persistStore, persistReducer } from "redux-persist"
 import { notesSlice } from "./notesSlice"
 import { settingsSlice } from "./settingsSlice"
 
-import AsyncStorage from "@react-native-async-storage/async-storage"
-import { persistStore, persistReducer } from "redux-persist"
 
 const persistConfig = {
   key: "root",

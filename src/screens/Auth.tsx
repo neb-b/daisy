@@ -8,7 +8,7 @@ import { doFetchProfile } from "store/notesSlice"
 import { useUser, useProfile } from "store/hooks"
 import { updateUser } from "store/settingsSlice"
 
-export const AuthScreen = ({ navigation }) => {
+export function AuthScreen({ navigation }) {
   const { reset } = navigation
   const dispatch = useDispatch()
   const user = useUser()

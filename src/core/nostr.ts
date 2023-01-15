@@ -32,8 +32,7 @@ export const defaultRelays = [
 const GET_EVENTS_LIMIT = 5
 const TIMEOUT = 1000
 
-export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
-  return new Promise(async (resolve) => {
+export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => new Promise(async (resolve) => {
     let connected = false
     let relay
     try {
@@ -65,7 +64,6 @@ export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; suc
       return resolve({ relay, success: false })
     }, 1000)
   })
-}
 
 export const getReplies = async (
   relays: Relay[],
@@ -75,8 +73,7 @@ export const getReplies = async (
   profiles: Record<string, NostrProfileEvent>
   related: NostrEvent[]
   reactions: Record<string, NostrReactionEvent[]>
-}> => {
-  return new Promise(async (resolve) => {
+}> => new Promise(async (resolve) => {
     const notes = await getNostrEvents(relays, {
       kinds: [nostrEventKinds.note],
       "#e": eventIds,
@@ -86,7 +83,6 @@ export const getReplies = async (
 
     resolve({ notes, related, profiles, reactions })
   })
-}
 
 export const getEventsFromPubkeys = async (
   relays: Relay[],
@@ -96,8 +92,7 @@ export const getEventsFromPubkeys = async (
   profiles: Record<string, NostrProfileEvent>
   related: NostrEvent[]
   reactions: Record<string, NostrReactionEvent[]>
-}> => {
-  return new Promise(async (resolve) => {
+}> => new Promise(async (resolve) => {
     const notes = await getNostrEvents(relays, {
       authors: pubkeys,
       kinds: [nostrEventKinds.note, nostrEventKinds.repost],
@@ -107,7 +102,6 @@ export const getEventsFromPubkeys = async (
 
     resolve({ notes, related, profiles, reactions })
   })
-}
 
 const getRelatedEvents = async (
   relays: Relay[],
@@ -116,8 +110,7 @@ const getRelatedEvents = async (
   related: NostrEvent[]
   profiles: Record<string, NostrProfileEvent>
   reactions: Record<string, NostrReactionEvent[]>
-}> => {
-  return new Promise(async (resolve) => {
+}> => new Promise(async (resolve) => {
     const alreadyFetchedReposts = []
     const repostsSet = new Set<string>()
     const repliesSet = new Set<string>()
@@ -160,9 +153,7 @@ const getRelatedEvents = async (
       "#e": [...repliesSet, ...repostsSet, ...notes.map((note) => note.id)],
     })
 
-    const prunedReactionEvents = reactionEvents.filter((note: NostrEvent) => {
-      return note.content === "+" || note.content === "🤙" || note.content === "❤️"
-    })
+    const prunedReactionEvents = reactionEvents.filter((note: NostrEvent) => note.content === "+" || note.content === "🤙" || note.content === "❤️")
 
     // Get profiles from all the events
     const profilePubkeysSet = new Set<string>()
@@ -219,10 +210,8 @@ const getRelatedEvents = async (
       reactions: reactionsById,
     })
   })
-}
 
-const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent[]> => {
-  return new Promise((resolve) => {
+const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent[]> => new Promise((resolve) => {
     const limit = filter?.limit || GET_EVENTS_LIMIT
     const eventsById: Record<string, NostrEvent> = {}
     let fetchedCount = 0
@@ -269,14 +258,13 @@ const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<No
       }, TIMEOUT)
     })
   })
-}
 
 export const subscribeToNostrEvents = (
   relays: Relay[],
   filter: NostrFilter,
   handleEvent: (NostrEvent, related: NostrEvent[], profiles: Record<string, NostrProfileEvent>) => void
 ): Sub[] => {
-  let subscriptions = []
+  const subscriptions = []
   relays.forEach((relay) => {
     const sub = relay.sub([{ ...filter }])
     subscriptions.push(sub)
@@ -295,8 +283,7 @@ export const subscribeToNostrEvents = (
   return subscriptions
 }
 
-const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent> => {
-  return new Promise((resolve) => {
+const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent> => new Promise((resolve) => {
     relays.forEach((relay) => {
       const sub = relay.sub([{ ...filter }])
 
@@ -325,7 +312,6 @@ const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<Nos
       })
     })
   })
-}
 
 export const publishNote = async (
   relays: Relay[],
@@ -334,7 +320,7 @@ export const publishNote = async (
   content = "",
   tags = []
 ): Promise<NostrNoteEvent> => {
-  let event = {
+  const event = {
     kind,
     pubkey: user.pubkey,
     created_at: Math.floor(Date.now() / 1000),

@@ -12,6 +12,4 @@ export const timeSince = (timeInSeconds: number) => {
   return time
 }
 
-export const fullDateString = (timeInSeconds: number) => {
-  return dayjs(timeInSeconds * 1000).format("MM/D/YY h:mm A")
-}
+export const fullDateString = (timeInSeconds: number) => dayjs(timeInSeconds * 1000).format("MM/D/YY h:mm A")

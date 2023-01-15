@@ -13,7 +13,7 @@ import { TopNavigation } from "components/TopNavigation"
 
 type MyAppState = "active" | "background" | "inactive"
 
-export const FollowingFeedScreen = () => {
+export function FollowingFeedScreen() {
   const dispatch = useDispatch()
   const [creatingNote, setCreatingNote] = React.useState(false)
   const { loading, notes } = useFeed("following")
