@@ -115,7 +115,6 @@ export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, 
 
   if (!hasProfile) {
     const { profile, contactList } = await getProfile(relays, pubkey)
-    console.log("contactList", contactList)
 
     dispatch(updateProfilesByPubkey({ [pubkey]: profile }))
     dispatch(updateContactListsByPubkey({ [pubkey]: contactList }))
