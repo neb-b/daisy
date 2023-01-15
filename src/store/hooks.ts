@@ -108,8 +108,14 @@ export const useThread = (noteId: string) => {
   const associatedReplies = originalEventReplies.reduce(searchForReplies, [])
 
   const prunedReplies = Array.from(new Set(associatedReplies))
-  const notes = [...prunedReplies, noteId]
-    .map((id) => notesById[id])
+  const notes = [...originalEventReplies, ...prunedReplies, noteId]
+    .reduce((acc, id) => {
+      if (notesById[id]) {
+        return [...acc, notesById[id]]
+      }
+
+      return acc
+    }, [])
     .sort((a, b) => a.created_at - b.created_at)
     .map((note) => note.id)
 
@@ -158,8 +164,10 @@ export const useNote = (
 }
 
 export const useReactions = (noteId: string) => {
-  const { reactionsByNoteId } = useSelector((state: RootState) => state.notes)
-  const { user } = useSelector((state: RootState) => state.settings)
+  const {
+    notes: { reactionsByNoteId },
+    settings: { user },
+  } = useSelector((state: RootState) => state)
 
   const reactions = reactionsByNoteId[noteId] || []
   let liked = false
@@ -171,6 +179,30 @@ export const useReactions = (noteId: string) => {
   })
 
   return { reactions, liked }
+}
+
+export const useReposted = (noteId: string) => {
+  const {
+    notes: { notesById },
+    settings: { user },
+  } = useSelector((state: RootState) => state)
+
+  const notes = Object.values(notesById)
+  let reposted = false
+  for (var i = 0; i < notes.length; i++) {
+    const note = notes[i]
+    if (note.kind === nostrEventKinds.repost) {
+      const isMe = note.pubkey === user.pubkey
+      const isNoteMatch = note.tags.find((tag) => tag[0] === "e")?.[1] === noteId
+
+      if (isMe && isNoteMatch) {
+        reposted = true
+        break
+      }
+    }
+  }
+
+  return reposted
 }
 
 export const useRelays = () => {

@@ -5,7 +5,7 @@ import { useTheme, Icon, Text } from "@ui-kitten/components"
 import { NoteCreate } from "components"
 import { nostrEventKinds } from "core/nostr"
 import { useDispatch } from "store"
-import { useNote, useReactions } from "store/hooks"
+import { useNote, useReactions, useReposted } from "store/hooks"
 import { doPublishNote, doLike } from "store/notesSlice"
 
 type Props = {
@@ -17,6 +17,7 @@ type Props = {
 export const NoteActions: React.FC<Props> = ({ id }) => {
   const note = useNote(id)
   const { reactions, liked } = useReactions(id)
+  const reposted = useReposted(id)
   const theme = useTheme()
   const dispatch = useDispatch()
   const [creatingNote, setCreatingNote] = React.useState(false)
@@ -63,7 +64,7 @@ export const NoteActions: React.FC<Props> = ({ id }) => {
           <Icon {...iconProps} name="message-circle-outline" />
         </Pressable>
         <Pressable onPress={handleRepost}>
-          <Icon {...iconProps} name="flip-2-outline" />
+          <Icon {...iconProps} name="flip-2-outline" fill={reposted ? interactedColor : iconProps.fill} />
         </Pressable>
         <Pressable style={{ flexDirection: "row", alignItems: "center" }} onPress={handleLike}>
           <Icon
