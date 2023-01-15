@@ -16,18 +16,20 @@ export function AuthScreen({ navigation }) {
   const [enteringPrivateKey, setEnteringPrivateKey] = React.useState(false)
   const [privateKey, setPrivateKey] = React.useState("")
   const hasProfile = Boolean(profile)
-
-  const handleSignup = () => {
-    navigation.reset({ index: 0, routes: [{ name: "Home" }] })
-  }
+  const [error, setError] = React.useState("")
 
   const handlePrivateKeySubmit = () => {
-    const { data } = nip19.decode(privateKey)
-    const hexPrivateKey = data as string
-    const hexPubkey = getPublicKey(hexPrivateKey)
+    setError("")
+    try {
+      const { data } = nip19.decode(privateKey)
+      const hexPrivateKey = data as string
+      const hexPubkey = getPublicKey(hexPrivateKey)
 
-    dispatch(updateUser({ pubkey: hexPubkey, privateKey: hexPrivateKey }))
-    dispatch(doFetchProfile(hexPubkey))
+      dispatch(updateUser({ pubkey: hexPubkey, privateKey: hexPrivateKey }))
+      dispatch(doFetchProfile(hexPubkey))
+    } catch (e) {
+      setError("Invalid private key")
+    }
   }
 
   React.useEffect(() => {
@@ -68,6 +70,7 @@ export function AuthScreen({ navigation }) {
               </Button>
             </View>
           )}
+          {error && <Text style={{ color: "red" }}>{error}</Text>}
         </View>
       </SafeAreaView>
     </Layout>
