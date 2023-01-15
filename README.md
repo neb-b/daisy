@@ -13,8 +13,8 @@ notes
 
 threads
 
-- [ ] reply to specific note
-- [ ] fetch profiles/reactions in threads
+- [x] reply to specific note
+- [x] fetch profiles/reactions in threads
 - [x] display who user is actually replying to
 - [x] better fetching of replies
 - [x] reply to a thread
@@ -62,3 +62,5 @@ maybe
 - [ ] general relay management
 - [ ] remove typescript expect-error comments
 - [ ] on scroll to bottom, fetch more notes? Or just fetch more total
+- [ ] mistakenly think user tags are replies
+- [ ] use correct tags for replies inside threads

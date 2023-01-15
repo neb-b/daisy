@@ -8,7 +8,7 @@ import { doPopulateFollowingFeed, unsubscribeFromFollowingFeed } from "store/not
 import { useFeed } from "store/hooks"
 import { Layout } from "components/Layout"
 import { Note } from "components/Note"
-import { NewNote } from "components/NewNote"
+import { NoteCreate } from "components/NoteCreate"
 import { TopNavigation } from "components/TopNavigation"
 
 type MyAppState = "active" | "background" | "inactive"
@@ -75,7 +75,7 @@ export const FollowingFeedScreen = () => {
             setCreatingNote(false)
           }}
         >
-          <NewNote closeModal={() => setCreatingNote(false)} />
+          <NoteCreate closeModal={() => setCreatingNote(false)} />
         </Modal>
       )}
     </Layout>

@@ -20,13 +20,13 @@ export const nostrEventKinds = {
 
 export const defaultRelays = [
   "wss://relay.damus.io",
-  // "wss://relay.snort.social",
+  "wss://relay.snort.social",
   "wss://nostr-pub.wellorder.net",
   // "wss://brb.io",
   // "wss://nostr-relay.wlvs.space",
-  "wss://nostr.oxtr.dev",
+  // "wss://nostr.oxtr.dev",
   // "wss://relay.nostr.bg",
-  "wss://nostr.fmt.wiz.biz",
+  // "wss://nostr.fmt.wiz.biz",
 ]
 
 const GET_EVENTS_LIMIT = 5
@@ -67,14 +67,24 @@ export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; suc
   })
 }
 
-export const getReplies = async (relays: Relay[], eventIds: string[]): Promise<NostrEvent[]> => {
+export const getReplies = async (
+  relays: Relay[],
+  eventIds: string[]
+): Promise<{
+  notes: NostrEvent[]
+  profiles: Record<string, NostrProfileEvent>
+  related: NostrEvent[]
+  reactions: Record<string, NostrReactionEvent[]>
+}> => {
   return new Promise(async (resolve) => {
-    const replies = await getNostrEvents(relays, {
+    const notes = await getNostrEvents(relays, {
       kinds: [nostrEventKinds.note],
       "#e": eventIds,
     })
 
-    resolve([...replies])
+    const { related, profiles, reactions } = await getRelatedEvents(relays, notes)
+
+    resolve({ notes, related, profiles, reactions })
   })
 }
 

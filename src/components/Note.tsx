@@ -18,9 +18,10 @@ type Props = {
   isThread?: boolean
   id: string
   style?: object
+  isSimple?: boolean
 }
 
-export const Note: React.FC<Props> = ({ id, style = {}, isThread = false }) => {
+export const Note: React.FC<Props> = ({ id, style = {}, isThread = false, isSimple = false }) => {
   const navigation = useNavigation()
   const note = useNote(id)
   const profile = useProfile(note?.pubkey)
@@ -62,12 +63,12 @@ export const Note: React.FC<Props> = ({ id, style = {}, isThread = false }) => {
               )}
 
               <NoteContent note={note} />
-              <NoteActions id={note.id} />
+              {!isSimple && <NoteActions id={note.id} />}
             </View>
           </View>
         </View>
       </Pressable>
-      <Divider />
+      {!isSimple && <Divider />}
     </>
   )
 }

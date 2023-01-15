@@ -3,16 +3,21 @@ import { View, ScrollView } from "react-native"
 import { Input, Button, Divider, TopNavigation, Text } from "@ui-kitten/components"
 
 import { Layout } from "components/Layout"
+import { Note } from "components/Note"
 import { useDispatch } from "store"
 import { doPublishNote } from "store/notesSlice"
+import { useNote } from "store/hooks"
+import { nostrEventKinds } from "core/nostr"
 
 type Props = {
   closeModal: () => void
+  id?: string
 }
 
-export const NewNote: React.FC<Props> = ({ closeModal }) => {
+export const NoteCreate: React.FC<Props> = ({ closeModal, id }) => {
   const dispatch = useDispatch()
   const [content, setContent] = React.useState("")
+  const note = useNote(id)
 
   const RightAccessory = () => (
     <Button appearance="ghost" onPress={closeModal}>
@@ -21,7 +26,7 @@ export const NewNote: React.FC<Props> = ({ closeModal }) => {
   )
 
   const handlePublish = () => {
-    dispatch(doPublishNote(content, closeModal))
+    dispatch(doPublishNote({ content, kind: nostrEventKinds.note, replyId: id, onSuccess: closeModal }))
   }
 
   return (
@@ -31,8 +36,9 @@ export const NewNote: React.FC<Props> = ({ closeModal }) => {
         <Divider />
 
         <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
-          <View style={{ flex: 1, padding: 10 }}>
-            <Text style={{ marginBottom: 5 }}>Message</Text>
+          {note && <Note id={id} isSimple />}
+          <View style={{ flex: 1, paddingRight: 16, paddingLeft: 16 }}>
+            <Text style={{ marginBottom: 8, marginTop: 16 }}>Reply</Text>
             <Input
               autoCapitalize="none"
               multiline

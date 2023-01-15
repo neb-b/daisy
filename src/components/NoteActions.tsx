@@ -1,8 +1,9 @@
 import React from "react"
-import { View, Pressable, Share } from "react-native"
+import { View, Pressable, Share, Modal } from "react-native"
 import { useTheme, Icon, Text } from "@ui-kitten/components"
 import { useNavigation } from "@react-navigation/native"
 
+import { NoteCreate } from "components/NoteCreate"
 import { nostrEventKinds } from "core/nostr"
 import { useDispatch } from "store"
 import { useNote, useReactions } from "store/hooks"
@@ -20,6 +21,8 @@ export const NoteActions: React.FC<Props> = ({ id, style = {}, isThread = false 
   const { reactions, liked } = useReactions(id)
   const theme = useTheme()
   const dispatch = useDispatch()
+  const [creatingNote, setCreatingNote] = React.useState(false)
+
   const defaultColor = theme["color-basic-600"]
   const interactedColor = theme["color-primary-500"]
 
@@ -29,8 +32,7 @@ export const NoteActions: React.FC<Props> = ({ id, style = {}, isThread = false 
     fill: defaultColor,
   }
 
-  // @ts-expect-error
-  const handleNavigate = () => navigation.navigate("Thread", { id })
+  const handleReply = () => setCreatingNote(true)
 
   const handleShare = async () => {
     try {
@@ -57,28 +59,41 @@ export const NoteActions: React.FC<Props> = ({ id, style = {}, isThread = false 
   }
 
   return (
-    <View style={{ flexDirection: "row", marginTop: 16, marginRight: 16, justifyContent: "space-between" }}>
-      {/* <Pressable onPress={handleNavigate}>
-        <Icon {...iconProps} name="message-circle-outline" />
-      </Pressable> */}
-      <Pressable onPress={handleRepost}>
-        <Icon {...iconProps} name="flip-2-outline" />
-      </Pressable>
-      <Pressable style={{ flexDirection: "row", alignItems: "center" }} onPress={handleLike}>
-        <Icon
-          {...iconProps}
-          fill={liked ? interactedColor : iconProps.fill}
-          name={liked ? "heart" : "heart-outline"}
-        />
-        {reactions.length > 0 && (
-          <Text style={{ color: liked ? interactedColor : defaultColor, fontSize: 12, marginLeft: 8 }}>
-            {reactions.length}
-          </Text>
-        )}
-      </Pressable>
-      <Pressable onPress={handleShare}>
-        <Icon {...iconProps} name="share-outline" />
-      </Pressable>
-    </View>
+    <>
+      <View style={{ flexDirection: "row", marginTop: 16, marginRight: 16, justifyContent: "space-between" }}>
+        <Pressable onPress={handleReply}>
+          <Icon {...iconProps} name="message-circle-outline" />
+        </Pressable>
+        <Pressable onPress={handleRepost}>
+          <Icon {...iconProps} name="flip-2-outline" />
+        </Pressable>
+        <Pressable style={{ flexDirection: "row", alignItems: "center" }} onPress={handleLike}>
+          <Icon
+            {...iconProps}
+            fill={liked ? interactedColor : iconProps.fill}
+            name={liked ? "heart" : "heart-outline"}
+          />
+          {reactions.length > 0 && (
+            <Text style={{ color: liked ? interactedColor : defaultColor, fontSize: 12, marginLeft: 8 }}>
+              {reactions.length}
+            </Text>
+          )}
+        </Pressable>
+        <Pressable onPress={handleShare}>
+          <Icon {...iconProps} name="share-outline" />
+        </Pressable>
+      </View>
+      {creatingNote && (
+        <Modal
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => {
+            setCreatingNote(false)
+          }}
+        >
+          <NoteCreate id={id} closeModal={() => setCreatingNote(false)} />
+        </Modal>
+      )}
+    </>
   )
 }

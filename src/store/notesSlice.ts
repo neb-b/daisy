@@ -192,7 +192,7 @@ export const doFetchRepliesInThread =
   (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
     const {
       settings: settingsState,
-      notes: { notesById },
+      notes: { notesById, reactionsByNoteId },
     } = getState()
 
     dispatch(updateloadingByIdOrPubkey({ [noteId]: true }))
@@ -200,17 +200,16 @@ export const doFetchRepliesInThread =
     const note = notesById[noteId]
     const replyIds = note.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
 
-    const replies = await getReplies(settingsState.relays, [noteId, ...replyIds])
+    const { notes, profiles, reactions } = await getReplies(settingsState.relays, [noteId, ...replyIds])
 
     dispatch(updateloadingByIdOrPubkey({ [noteId]: false }))
 
-    if (!replies.length) {
+    if (!notes.length && !reactions.length) {
       return
     }
 
-    const repliesMap = replies.reduce((acc, reply) => ({ ...acc, [reply.id]: reply }), {})
-
-    dispatch(updateNotesById(repliesMap))
+    dispatch(updateNotesAndProfiles({ notes, profiles }))
+    dispatch(updateReactionsByNoteId(reactions))
   }
 
 export const doPublishNote =

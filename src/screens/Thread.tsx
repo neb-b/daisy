@@ -45,17 +45,6 @@ export const ThreadScreen = ({ navigation, route }) => {
 
   const keyExtractor = React.useCallback((item) => item, [])
 
-  const handleSubmit = (text: string) => {
-    dispatch(
-      doPublishNote({
-        kind: nostrEventKinds.note,
-        content: text,
-        onSuccess: () => setReplyDraft(""),
-        replyId: id,
-      })
-    )
-  }
-
   return (
     <Layout>
       <TopNavigation hideProfileLink title="Thread" alignment="center" />
@@ -77,13 +66,6 @@ export const ThreadScreen = ({ navigation, route }) => {
           />
         </View>
       )}
-
-      <MessageInput
-        onSubmit={handleSubmit}
-        value={replyDraft}
-        onChangeText={setReplyDraft}
-        label={`Reply to ${noteAuthor?.content?.name || nip19(nip19.npubEncode(note?.pubkey))}`}
-      />
     </Layout>
   )
 }
