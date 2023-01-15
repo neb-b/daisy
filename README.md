@@ -41,7 +41,7 @@ style
 
 misc
 
-- [ ] fix follow/unfollow
+- [x] fix follow/unfollow
 - [x] white flash on startup
 - [x] handle app close/open to refetch notes
 - [x] subscribe to following

@@ -327,7 +327,7 @@ export const publishNote = async (
   kind: number,
   content = "",
   tags = []
-): Promise<NostrNoteEvent> => {
+): Promise<NostrNoteEvent | undefined> => {
   const event = {
     kind,
     pubkey: user.pubkey,
@@ -372,6 +372,13 @@ export const publishNote = async (
         relay.close()
       })
     })
+
+    setTimeout(() => {
+      if (!returned) {
+        resolve(undefined)
+        returned = true
+      }
+    }, 5000)
   })
 }
 

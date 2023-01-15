@@ -115,6 +115,7 @@ export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, 
 
   if (!hasProfile) {
     const { profile, contactList } = await getProfile(relays, pubkey)
+    console.log("contactList", contactList)
 
     dispatch(updateProfilesByPubkey({ [pubkey]: profile }))
     dispatch(updateContactListsByPubkey({ [pubkey]: contactList }))
@@ -271,7 +272,7 @@ export const doToggleFollow = (pubkey: string) => async (dispatch: AppDispatch, 
   const { user, relays } = settingsState
   const { contactListsByPubkey } = notesState
   const contactList = contactListsByPubkey[user.pubkey]
-  const isFollowing = contactList.tags.some((tag) => tag[1] === pubkey)
+  const isCurrentlyFollowing = contactList.tags.some((tag) => tag[1] === pubkey)
 
   if (!contactList) {
     console.log("unable to find contactList")
@@ -285,13 +286,14 @@ export const doToggleFollow = (pubkey: string) => async (dispatch: AppDispatch, 
 
   let newTags = contactList.tags.slice()
 
-  if (isFollowing) {
+  if (isCurrentlyFollowing) {
+    // remove from following
     newTags = newTags.filter((tag) => tag[1] !== pubkey)
   } else {
     newTags.push(["p", pubkey])
   }
 
-  const resolvedContactList = await publishNote(
+  await publishNote(
     relays,
     // @ts-expect-error
     user,
@@ -299,8 +301,17 @@ export const doToggleFollow = (pubkey: string) => async (dispatch: AppDispatch, 
     "",
     newTags
   )
-  // @ts-expect-error
-  dispatch(updateContactListsByPubkey({ [user.pubkey]: resolvedContactList }))
+
+  // TODO: only dispatch state if we get success from publishNote
+  // currently seeing the contact list be saved, but not received as success from relays after publish
+  dispatch(
+    updateContactListsByPubkey({
+      [user.pubkey]: {
+        ...contactList,
+        tags: newTags,
+      },
+    })
+  )
 }
 
 export const doLike = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
