@@ -143,7 +143,7 @@ const getRelatedEvents = async (
     const replyEvents = (await getNostrEvents(relays, {
       kinds: [nostrEventKinds.note],
       limit: repliesSet.size,
-      "#e": Array.from(repliesSet),
+      ids: Array.from(repliesSet),
     })) as NostrProfileEvent[]
 
     const repostEvents = (await getNostrEvents(relays, {

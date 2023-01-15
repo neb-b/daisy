@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux"
 import { nostrEventKinds } from "core/nostr"
 import type { RootState } from "./index"
+import { camelCase } from "react-native-svg/lib/typescript/xml"
 
 export const useUser = () => {
   const { user } = useSelector((state: RootState) => state.settings)
@@ -84,38 +85,32 @@ export const useThread = (noteId: string) => {
     return { notes: [], loading }
   }
 
-  const searchForReplies = (acc: string[], noteId: string) => {
-    const note = notesById[noteId]
-
-    if (!note) {
+  const replyIdsMap = note.tags
+    .filter((tag) => tag[0] === "e")
+    .reduce((acc, tag) => {
+      const referenceId = tag[1]
+      acc[referenceId] = true
       return acc
-    }
+    }, {})
 
-    const tags = note.tags || []
-    const replyIds = tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
+  const replies = Object.values(notesById).reduce((acc, noteFromNoteById) => {
+    const noteTags = noteFromNoteById.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
 
-    if (replyIds.length > 0) {
-      acc.push(noteId)
-      acc.push(...replyIds.reduce(searchForReplies, []))
+    if (replyIdsMap[noteFromNoteById.id]) {
+      acc.push(noteFromNoteById.id)
     } else {
-      acc.push(noteId)
+      noteTags.forEach((id) => {
+        if (replyIdsMap[id]) {
+          acc.push(noteFromNoteById.id)
+        }
+      })
     }
 
     return acc
-  }
+  }, [])
 
-  const originalEventReplies = note.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
-  const associatedReplies = originalEventReplies.reduce(searchForReplies, [])
-
-  const prunedReplies = Array.from(new Set(associatedReplies))
-  const notes = [...originalEventReplies, ...prunedReplies, noteId]
-    .reduce((acc, id) => {
-      if (notesById[id]) {
-        return [...acc, notesById[id]]
-      }
-
-      return acc
-    }, [])
+  const notes = Array.from(new Set(replies))
+    .map((noteId) => notesById[noteId])
     .sort((a, b) => a.created_at - b.created_at)
     .map((note) => note.id)
 
@@ -189,7 +184,7 @@ export const useReposted = (noteId: string) => {
 
   const notes = Object.values(notesById)
   let reposted = false
-  for (var i = 0; i < notes.length; i++) {
+  for (let i = 0; i < notes.length; i++) {
     const note = notes[i]
     if (note.kind === nostrEventKinds.repost) {
       const isMe = note.pubkey === user.pubkey

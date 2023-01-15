@@ -57,7 +57,7 @@ misc
 
 maybe
 
-- [ ] don't fetch profiles to new notes if they have already been fetched
+- [ ] don't fetch profiles/notes if they have already been fetched (move nostr calls inside of redux)
 - [ ] speed improvements
 - [ ] general relay management
 - [ ] remove typescript expect-error comments
