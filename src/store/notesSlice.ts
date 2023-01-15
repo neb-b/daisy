@@ -227,7 +227,10 @@ export const doPublishNote =
     onSuccess?: () => void
   }) =>
   async (dispatch: AppDispatch, getState: GetState) => {
-    const { settings: settingsState } = getState()
+    const {
+      settings: settingsState,
+      notes: { notesById },
+    } = getState()
     const { user } = settingsState
 
     if (!user.pubkey || !user.privateKey) {
@@ -238,6 +241,11 @@ export const doPublishNote =
     const tags = []
     if (replyId) {
       tags.push(["e", replyId])
+
+      const reply = notesById[replyId]
+      if (reply?.pubkey) {
+        tags.push(["p", reply.pubkey])
+      }
     } else if (repostOf) {
       tags.push(["e", repostOf])
     }
