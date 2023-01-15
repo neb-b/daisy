@@ -13,7 +13,9 @@ notes
 
 threads
 
-- [ ] display who user is actually replying to
+- [ ] reply to specific note
+- [ ] fetch profiles/reactions in threads
+- [x] display who user is actually replying to
 - [x] better fetching of replies
 - [x] reply to a thread
 - [x] display fetched replies in a thread
@@ -55,8 +57,6 @@ misc
 
 maybe
 
-- [ ] reply to specific note
-- [ ] fetch profiles/reactions in threads
 - [ ] don't fetch profiles to new notes if they have already been fetched
 - [ ] speed improvements
 - [ ] general relay management

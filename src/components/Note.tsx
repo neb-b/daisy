@@ -2,6 +2,7 @@ import React from "react"
 import { View, Linking, Pressable } from "react-native"
 import { Text, Divider, Button, useTheme, Icon } from "@ui-kitten/components"
 import { useNavigation } from "@react-navigation/native"
+import { nip19 } from "nostr-tools"
 
 import { useNote, useProfile } from "store/hooks"
 import { timeSince } from "utils/time"
@@ -24,8 +25,6 @@ export const Note: React.FC<Props> = ({ id, style = {}, isThread = false }) => {
   const note = useNote(id)
   const profile = useProfile(note?.pubkey)
   const profileContent = profile?.content
-  const replyProfile = useProfile(note?.reply?.pubkey)
-  const replyProfileContent = replyProfile?.content
 
   if (!note) return null
 
@@ -58,10 +57,8 @@ export const Note: React.FC<Props> = ({ id, style = {}, isThread = false }) => {
                 </Text>
               </View>
 
-              {note.reply && (
-                <Text appearance="hint" style={{ fontSize: 12 }}>
-                  Replying to {replyProfileContent?.name || note.reply.pubkey.slice(0, 6) || "unknown user"}
-                </Text>
+              {note.replyingToProfiles?.length > 0 && (
+                <ReplyText pubkeysOrProfiles={note.replyingToProfiles} />
               )}
 
               <NoteContent note={note} />
@@ -72,6 +69,38 @@ export const Note: React.FC<Props> = ({ id, style = {}, isThread = false }) => {
       </Pressable>
       <Divider />
     </>
+  )
+}
+
+const ReplyText = ({ pubkeysOrProfiles }) => {
+  return (
+    <Text appearance="hint" style={{ fontSize: 12 }}>
+      Replying to{" "}
+      {pubkeysOrProfiles
+        .map((p, index) => {
+          const name =
+            typeof p === "string"
+              ? nip19.npubEncode(p).slice(0, 8)
+              : p.content.name || nip19.npubEncode(p.pubkey).slice(0, 6)
+
+          if (index === 0) {
+            return name
+          }
+
+          if (index === 1) {
+            if (pubkeysOrProfiles.length === 2) {
+              return ` & ${name}`
+            } else {
+              return `, ${name}`
+            }
+          }
+
+          if (index === 2) {
+            return `, & ${name}`
+          }
+        })
+        .join("")}
+    </Text>
   )
 }
 

@@ -120,9 +120,9 @@ export const useNote = (
   noteId: string
 ): (NostrNoteEvent | NostrRepostEvent) & {
   repostedBy?: string
-  reply?: NostrNoteEvent | NostrRepostEvent
+  replyingToProfiles?: (NostrProfileEvent | string)[]
 } => {
-  const { notesById } = useSelector((state: RootState) => state.notes)
+  const { notesById, profilesByPubkey } = useSelector((state: RootState) => state.notes)
   const note = notesById[noteId]
 
   if (!note) {
@@ -144,12 +144,13 @@ export const useNote = (
     }
   }
 
-  const replyId = note.tags.find((tag) => tag[0] === "e")?.[1]
-  const reply = notesById[replyId]
-  if (replyId) {
+  const replyingToPubkeys = note.tags.filter((tag) => tag[0] === "p").map((tag) => tag[1])
+  const replyingToProfiles = replyingToPubkeys.map((pubkey) => profilesByPubkey[pubkey] || pubkey).slice(0, 3)
+
+  if (replyingToProfiles.length > 0) {
     return {
       ...note,
-      reply,
+      replyingToProfiles,
     }
   }
 

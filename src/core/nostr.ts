@@ -29,7 +29,7 @@ export const defaultRelays = [
   "wss://nostr.fmt.wiz.biz",
 ]
 
-const GET_EVENTS_LIMIT = 50
+const GET_EVENTS_LIMIT = 5
 const TIMEOUT = 1000
 
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> => {
