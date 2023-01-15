@@ -1,18 +1,12 @@
 import React from "react"
-import { View, Linking, Pressable } from "react-native"
-import { Text, Divider, Button, useTheme, Icon } from "@ui-kitten/components"
+import { View, Pressable } from "react-native"
+import { Text, Divider, useTheme, Icon } from "@ui-kitten/components"
 import { useNavigation } from "@react-navigation/native"
 import { nip19 } from "nostr-tools"
 
 import { useNote, useProfile } from "store/hooks"
 import { timeSince } from "utils/time"
-import { isImage, isUrl, isMention, noteOrUrlRegex } from "utils/note"
-import { Image } from "./Image"
-import { Avatar } from "./Avatar"
-import { Link } from "./Link"
-import { Mention } from "./Mention"
-import { NoteContent } from "./NoteContent"
-import { NoteActions } from "./NoteActions"
+import { Avatar, NoteContent, NoteActions } from "components"
 
 type Props = {
   isThread?: boolean

@@ -1,7 +1,7 @@
 import { View, Image, Pressable } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 
-import { useProfile, useUser } from "store/hooks"
+import { useProfile } from "store/hooks"
 
 type Props = {
   pubkey: string

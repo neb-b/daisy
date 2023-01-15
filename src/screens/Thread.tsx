@@ -2,16 +2,11 @@ import React from "react"
 import { View, Pressable } from "react-native"
 import { Divider, Spinner } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
-import { nip19 } from "nostr-tools"
 
-import { Note } from "components/Note"
-import { MessageInput } from "components/MessageInput"
-import { TopNavigation } from "components/TopNavigation"
-import { Layout } from "components/Layout"
-import { useThread, useNote, useProfile } from "store/hooks"
-import { doFetchRepliesInThread, doPublishNote } from "store/notesSlice"
+import { Note, Layout, TopNavigation } from "components"
+import { useThread } from "store/hooks"
+import { doFetchRepliesInThread } from "store/notesSlice"
 import { useDispatch } from "store"
-import { nostrEventKinds } from "core/nostr"
 
 export const ThreadScreen = ({ navigation, route }) => {
   const {
@@ -19,9 +14,6 @@ export const ThreadScreen = ({ navigation, route }) => {
   } = route
   const dispatch = useDispatch()
   const { notes, loading } = useThread(id)
-  const note = useNote(id)
-  const [replyDraft, setReplyDraft] = React.useState("")
-  const noteAuthor = useProfile(note?.pubkey)
 
   React.useEffect(() => {
     dispatch(doFetchRepliesInThread(id))

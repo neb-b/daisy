@@ -1,9 +1,8 @@
 import React from "react"
 import { View, Pressable, Share, Modal } from "react-native"
 import { useTheme, Icon, Text } from "@ui-kitten/components"
-import { useNavigation } from "@react-navigation/native"
 
-import { NoteCreate } from "components/NoteCreate"
+import { NoteCreate } from "components"
 import { nostrEventKinds } from "core/nostr"
 import { useDispatch } from "store"
 import { useNote, useReactions } from "store/hooks"
@@ -15,8 +14,7 @@ type Props = {
   style?: object
 }
 
-export const NoteActions: React.FC<Props> = ({ id, style = {}, isThread = false }) => {
-  const navigation = useNavigation()
+export const NoteActions: React.FC<Props> = ({ id }) => {
   const note = useNote(id)
   const { reactions, liked } = useReactions(id)
   const theme = useTheme()

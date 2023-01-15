@@ -1,7 +1,7 @@
 import React from "react"
 import { useProfile } from "store/hooks"
 import { nip19 } from "nostr-tools"
-import { Link } from "./Link"
+import { Link } from "components"
 
 const UserMention = ({ pubkey }) => {
   const profile = useProfile(pubkey)

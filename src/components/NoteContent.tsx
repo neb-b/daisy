@@ -3,9 +3,7 @@ import { View } from "react-native"
 import { Text } from "@ui-kitten/components"
 
 import { isImage, isUrl, isMention, noteOrUrlRegex } from "utils/note"
-import { Image } from "./Image"
-import { Link } from "./Link"
-import { Mention } from "./Mention"
+import { Image, Link, Mention } from "components"
 
 type Props = {
   note: NostrNoteEvent | NostrRepostEvent
