@@ -2,6 +2,10 @@
 
 A nostr client for iOS and Android
 
+## Downloads
+
+You can find downloads here: [https://neb.lol/nostr](https://neb.lol/nostr)
+
 ## Development
 
 This is built with expo and react-native
