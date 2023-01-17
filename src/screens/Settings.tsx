@@ -5,18 +5,23 @@ import { nip19 } from "nostr-tools"
 import * as Clipboard from "expo-clipboard"
 
 import { useDispatch } from "store"
-import { useUser } from "store/hooks"
-import { logout } from "store/settingsSlice"
+import { useUser, useRelayState } from "store/hooks"
+import { logout, doToggleRelay } from "store/settingsSlice"
 import { TopNavigation } from "components/TopNavigation"
 import { Layout } from "components/Layout"
 
 export function SettingsScreen({ navigation }) {
   const dispatch = useDispatch()
   const user = useUser()
+  const relayState = useRelayState()
 
   const handleLogout = () => {
     dispatch(logout())
     navigation.reset({ index: 0, routes: [{ name: "Auth" }] })
+  }
+
+  const handleRelayToggle = (relay) => {
+    dispatch(doToggleRelay(relay.url))
   }
 
   return (
@@ -24,6 +29,21 @@ export function SettingsScreen({ navigation }) {
       <TopNavigation title="Settings" alignment="center" />
       <Divider />
       <ScrollView style={{ paddingTop: 16, paddingLeft: 8, paddingRight: 8 }}>
+        {Object.values(relayState).map((relay) => {
+          console.log("relay", relay)
+          return (
+            <View key={relay.url} style={{ marginBottom: 32 }}>
+              <Pressable
+                onPress={() => handleRelayToggle(relay)}
+                style={{ borderWidth: 1, borderColor: "white" }}
+              >
+                <Text>{relay.url}</Text>
+                <Text>{relay.status}</Text>
+              </Pressable>
+            </View>
+          )
+        })}
+
         {user.pubkey && user.privateKey && (
           <>
             <SettingsCard title="Public Account ID" value={nip19.npubEncode(user.pubkey)} />

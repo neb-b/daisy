@@ -204,3 +204,9 @@ export const useRelays = () => {
 
   return relays
 }
+
+export const useRelayState = () => {
+  const { relayState } = useSelector((state: RootState) => state.settings)
+
+  return relayState
+}
