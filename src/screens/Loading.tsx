@@ -1,19 +1,16 @@
 import React from "react"
 import { SafeAreaView } from "react-native"
 import { Layout, Text } from "@ui-kitten/components"
-import { useUser, useProfile, useRelays } from "store/hooks"
+import { useUser, useRelays } from "store/hooks"
 import { useDispatch } from "store"
-import { doFetchProfile } from "store/notesSlice"
 import { initRelays } from "store/settingsSlice"
 
-export function LoadingScreen({ navigation, route }) {
+export function LoadingScreen({ navigation }) {
   const { reset } = navigation
   const dispatch = useDispatch()
   const { pubkey } = useUser()
-  const profile = useProfile(pubkey)
   const relays = useRelays()
   const hasRelays = relays.length > 0 && Boolean(relays.find((relay) => typeof relay.on === "function"))
-  const hasProfile = Boolean(profile)
 
   React.useEffect(() => {
     dispatch(initRelays())
@@ -30,15 +27,13 @@ export function LoadingScreen({ navigation, route }) {
         routes: [{ name: "Auth" }],
       })
     }
-
-    dispatch(doFetchProfile(pubkey))
   }, [hasRelays, pubkey, reset])
 
   React.useEffect(() => {
-    if (hasProfile) {
+    if (hasRelays) {
       return reset({ index: 0, routes: [{ name: "Home" }] })
     }
-  }, [reset, hasProfile])
+  }, [reset, hasRelays])
 
   return (
     <Layout style={{ flex: 1 }}>

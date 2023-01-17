@@ -40,7 +40,7 @@ export function FollowingFeedScreen() {
   }, [appVisible, setAppVisible, dispatch])
 
   React.useEffect(() => {
-    dispatch(doPopulateFollowingFeed())
+    // dispatch(doPopulateFollowingFeed())
   }, [])
 
   const renderNote = React.useCallback(({ item }) => <Note key={item} id={item} />, [])

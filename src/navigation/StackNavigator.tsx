@@ -1,5 +1,4 @@
 import React from "react"
-import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { createStackNavigator } from "@react-navigation/stack"
 
 import { ProfileScreen } from "screens/Profile"
@@ -9,11 +8,22 @@ import { LoadingScreen } from "screens/Loading"
 import { AuthScreen } from "screens/Auth"
 
 import { BottomTabNavigator } from "navigation/TabNavigator"
+import { useDispatch } from "store"
+import { useUser } from "store/hooks"
+import { doFetchProfile } from "store/notesSlice"
 
-// const Stack = createNativeStackNavigator()
 const Stack = createStackNavigator()
 
 function HomeStackNavigator() {
+  const dispatch = useDispatch()
+  const { pubkey } = useUser()
+
+  React.useEffect(() => {
+    if (pubkey) {
+      dispatch(doFetchProfile(pubkey))
+    }
+  }, [pubkey])
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Loading" component={LoadingScreen} />

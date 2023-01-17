@@ -1,7 +1,6 @@
 import { useSelector } from "react-redux"
 import { nostrEventKinds } from "core/nostr"
 import type { RootState } from "./index"
-import { camelCase } from "react-native-svg/lib/typescript/xml"
 
 export const useUser = () => {
   const { user } = useSelector((state: RootState) => state.settings)

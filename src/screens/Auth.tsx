@@ -5,32 +5,29 @@ import { Input, Button, Layout, Text } from "@ui-kitten/components"
 import * as secp from "@noble/secp256k1"
 
 import { useDispatch } from "store"
-import { doFetchProfile } from "store/notesSlice"
-import { useUser, useProfile } from "store/hooks"
+import { useUser } from "store/hooks"
 import { updateUser } from "store/settingsSlice"
 
 export function AuthScreen({ navigation }) {
   const { reset } = navigation
   const dispatch = useDispatch()
   const user = useUser()
-  const profile = useProfile(user?.pubkey)
   const [enteringPrivateKey, setEnteringPrivateKey] = React.useState(false)
   const [privateKey, setPrivateKey] = React.useState("")
-  const hasProfile = Boolean(profile)
   const [error, setError] = React.useState("")
 
   const handlePrivateKeySubmit = () => {
     setError("")
     try {
-      let validPrivateKey
-      let validPubkey
+      let validPrivateKey: string
+      let validPubkey: string
 
       if (privateKey.startsWith("nsec")) {
         const { data } = nip19.decode(privateKey)
         const hexPrivateKey = data as string
         const hexPubkey = getPublicKey(hexPrivateKey)
         validPrivateKey = hexPrivateKey
-        validPrivateKey = hexPubkey
+        validPubkey = hexPubkey
       } else {
         if (secp.utils.isValidPrivateKey(privateKey)) {
           const hexPrivateKey = privateKey
@@ -43,17 +40,16 @@ export function AuthScreen({ navigation }) {
       }
 
       dispatch(updateUser({ pubkey: validPubkey, privateKey: validPrivateKey }))
-      dispatch(doFetchProfile(validPubkey))
     } catch (e) {
       setError("Invalid private key")
     }
   }
 
   React.useEffect(() => {
-    if (hasProfile) {
+    if (user.privateKey) {
       reset({ index: 0, routes: [{ name: "Home" }] })
     }
-  }, [reset, hasProfile])
+  }, [reset, user.privateKey])
 
   return (
     <Layout style={{ flex: 1 }}>
