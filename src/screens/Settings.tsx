@@ -1,5 +1,5 @@
 import React from "react"
-import { View, ScrollView, Pressable } from "react-native"
+import { View, ScrollView, Pressable, Modal } from "react-native"
 import { Button, Text, useTheme, Icon, Divider } from "@ui-kitten/components"
 import { nip19 } from "nostr-tools"
 import * as Clipboard from "expo-clipboard"
@@ -7,8 +7,7 @@ import * as Clipboard from "expo-clipboard"
 import { useDispatch } from "store"
 import { useUser, useRelaysByUrl, useRelaysLoadingByUrl } from "store/hooks"
 import { logout, doToggleRelay } from "store/settingsSlice"
-import { TopNavigation } from "components/TopNavigation"
-import { Layout } from "components/Layout"
+import { TopNavigation, Layout } from "components"
 
 export function SettingsScreen({ navigation }) {
   const dispatch = useDispatch()
@@ -87,19 +86,33 @@ const RelayManagement = () => {
   const dispatch = useDispatch()
   const theme = useTheme()
   const relaysLoadingByUrl = useRelaysLoadingByUrl()
-
   const relaysByUrl = useRelaysByUrl()
+  const [addingRelay, setAddingRelay] = React.useState(false)
+
   const relayLength = Object.values(relaysByUrl).length
 
   const handleRelayToggle = (relayUrl) => {
     dispatch(doToggleRelay(relayUrl))
   }
 
+  const rightAccessory = () => (
+    <Button appearance="ghost" onPress={() => setAddingRelay(false)}>
+      <Text>Cancel</Text>
+    </Button>
+  )
+
   return (
     <View style={{ marginBottom: 32 }}>
-      <Text appearance="hint" style={{ fontWeight: "400", fontSize: 16, paddingLeft: 16, marginBottom: 8 }}>
-        Relays
-      </Text>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+        <Text appearance="hint" style={{ fontWeight: "400", fontSize: 16, paddingLeft: 16, marginBottom: 8 }}>
+          Relays
+        </Text>
+        <Button
+          accessoryLeft={(props) => <Icon {...props} name="plus-outline" />}
+          appearance="ghost"
+          onPress={() => setAddingRelay(true)}
+        ></Button>
+      </View>
       <View style={{ backgroundColor: theme["background-basic-color-3"], borderRadius: 10 }}>
         {Object.values(relaysByUrl).map((relay, i) => {
           const connected = relay.status === 1
@@ -136,6 +149,27 @@ const RelayManagement = () => {
           )
         })}
       </View>
+
+      {addingRelay && (
+        <Modal
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => {
+            setAddingRelay(false)
+          }}
+        >
+          <Layout>
+            <TopNavigation
+              hideProfileLink
+              hideBack
+              title="Add Relay"
+              alignment="center"
+              accessoryRight={rightAccessory}
+            />
+            <Text>Add relay</Text>
+          </Layout>
+        </Modal>
+      )}
     </View>
   )
 }

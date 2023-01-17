@@ -129,6 +129,15 @@ export const doToggleRelay = (relayUrl: string) => async (dispatch: AppDispatch,
     })
   )
 
+  if (!relay) {
+    connectToRelay(relayUrl, ({ relay }) => {
+      dispatch(updateRelays({ [relay.url]: relay }))
+      dispatch(updateRelaysLoadingByUrl({ [relay.url]: false }))
+    })
+
+    return
+  }
+
   if (currentStatus === 1) {
     await relay.close()
     return dispatch(updateRelays({ [relayUrl]: relay }))

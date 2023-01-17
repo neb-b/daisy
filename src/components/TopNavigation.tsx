@@ -7,9 +7,15 @@ import { useUser } from "store/hooks"
 import { doFetchProfile } from "store/notesSlice"
 import { Avatar } from "components"
 
-type Props = { title?: string; hideProfileLink?: boolean; alignment: string }
+type Props = {
+  title?: string
+  hideProfileLink?: boolean
+  alignment: string
+  hideBack?: boolean
+  accessoryRight?: React.ReactNode
+}
 
-export const TopNavigation = ({ title, hideProfileLink }: Props) => {
+export const TopNavigation = ({ title, hideProfileLink, hideBack, ...rest }: Props) => {
   const dispatch = useDispatch()
   const { goBack } = useNavigation()
   const { pubkey } = useUser()
@@ -32,7 +38,7 @@ export const TopNavigation = ({ title, hideProfileLink }: Props) => {
     []
   )
   const profileLink = React.useCallback(() => <Avatar pubkey={user.pubkey} size={35} />, [user.pubkey])
-  const accessoryLeft = hideProfileLink ? backAction : profileLink
+  const accessoryLeft = hideProfileLink ? (hideBack ? null : backAction) : profileLink
 
-  return <BaseTopNavigation accessoryLeft={accessoryLeft} title={title} alignment="center" />
+  return <BaseTopNavigation accessoryLeft={accessoryLeft} title={title} alignment="center" {...rest} />
 }
