@@ -10,7 +10,7 @@ import { Note } from "components/Note"
 import { TopNavigation } from "components/TopNavigation"
 import { useDispatch } from "store"
 import { useUser, useProfile, useContactList, useProfileNotes } from "store/hooks"
-import { doFetchProfile, doToggleFollow } from "store/notesSlice"
+import { doFetchProfile, doFetchProfileNotes, doToggleFollow } from "store/notesSlice"
 
 export function ProfileScreen({ route }) {
   const {
@@ -21,14 +21,14 @@ export function ProfileScreen({ route }) {
   const profile = useProfile(pubkey)
   const contactList = useContactList(user?.pubkey)
   const { notes, loading } = useProfileNotes(pubkey)
-  const hasProfile = !!profile
   const profileContent = profile?.content
   const isFollowing = contactList?.tags.find((tag) => tag[0] === "p" && tag[1] === pubkey)?.length > 0
   const npub = nip19.npubEncode(pubkey)
 
   React.useEffect(() => {
     dispatch(doFetchProfile(pubkey))
-  }, [hasProfile, pubkey])
+    dispatch(doFetchProfileNotes(pubkey))
+  }, [pubkey])
 
   const handleToggleFollow = () => {
     dispatch(doToggleFollow(pubkey))

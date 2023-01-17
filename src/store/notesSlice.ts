@@ -48,8 +48,7 @@ export const notesSlice = createSlice({
     },
 
     updateContactListsByPubkey(state, action: PayloadAction<Record<string, NostrContactListEvent>>) {
-      // @ts-expect-error wtf
-      state.contactListsByPubkey = { ...state.profilesByPubkey, ...action.payload }
+      state.contactListsByPubkey = { ...state.contactListsByPubkey, ...action.payload }
     },
 
     updateNotesAndProfiles(
@@ -115,10 +114,17 @@ export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, 
 
   if (!hasProfile) {
     const { profile, contactList } = await getProfile(relays, pubkey)
-
     dispatch(updateProfilesByPubkey({ [pubkey]: profile }))
     dispatch(updateContactListsByPubkey({ [pubkey]: contactList }))
   }
+}
+
+export const doFetchProfileNotes = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
+  const {
+    settings: { relays },
+  } = getState()
+
+  dispatch(updateloadingByIdOrPubkey({ [pubkey]: true }))
 
   const { notes, profiles, related, reactions } = await getEventsFromPubkeys(relays, [pubkey])
 

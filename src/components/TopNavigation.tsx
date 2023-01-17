@@ -2,14 +2,24 @@ import React from "react"
 import { TopNavigationAction, TopNavigation as BaseTopNavigation, Icon } from "@ui-kitten/components"
 import { useNavigation } from "@react-navigation/native"
 
+import { useDispatch } from "store"
 import { useUser } from "store/hooks"
+import { doFetchProfile } from "store/notesSlice"
 import { Avatar } from "components/Avatar"
 
 type Props = { title?: string; hideProfileLink?: boolean; alignment: string }
 
 export function TopNavigation({ title, hideProfileLink }: Props) {
-  const user = useUser()
+  const dispatch = useDispatch()
   const { goBack } = useNavigation()
+  const { pubkey } = useUser()
+  const user = useUser()
+
+  React.useEffect(() => {
+    if (pubkey) {
+      dispatch(doFetchProfile(pubkey))
+    }
+  }, [pubkey])
 
   const navigateBack = () => {
     goBack()

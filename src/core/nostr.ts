@@ -294,12 +294,9 @@ const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<Nos
   new Promise((resolve) => {
     relays.forEach((relay) => {
       const sub = relay.sub([{ ...filter }])
-
       sub.on("event", (event) => {
         const nostrEvent = <NostrEvent>event
-
         const { content: stringifedContent, ...rest } = nostrEvent
-
         if (stringifedContent === "") {
           resolve(nostrEvent)
         } else {
@@ -311,10 +308,8 @@ const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<Nos
             console.log("", nostrEvent)
           }
         }
-
         sub.unsub()
       })
-
       sub.on("eose", () => {
         sub.unsub()
       })
@@ -385,16 +380,21 @@ export const publishNote = async (
 export const getProfile = async (
   relays: Relay[],
   pubkey: string
-): Promise<{ profile: NostrProfile; contactList: NostrContactListEvent }> => {
-  const profile = (await getNostrEvent(relays, {
+): Promise<{ profile?: NostrProfile; contactList?: NostrContactListEvent }> => {
+  const profilePromise = getNostrEvent(relays, {
     kinds: [nostrEventKinds.profile],
     authors: [pubkey],
-  })) as NostrProfile
+  })
 
-  const contactList = (await getNostrEvent(relays, {
+  const contactListPromise = getNostrEvent(relays, {
     kinds: [nostrEventKinds.contactList],
     authors: [pubkey],
-  })) as NostrContactListEvent
+  })
 
-  return { profile, contactList }
+  const [profile, contactList] = await Promise.all([profilePromise, contactListPromise])
+
+  const profileRes = profile as NostrProfileEvent
+  const contactListRes = contactList as NostrContactListEvent
+
+  return { profile: profileRes, contactList: contactListRes }
 }

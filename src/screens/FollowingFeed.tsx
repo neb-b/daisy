@@ -21,22 +21,20 @@ export function FollowingFeedScreen() {
   const [appVisible, setAppVisible] = React.useState(appState.current === "active")
 
   React.useEffect(() => {
-    const subscription = AppState.addEventListener("change", (nextAppState: MyAppState) => {
-      if (!appVisible && nextAppState === "active") {
-        // TODO: only fetch new notes instead of repopulating the whole feed
-        // will need to detect if it was inactive or background I think
-        dispatch(doPopulateFollowingFeed())
-      } else if (appVisible && (nextAppState === "inactive" || nextAppState === "background")) {
-        dispatch(unsubscribeFromFollowingFeed())
-      }
-
-      appState.current = nextAppState
-      setAppVisible(appState.current === "active")
-    })
-
-    return () => {
-      subscription.remove()
-    }
+    // const subscription = AppState.addEventListener("change", (nextAppState: MyAppState) => {
+    //   if (!appVisible && nextAppState === "active") {
+    //     // TODO: only fetch new notes instead of repopulating the whole feed
+    //     // will need to detect if it was inactive or background I think
+    //     dispatch(doPopulateFollowingFeed())
+    //   } else if (appVisible && (nextAppState === "inactive" || nextAppState === "background")) {
+    //     dispatch(unsubscribeFromFollowingFeed())
+    //   }
+    //   appState.current = nextAppState
+    //   setAppVisible(appState.current === "active")
+    // })
+    // return () => {
+    //   subscription.remove()
+    // }
   }, [appVisible, setAppVisible, dispatch])
 
   React.useEffect(() => {
