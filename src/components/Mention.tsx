@@ -3,24 +3,25 @@ import { useProfile } from "store/hooks"
 import { nip19 } from "nostr-tools"
 import { Link } from "components"
 
-function UserMention({ pubkey }) {
+const UserMention = ({ pubkey }) => {
   const profile = useProfile(pubkey)
   const name = profile?.content?.name || nip19.npubEncode(pubkey).slice(0, 9)
 
   return <Link src={`p:${pubkey}`} label={`@${name}`} />
 }
 
-function NoteMention({ id }) {
+const NoteMention = ({ id }) => {
   return <Link src={`n:${id}`} label={`@${nip19.noteEncode(id)}`} />
 }
 
-export function Mention({ tag }) {
+export const Mention = ({ tag }) => {
   const isUserMention = tag[0] === "p"
   const isNoteMention = tag[0] === "e"
 
   if (isUserMention) {
     return <UserMention pubkey={tag[1]} />
-  } if (isNoteMention) {
+  }
+  if (isNoteMention) {
     return <NoteMention id={tag[1]} />
   }
 

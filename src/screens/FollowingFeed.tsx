@@ -6,10 +6,7 @@ import { FlashList } from "@shopify/flash-list"
 import { useDispatch } from "store"
 import { doPopulateFollowingFeed, unsubscribeFromFollowingFeed } from "store/notesSlice"
 import { useContactList, useFeed, useUser } from "store/hooks"
-import { Layout } from "components/Layout"
-import { Note } from "components/Note"
-import { NoteCreate } from "components/NoteCreate"
-import { TopNavigation } from "components/TopNavigation"
+import { Layout, Note, NoteCreate, TopNavigation } from "components"
 
 type MyAppState = "active" | "background" | "inactive"
 

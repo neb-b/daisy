@@ -7,7 +7,7 @@ type Props = {
   src: string
 }
 
-export function Link({ label, src }: Props) {
+export const Link = ({ label, src }: Props) => {
   const theme = useTheme()
   const navigation = useNavigation()
 

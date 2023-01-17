@@ -5,11 +5,11 @@ import { useNavigation } from "@react-navigation/native"
 import { useDispatch } from "store"
 import { useUser } from "store/hooks"
 import { doFetchProfile } from "store/notesSlice"
-import { Avatar } from "components/Avatar"
+import { Avatar } from "components"
 
 type Props = { title?: string; hideProfileLink?: boolean; alignment: string }
 
-export function TopNavigation({ title, hideProfileLink }: Props) {
+export const TopNavigation = ({ title, hideProfileLink }: Props) => {
   const dispatch = useDispatch()
   const { goBack } = useNavigation()
   const { pubkey } = useUser()
