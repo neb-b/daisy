@@ -30,7 +30,7 @@ export const defaultRelays = [
 ]
 
 const GET_EVENTS_LIMIT = 50
-const TIMEOUT = 1000
+const TIMEOUT = 500
 
 export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> =>
   new Promise(async (resolve) => {
@@ -136,26 +136,28 @@ const getRelatedEvents = async (
       }
     })
 
-    //
-    // TODO: fetch all events in parallel, and possibly fetch them together
-    // Maybe reactions should be fetched after all the notes are actually rendered
-    //
-    const replyEvents = (await getNostrEvents(relays, {
+    const replyEventsPromise = getNostrEvents(relays, {
       kinds: [nostrEventKinds.note],
       limit: repliesSet.size,
       ids: Array.from(repliesSet),
-    })) as NostrProfileEvent[]
+    })
 
-    const repostEvents = (await getNostrEvents(relays, {
+    const repostEventsPromise = getNostrEvents(relays, {
       kinds: [nostrEventKinds.note],
       limit: repostsSet.size,
       ids: Array.from(repostsSet),
-    })) as NostrProfileEvent[]
+    })
 
-    const reactionEvents = await getNostrEvents(relays, {
+    const reactionEventsPromise = getNostrEvents(relays, {
       kinds: [nostrEventKinds.reaction],
       "#e": [...repliesSet, ...repostsSet, ...notes.map((note) => note.id)],
     })
+
+    const [replyEvents, repostEvents, reactionEvents] = await Promise.all([
+      replyEventsPromise,
+      repostEventsPromise,
+      reactionEventsPromise,
+    ])
 
     const prunedReactionEvents = reactionEvents.filter(
       (note: NostrEvent) => note.content === "+" || note.content === "🤙" || note.content === "❤️"

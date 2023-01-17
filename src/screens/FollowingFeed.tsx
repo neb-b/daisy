@@ -5,7 +5,7 @@ import { FlashList } from "@shopify/flash-list"
 
 import { useDispatch } from "store"
 import { doPopulateFollowingFeed, unsubscribeFromFollowingFeed } from "store/notesSlice"
-import { useFeed } from "store/hooks"
+import { useContactList, useFeed, useUser } from "store/hooks"
 import { Layout } from "components/Layout"
 import { Note } from "components/Note"
 import { NoteCreate } from "components/NoteCreate"
@@ -17,29 +17,38 @@ export function FollowingFeedScreen() {
   const dispatch = useDispatch()
   const [creatingNote, setCreatingNote] = React.useState(false)
   const { loading, notes } = useFeed("following")
+  const user = useUser()
+  const contactList = useContactList(user.pubkey)
   const appState = React.useRef(AppState.currentState)
   const [appVisible, setAppVisible] = React.useState(appState.current === "active")
+  const hasContactList = contactList?.tags?.length > 0
 
   React.useEffect(() => {
-    // const subscription = AppState.addEventListener("change", (nextAppState: MyAppState) => {
-    //   if (!appVisible && nextAppState === "active") {
-    //     // TODO: only fetch new notes instead of repopulating the whole feed
-    //     // will need to detect if it was inactive or background I think
-    //     dispatch(doPopulateFollowingFeed())
-    //   } else if (appVisible && (nextAppState === "inactive" || nextAppState === "background")) {
-    //     dispatch(unsubscribeFromFollowingFeed())
-    //   }
-    //   appState.current = nextAppState
-    //   setAppVisible(appState.current === "active")
-    // })
-    // return () => {
-    //   subscription.remove()
-    // }
-  }, [appVisible, setAppVisible, dispatch])
+    if (!hasContactList) {
+      return
+    }
+
+    const subscription = AppState.addEventListener("change", (nextAppState: MyAppState) => {
+      if (!appVisible && nextAppState === "active") {
+        // TODO: only fetch new notes instead of repopulating the whole feed
+        // will need to detect if it was inactive or background I think
+        dispatch(doPopulateFollowingFeed())
+      } else if (appVisible && (nextAppState === "inactive" || nextAppState === "background")) {
+        dispatch(unsubscribeFromFollowingFeed())
+      }
+      appState.current = nextAppState
+      setAppVisible(appState.current === "active")
+    })
+    return () => {
+      subscription.remove()
+    }
+  }, [hasContactList, appVisible, setAppVisible, dispatch])
 
   React.useEffect(() => {
-    // dispatch(doPopulateFollowingFeed())
-  }, [])
+    if (hasContactList) {
+      dispatch(doPopulateFollowingFeed())
+    }
+  }, [hasContactList])
 
   const renderNote = React.useCallback(({ item }) => <Note key={item} id={item} />, [])
   const keyExtractor = React.useCallback((item) => item, [])
