@@ -24,7 +24,7 @@ export const defaultRelays = [
   "wss://nostr-pub.wellorder.net",
   // "wss://brb.io",
   // "wss://nostr-relay.wlvs.space",
-  // "wss://nostr.oxtr.dev",
+  "wss://nostr.oxtr.dev",
   // "wss://relay.nostr.bg",
   // "wss://nostr.fmt.wiz.biz",
 ]
@@ -32,39 +32,49 @@ export const defaultRelays = [
 const GET_EVENTS_LIMIT = 50
 const TIMEOUT = 500
 
-export const connectToRelay = async (relayEndpoint): Promise<{ relay: Relay; success: boolean }> =>
-  new Promise(async (resolve) => {
-    let connected = false
-    let relay
-    try {
-      relay = relayInit(relayEndpoint)
-      await relay.connect()
+type ConnectionEventCbArg = {
+  success: boolean
+  relay?: Relay
+}
 
-      relay.on("connect", () => {
-        console.log("connected to: ", relay.url)
-        connected = true
-        return resolve({ relay, success: true })
-      })
-      relay.on("error", () => {
-        console.log("error with: ", relay.url)
-        relay.close()
-        return resolve({ relay, success: false })
-      })
-    } catch (e) {
-      console.log("error with init relay", relayEndpoint, e)
-      // @ts-expect-error
-      resolve({ relay: { url: relayEndpoint }, success: false })
+export const connectToRelay = async (relayEndpoint, cb: (ConnectionEventCbArg) => void) => {
+  let relay
+  let handled = false
+
+  try {
+    relay = relayInit(relayEndpoint)
+    await relay.connect()
+
+    relay.on("connect", () => {
+      console.log("connected to: ", relay.url)
+
+      handled = true
+      return cb({ relay, success: true })
+    })
+
+    relay.on("error", () => {
+      relay.close()
+      handled = true
+
+      return cb({ relay, success: false })
+    })
+  } catch (e) {
+    console.log("error with init relay", relayEndpoint, e)
+    handled = true
+
+    cb({ relay: { url: relayEndpoint, status: 0 }, success: false })
+  }
+
+  setTimeout(() => {
+    if (handled) return
+
+    if (relay) {
+      relay.close()
     }
 
-    setTimeout(() => {
-      if (connected) return
-
-      if (relay) {
-        relay.close()
-      }
-      return resolve({ relay, success: false })
-    }, 1000)
-  })
+    cb({ relay, success: false })
+  }, 1000)
+}
 
 export const getReplies = async (
   relays: Relay[],
@@ -294,6 +304,7 @@ export const subscribeToNostrEvents = (
 
 const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent> =>
   new Promise((resolve) => {
+    console.log("getEvent", relays)
     relays.forEach((relay) => {
       const sub = relay.sub([{ ...filter }])
       sub.on("event", (event) => {

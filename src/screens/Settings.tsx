@@ -5,7 +5,7 @@ import { nip19 } from "nostr-tools"
 import * as Clipboard from "expo-clipboard"
 
 import { useDispatch } from "store"
-import { useUser, useRelayState } from "store/hooks"
+import { useUser, useRelaysByUrl, useRelaysLoadingByUrl } from "store/hooks"
 import { logout, doToggleRelay } from "store/settingsSlice"
 import { TopNavigation } from "components/TopNavigation"
 import { Layout } from "components/Layout"
@@ -13,15 +13,10 @@ import { Layout } from "components/Layout"
 export function SettingsScreen({ navigation }) {
   const dispatch = useDispatch()
   const user = useUser()
-  const relayState = useRelayState()
 
   const handleLogout = () => {
     dispatch(logout())
     navigation.reset({ index: 0, routes: [{ name: "Auth" }] })
-  }
-
-  const handleRelayToggle = (relay) => {
-    dispatch(doToggleRelay(relay.url))
   }
 
   return (
@@ -29,20 +24,7 @@ export function SettingsScreen({ navigation }) {
       <TopNavigation title="Settings" alignment="center" />
       <Divider />
       <ScrollView style={{ paddingTop: 16, paddingLeft: 8, paddingRight: 8 }}>
-        {Object.values(relayState).map((relay) => {
-          console.log("relay", relay)
-          return (
-            <View key={relay.url} style={{ marginBottom: 32 }}>
-              <Pressable
-                onPress={() => handleRelayToggle(relay)}
-                style={{ borderWidth: 1, borderColor: "white" }}
-              >
-                <Text>{relay.url}</Text>
-                <Text>{relay.status}</Text>
-              </Pressable>
-            </View>
-          )
-        })}
+        <RelayManagement />
 
         {user.pubkey && user.privateKey && (
           <>
@@ -97,6 +79,63 @@ function SettingsCard({ title, value }) {
           </View>
         </View>
       </Pressable>
+    </View>
+  )
+}
+
+const RelayManagement = () => {
+  const dispatch = useDispatch()
+  const theme = useTheme()
+  const relaysLoadingByUrl = useRelaysLoadingByUrl()
+
+  const relaysByUrl = useRelaysByUrl()
+  const relayLength = Object.values(relaysByUrl).length
+
+  const handleRelayToggle = (relayUrl) => {
+    dispatch(doToggleRelay(relayUrl))
+  }
+
+  return (
+    <View style={{ marginBottom: 32 }}>
+      <Text appearance="hint" style={{ fontWeight: "400", fontSize: 16, paddingLeft: 16, marginBottom: 8 }}>
+        Relays
+      </Text>
+      <View style={{ backgroundColor: theme["background-basic-color-3"], borderRadius: 10 }}>
+        {Object.values(relaysByUrl).map((relay, i) => {
+          const connected = relay.status === 1
+          const loading = relaysLoadingByUrl[relay.url]
+
+          const iconProps = connected
+            ? {
+                name: "checkmark-outline",
+                fill: theme["color-primary-500"],
+              }
+            : loading
+            ? {
+                name: "alert-circle-outline",
+                fill: theme["color-warning-500"],
+              }
+            : {
+                name: "alert-circle-outline",
+                fill: theme["color-error-500"],
+              }
+
+          return (
+            <Pressable key={relay.url} onPress={() => handleRelayToggle(relay.url)}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", margin: 16 }}>
+                <Text>
+                  {relay.url}
+                  {loading ? "..." : ""}
+                </Text>
+                <Icon height={20} width={20} {...iconProps} />
+              </View>
+              {i !== relayLength - 1 && (
+                <Divider style={{ backgroundColor: theme["background-basic-color-4"] }} />
+              )}
+            </Pressable>
+          )
+        })}
+      </View>
     </View>
   )
 }

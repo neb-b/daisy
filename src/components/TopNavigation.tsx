@@ -17,7 +17,7 @@ export const TopNavigation = ({ title, hideProfileLink }: Props) => {
 
   React.useEffect(() => {
     if (pubkey) {
-      // dispatch(doFetchProfile(pubkey))
+      dispatch(doFetchProfile(pubkey))
     }
   }, [pubkey])
 

@@ -205,8 +205,23 @@ export const useRelays = () => {
   return relays
 }
 
-export const useRelayState = () => {
-  const { relayState } = useSelector((state: RootState) => state.settings)
+export const useRelaysByUrl = () => {
+  const { relaysByUrl } = useSelector((state: RootState) => state.settings)
 
-  return relayState
+  return relaysByUrl
+}
+
+export const useRelaysLoadingByUrl = () => {
+  const { relaysLoadingByUrl } = useSelector((state: RootState) => state.settings)
+
+  return relaysLoadingByUrl
+}
+
+export const useHasRelayConnection = () => {
+  const { relaysByUrl } = useSelector((state: RootState) => state.settings)
+
+  return (
+    relaysByUrl &&
+    !!Object.values(relaysByUrl).find((relay) => relay.status === 1 && typeof relay.on === "function")
+  )
 }

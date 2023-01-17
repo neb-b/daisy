@@ -104,13 +104,15 @@ export const {
 
 export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
   const {
-    settings: { relays },
+    settings: { relaysByUrl, relaysLoadingByUrl },
     notes: { profilesByPubkey },
   } = getState()
 
   const hasProfile = profilesByPubkey[pubkey]
 
   dispatch(updateloadingByIdOrPubkey({ [pubkey]: true }))
+
+  const relays = Object.values(relaysByUrl).filter((relay) => relaysLoadingByUrl[relay.url] !== true)
 
   if (!hasProfile) {
     const { profile, contactList } = await getProfile(relays, pubkey)
@@ -121,10 +123,12 @@ export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, 
 
 export const doFetchProfileNotes = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
   const {
-    settings: { relays },
+    settings: { relaysByUrl, relaysLoadingByUrl },
   } = getState()
 
   dispatch(updateloadingByIdOrPubkey({ [pubkey]: true }))
+
+  const relays = Object.values(relaysByUrl).filter((relay) => relaysLoadingByUrl[relay.url] !== true)
 
   const { notes, profiles, related, reactions } = await getEventsFromPubkeys(relays, [pubkey])
 
@@ -147,7 +151,10 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
 
   dispatch(updateloadingByIdOrPubkey({ following: true }))
 
-  const { notes, profiles, related, reactions } = await getEventsFromPubkeys(settingsState.relays, pubkeys)
+  const { relaysByUrl, relaysLoadingByUrl } = settingsState
+  const relays = Object.values(relaysByUrl).filter((relay) => relaysLoadingByUrl[relay.url] !== true)
+
+  const { notes, profiles, related, reactions } = await getEventsFromPubkeys(relays, pubkeys)
 
   dispatch(
     updateNotesAndProfiles({
@@ -167,7 +174,7 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
   }
 
   const subscriptions = subscribeToNostrEvents(
-    settingsState.relays,
+    relays,
     filter,
     (note: NostrEvent, related: NostrEvent[], profiles: Record<string, NostrProfile>) => {
       dispatch(
@@ -206,7 +213,10 @@ export const doFetchRepliesInThread =
     const note = notesById[noteId]
     const replyIds = note.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
 
-    const { notes, profiles, reactions } = await getReplies(settingsState.relays, [noteId, ...replyIds])
+    const { notes, profiles, reactions } = await getReplies(Object.values(settingsState.relaysByUrl), [
+      noteId,
+      ...replyIds,
+    ])
 
     dispatch(updateloadingByIdOrPubkey({ [noteId]: false }))
 
@@ -257,7 +267,7 @@ export const doPublishNote =
     }
 
     const note = await publishNote(
-      settingsState.relays,
+      Object.values(settingsState.relaysByUrl),
       // @ts-expect-error
       settingsState.user,
       kind,
@@ -274,7 +284,7 @@ export const doPublishNote =
 
 export const doToggleFollow = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
   const { settings: settingsState, notes: notesState } = getState()
-  const { user, relays } = settingsState
+  const { user, relaysByUrl } = settingsState
   const { contactListsByPubkey } = notesState
   const contactList = contactListsByPubkey[user.pubkey]
   const isCurrentlyFollowing = contactList.tags.some((tag) => tag[1] === pubkey)
@@ -299,7 +309,7 @@ export const doToggleFollow = (pubkey: string) => async (dispatch: AppDispatch, 
   }
 
   await publishNote(
-    relays,
+    Object.values(relaysByUrl),
     // @ts-expect-error
     user,
     nostrEventKinds.contactList,
@@ -323,7 +333,7 @@ export const doLike = (noteId: string) => async (dispatch: AppDispatch, getState
   const { settings: settingsState, notes: notesState } = getState()
   const {
     user: { pubkey, privateKey },
-    relays,
+    relaysByUrl,
   } = settingsState
 
   if (!pubkey || !privateKey) {
@@ -331,9 +341,13 @@ export const doLike = (noteId: string) => async (dispatch: AppDispatch, getState
     return
   }
 
-  const nostrEvent = (await publishNote(relays, { pubkey, privateKey }, nostrEventKinds.reaction, "🤙", [
-    ["e", noteId],
-  ])) as unknown
+  const nostrEvent = (await publishNote(
+    Object.values(settingsState.relaysByUrl),
+    { pubkey, privateKey },
+    nostrEventKinds.reaction,
+    "🤙",
+    [["e", noteId]]
+  )) as unknown
 
   const reaction = nostrEvent as NostrReactionEvent
 
