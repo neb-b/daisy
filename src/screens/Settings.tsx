@@ -27,7 +27,7 @@ export function SettingsScreen({ navigation }) {
         {user.pubkey && user.privateKey && (
           <>
             <SettingsCard title="Public Account ID" value={nip19.npubEncode(user.pubkey)} />
-            <SettingsCard title="Secret Account Login Key" value={nip19.nsecEncode(user.privateKey)} />
+            <SettingsCard title="Secret Account Login Key" value={user.privateKey} />
           </>
         )}
 

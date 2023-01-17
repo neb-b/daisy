@@ -2,6 +2,7 @@ import React from "react"
 import { View, SafeAreaView } from "react-native"
 import { getPublicKey, nip19 } from "nostr-tools"
 import { Input, Button, Layout, Text } from "@ui-kitten/components"
+import * as secp from "@noble/secp256k1"
 
 import { useDispatch } from "store"
 import { doFetchProfile } from "store/notesSlice"
@@ -21,12 +22,28 @@ export function AuthScreen({ navigation }) {
   const handlePrivateKeySubmit = () => {
     setError("")
     try {
-      const { data } = nip19.decode(privateKey)
-      const hexPrivateKey = data as string
-      const hexPubkey = getPublicKey(hexPrivateKey)
+      let validPrivateKey
+      let validPubkey
 
-      dispatch(updateUser({ pubkey: hexPubkey, privateKey: hexPrivateKey }))
-      dispatch(doFetchProfile(hexPubkey))
+      if (privateKey.startsWith("nsec")) {
+        const { data } = nip19.decode(privateKey)
+        const hexPrivateKey = data as string
+        const hexPubkey = getPublicKey(hexPrivateKey)
+        validPrivateKey = hexPrivateKey
+        validPrivateKey = hexPubkey
+      } else {
+        if (secp.utils.isValidPrivateKey(privateKey)) {
+          const hexPrivateKey = privateKey
+          const hexPubkey = getPublicKey(hexPrivateKey)
+          validPrivateKey = hexPrivateKey
+          validPubkey = hexPubkey
+        } else {
+          throw new Error("Invalid private key")
+        }
+      }
+
+      dispatch(updateUser({ pubkey: validPubkey, privateKey: validPrivateKey }))
+      dispatch(doFetchProfile(validPubkey))
     } catch (e) {
       setError("Invalid private key")
     }
