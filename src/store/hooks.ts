@@ -108,7 +108,7 @@ export const useThread = (noteId: string) => {
     return acc
   }, [])
 
-  const notes = [noteId, ...Array.from(new Set(replies))]
+  const notes = [...Array.from(new Set([noteId, ...replies]))]
     .map((id: string) => notesById[id])
     .sort((a, b) => a.created_at - b.created_at)
     .map((note) => note.id)

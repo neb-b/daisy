@@ -14,22 +14,22 @@ export const Avatar: React.FC<Props> = ({ pubkey, size = 40, ...rest }) => {
   const picture = note?.content?.picture
 
   return (
-    <Pressable
-      onPress={() =>
-        // @ts-expect-error
-        navigate("Profile", {
-          pubkey,
-        })
-      }
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size ? size / 2 : 10,
+        backgroundColor: "black",
+        ...rest,
+      }}
     >
-      <View
-        style={{
-          width: size,
-          height: size,
-          borderRadius: size ? size / 2 : 10,
-          backgroundColor: "black",
-          ...rest,
-        }}
+      <Pressable
+        onPress={() =>
+          // @ts-expect-error
+          navigate("Profile", {
+            pubkey,
+          })
+        }
       >
         <Image
           source={{
@@ -37,7 +37,7 @@ export const Avatar: React.FC<Props> = ({ pubkey, size = 40, ...rest }) => {
           }}
           style={{ height: size, width: size, borderRadius: size ? size / 2 : 10, resizeMode: "stretch" }}
         />
-      </View>
-    </Pressable>
+      </Pressable>
+    </View>
   )
 }
