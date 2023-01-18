@@ -158,7 +158,7 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
     (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
   )
 
-  const { notes, profiles, related = [], reactions } = await getEventsFromPubkeys(relays, pubkeys)
+  const { notes, profiles, related, reactions } = await getEventsFromPubkeys(relays, pubkeys)
 
   dispatch(
     updateNotesAndProfiles({

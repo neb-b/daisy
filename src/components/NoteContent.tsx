@@ -32,7 +32,7 @@ export const NoteContent: React.FC<Props> = ({ note }) => {
         }
 
         if (isMention(text)) {
-          const tagIndex = text.match(/#\[(\d)\]/)[1]
+          const tagIndex = text.match(/#\[([0-9]+)]/)[1]
           const tag = note.tags[tagIndex]
 
           return <Mention key={i} tag={tag} />
