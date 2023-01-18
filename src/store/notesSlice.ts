@@ -177,12 +177,8 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
     since: Math.floor(Date.now() / 1000),
   }
 
-  const updatedRelays = Object.values(relaysByUrl).filter(
-    (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
-  )
-
   const subscriptions = subscribeToNostrEvents(
-    updatedRelays,
+    relays,
     filter,
     (note: NostrEvent, related: NostrEvent[], profiles: Record<string, NostrProfile>) => {
       dispatch(

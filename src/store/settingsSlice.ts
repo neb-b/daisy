@@ -3,7 +3,7 @@ import type { PayloadAction } from "@reduxjs/toolkit"
 import type { Relay } from "nostr-tools"
 import { relayInit } from "nostr-tools"
 import type { AppDispatch, GetState } from "store"
-import { connectToRelay } from "core/nostr"
+import { connectToRelay, defaultRelays } from "core/nostr"
 
 type theme = "light" | "dark" | "system"
 
@@ -59,7 +59,15 @@ export const initRelays = () => async (dispatch: AppDispatch, getState: GetState
   const {
     settings: { relaysByUrl },
   } = getState()
-  const relayUrls = Object.keys(relaysByUrl)
+
+  const relayMap =
+    relaysByUrl ||
+    defaultRelays.reduce((acc, relayUrl) => {
+      acc[relayUrl] = { status: 0 }
+      return acc
+    }, {})
+
+  const relayUrls = Object.keys(relayMap)
   const initialRelayLoadingState = relayUrls.reduce((acc, relay) => {
     acc[relay] = true
     return acc
