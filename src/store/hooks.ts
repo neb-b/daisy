@@ -199,12 +199,6 @@ export const useReposted = (noteId: string) => {
   return reposted
 }
 
-export const useRelays = () => {
-  const { relays } = useSelector((state: RootState) => state.settings)
-
-  return relays
-}
-
 export const useRelaysByUrl = () => {
   const { relaysByUrl } = useSelector((state: RootState) => state.settings)
 

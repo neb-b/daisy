@@ -1,6 +1,6 @@
 import React from "react"
 import { View, ScrollView, Pressable, Alert, Modal } from "react-native"
-import { Button, Text, useTheme, Icon, Divider, Input } from "@ui-kitten/components"
+import { Button, Text, useTheme, Icon, Divider, Input, Toggle } from "@ui-kitten/components"
 import { nip19 } from "nostr-tools"
 import * as Clipboard from "expo-clipboard"
 
@@ -23,12 +23,16 @@ export function SettingsScreen({ navigation }) {
       <TopNavigation title="Settings" alignment="center" />
       <Divider />
       <ScrollView style={{ paddingTop: 16, paddingLeft: 8, paddingRight: 8 }}>
-        <RelayManagement />
+        {/* <RelayManagement /> */}
 
         {user.pubkey && user.privateKey && (
           <>
             <SettingsCard title="Public Account ID" value={nip19.npubEncode(user.pubkey)} />
-            <SettingsCard title="Secret Account Login Key" value={nip19.nsecEncode(user.privateKey)} />
+            <SettingsCard
+              title="Secret Account Login Key"
+              value={nip19.nsecEncode(user.privateKey)}
+              isHidden
+            />
           </>
         )}
 
@@ -42,9 +46,10 @@ export function SettingsScreen({ navigation }) {
   )
 }
 
-function SettingsCard({ title, value }) {
+function SettingsCard({ title, value, isHidden = false }) {
   const [copied, setCopied] = React.useState(false)
   const theme = useTheme()
+  const [hideText, setHideText] = React.useState(isHidden)
 
   const copyToClipboard = async () => {
     await Clipboard.setStringAsync(value)
@@ -65,19 +70,56 @@ function SettingsCard({ title, value }) {
       <Text appearance="hint" style={{ fontWeight: "400", fontSize: 16, paddingLeft: 16, marginBottom: 8 }}>
         {title}
       </Text>
-      <Pressable onPress={copyToClipboard}>
-        <View style={{ backgroundColor: theme["background-basic-color-3"], padding: 16, borderRadius: 10 }}>
+      <View
+        style={{
+          backgroundColor: theme["background-basic-color-3"],
+          padding: 16,
+          borderTopLeftRadius: 10,
+          borderTopRightRadius: 10,
+          borderBottomLeftRadius: isHidden ? 0 : 10,
+          borderBottomRightRadius: isHidden ? 0 : 10,
+        }}
+      >
+        <Pressable onPress={copyToClipboard}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View style={{ flex: 1, marginRight: 16 }}>
-              <Text>{value}</Text>
+              <Text
+                style={{
+                  fontSize: hideText ? 36 : undefined,
+                  lineHeight: hideText ? 24 : undefined,
+                  marginBottom: hideText ? -12 : undefined,
+                }}
+              >
+                {hideText ? "•••••••••••••••" : value}
+              </Text>
             </View>
             <Icon
               name={copied ? "checkmark-outline" : "copy-outline"}
               style={{ height: 20, width: 20, tintColor: theme["color-primary-500"] }}
             />
           </View>
-        </View>
-      </Pressable>
+        </Pressable>
+      </View>
+      {isHidden && (
+        <>
+          <Divider style={{ backgroundColor: theme["background-basic-color-4"] }} />
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: theme["background-basic-color-3"],
+              padding: 16,
+              borderBottomLeftRadius: 10,
+              borderBottomRightRadius: 10,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <Text>Hide login key</Text>
+
+              <Toggle checked={hideText} onChange={() => setHideText(!hideText)} />
+            </View>
+          </View>
+        </>
+      )}
     </View>
   )
 }

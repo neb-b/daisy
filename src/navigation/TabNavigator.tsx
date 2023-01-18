@@ -16,7 +16,7 @@ function BottomTabBar({ navigation, state }) {
         selectedIndex={state.index}
         onSelect={(index) => navigation.navigate(state.routeNames[index])}
       >
-        <BottomNavigationTab icon={(props) => <Icon {...props} name="home-outline" />} />
+        {/* <BottomNavigationTab icon={(props) => <Icon {...props} name="home-outline" />} /> */}
         <BottomNavigationTab icon={(props) => <Icon {...props} name="settings-outline" />} />
       </BottomNavigation>
     </>
@@ -26,7 +26,7 @@ function BottomTabBar({ navigation, state }) {
 export function BottomTabNavigator() {
   return (
     <Navigator tabBar={(props) => <BottomTabBar {...props} />} screenOptions={{ headerShown: false }}>
-      <Screen name="FollowingFeed" component={FollowingFeedScreen} />
+      {/* <Screen name="FollowingFeed" component={FollowingFeedScreen} /> */}
       <Screen name="Settings" component={SettingsScreen} />
     </Navigator>
   )
