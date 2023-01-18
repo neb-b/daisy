@@ -39,8 +39,8 @@ export const NoteCreate: React.FC<Props> = ({ closeModal, id }) => {
         <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
           {note && <Note id={id} isSimple />}
           <View style={{ flex: 1, paddingRight: 16, paddingLeft: 16 }}>
-            <Text style={{ marginBottom: 8, marginTop: 16 }}>Reply</Text>
             <Input
+              label={id ? "Reply" : "Post"}
               autoCapitalize="none"
               multiline
               placeholder="hello world..."
@@ -48,7 +48,7 @@ export const NoteCreate: React.FC<Props> = ({ closeModal, id }) => {
               onChangeText={(newContent) => setContent(newContent)}
             />
             <Button style={{ marginTop: 16, borderRadius: 10 }} onPress={handlePublish}>
-              Publish
+              {id ? "Reply" : "Post"}
             </Button>
           </View>
         </ScrollView>

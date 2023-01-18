@@ -8,22 +8,26 @@ import { SettingsScreen } from "screens/Settings"
 const { Navigator, Screen } = createBottomTabNavigator()
 
 function BottomTabBar({ navigation, state }) {
-  return <>
-    <Divider />
-    <BottomNavigation
-      appearance="noIndicator"
-      selectedIndex={state.index}
-      onSelect={(index) => navigation.navigate(state.routeNames[index])}
-    >
-      <BottomNavigationTab icon={(props) => <Icon {...props} name="home-outline" />} />
-      <BottomNavigationTab icon={(props) => <Icon {...props} name="settings-outline" />} />
-    </BottomNavigation>
-  </>
+  return (
+    <>
+      <Divider />
+      <BottomNavigation
+        appearance="noIndicator"
+        selectedIndex={state.index}
+        onSelect={(index) => navigation.navigate(state.routeNames[index])}
+      >
+        <BottomNavigationTab icon={(props) => <Icon {...props} name="home-outline" />} />
+        <BottomNavigationTab icon={(props) => <Icon {...props} name="settings-outline" />} />
+      </BottomNavigation>
+    </>
+  )
 }
 
 export function BottomTabNavigator() {
-  return <Navigator tabBar={(props) => <BottomTabBar {...props} />} screenOptions={{ headerShown: false }}>
-    <Screen name="FollowingFeed" component={FollowingFeedScreen} />
-    <Screen name="Settings" component={SettingsScreen} />
-  </Navigator>
+  return (
+    <Navigator tabBar={(props) => <BottomTabBar {...props} />} screenOptions={{ headerShown: false }}>
+      <Screen name="FollowingFeed" component={FollowingFeedScreen} />
+      <Screen name="Settings" component={SettingsScreen} />
+    </Navigator>
+  )
 }
