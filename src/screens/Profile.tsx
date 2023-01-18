@@ -24,6 +24,7 @@ export function ProfileScreen({ route }) {
   const profileContent = profile?.content
   const isFollowing = contactList?.tags.find((tag) => tag[0] === "p" && tag[1] === pubkey)?.length > 0
   const npub = nip19.npubEncode(pubkey)
+  const isMe = user?.pubkey === pubkey
 
   React.useEffect(() => {
     dispatch(doFetchProfile(pubkey))
@@ -47,13 +48,14 @@ export function ProfileScreen({ route }) {
       <View style={{ padding: 16, paddingTop: 0, flex: 1 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Avatar pubkey={pubkey} size={75} />
-          <Button
-            appearance={isFollowing ? "outline" : "primary"}
-            style={{ marginBottom: "auto" }}
-            onPress={handleToggleFollow}
-          >
-            {isFollowing ? "Unfollow" : "Follow"}
-          </Button>
+          {!isMe && 
+            <Button
+              appearance={isFollowing ? "outline" : "primary"}
+              style={{ marginBottom: "auto" }}
+              onPress={handleToggleFollow}
+            >
+              {isFollowing ? "Unfollow" : "Follow"}
+            </Button>}
         </View>
         {profileContent?.name && (
           <Text style={{ fontWeight: "bold", fontSize: 16, marginTop: 16 }}>{profileContent.name}</Text>
