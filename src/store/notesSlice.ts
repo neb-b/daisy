@@ -112,7 +112,9 @@ export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, 
 
   dispatch(updateloadingByIdOrPubkey({ [pubkey]: true }))
 
-  const relays = Object.values(relaysByUrl).filter((relay) => relaysLoadingByUrl[relay.url] !== true)
+  const relays = Object.values(relaysByUrl).filter(
+    (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
+  )
 
   if (!hasProfile) {
     const { profile, contactList } = await getProfile(relays, pubkey)
@@ -152,9 +154,11 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
   dispatch(updateloadingByIdOrPubkey({ following: true }))
 
   const { relaysByUrl, relaysLoadingByUrl } = settingsState
-  const relays = Object.values(relaysByUrl).filter((relay) => relaysLoadingByUrl[relay.url] !== true)
+  const relays = Object.values(relaysByUrl).filter(
+    (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
+  )
 
-  const { notes, profiles, related, reactions } = await getEventsFromPubkeys(relays, pubkeys)
+  const { notes, profiles, related = [], reactions } = await getEventsFromPubkeys(relays, pubkeys)
 
   dispatch(
     updateNotesAndProfiles({
@@ -173,8 +177,12 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
     since: Math.floor(Date.now() / 1000),
   }
 
+  const updatedRelays = Object.values(relaysByUrl).filter(
+    (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
+  )
+
   const subscriptions = subscribeToNostrEvents(
-    relays,
+    updatedRelays,
     filter,
     (note: NostrEvent, related: NostrEvent[], profiles: Record<string, NostrProfile>) => {
       dispatch(

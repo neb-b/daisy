@@ -15,6 +15,7 @@ export function FollowingFeedScreen() {
   const [creatingNote, setCreatingNote] = React.useState(false)
   const { loading, notes } = useFeed("following")
   const user = useUser()
+
   const contactList = useContactList(user.pubkey)
   const appState = React.useRef(AppState.currentState)
   const [appVisible, setAppVisible] = React.useState(appState.current === "active")
@@ -42,7 +43,9 @@ export function FollowingFeedScreen() {
 
   React.useEffect(() => {
     if (hasContactList) {
-      dispatch(doPopulateFollowingFeed())
+      setTimeout(() => {
+        dispatch(doPopulateFollowingFeed())
+      }, 500)
     }
   }, [hasContactList])
 

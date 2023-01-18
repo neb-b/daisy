@@ -3,7 +3,7 @@ import { TopNavigationAction, TopNavigation as BaseTopNavigation, Icon } from "@
 import { useNavigation } from "@react-navigation/native"
 
 import { useDispatch } from "store"
-import { useUser } from "store/hooks"
+import { useUser, useHasRelayConnection } from "store/hooks"
 import { doFetchProfile } from "store/notesSlice"
 import { Avatar } from "components"
 
@@ -20,12 +20,13 @@ export const TopNavigation = ({ title, hideProfileLink, hideBack, ...rest }: Pro
   const { goBack } = useNavigation()
   const { pubkey } = useUser()
   const user = useUser()
+  const hasRelayConnection = useHasRelayConnection()
 
   React.useEffect(() => {
-    if (pubkey) {
-      // dispatch(doFetchProfile(pubkey))
+    if (pubkey && hasRelayConnection) {
+      dispatch(doFetchProfile(pubkey))
     }
-  }, [pubkey])
+  }, [pubkey, hasRelayConnection])
 
   const navigateBack = () => {
     goBack()

@@ -67,6 +67,8 @@ export const initRelays = () => async (dispatch: AppDispatch, getState: GetState
 
   dispatch(updateRelaysLoadingByUrl(initialRelayLoadingState))
 
+  let handledRelays = {}
+  let handledCount = 0
   relayUrls.forEach(async (relayUrl) => {
     let handled = false
     let relay
@@ -78,11 +80,8 @@ export const initRelays = () => async (dispatch: AppDispatch, getState: GetState
       relay.on("connect", () => {
         console.log("connected to: ", relay.url)
         handled = true
-        dispatch(
-          updateRelays({
-            [relay.url]: relay,
-          })
-        )
+        handledRelays[relay.url] = relay
+        handledCount++
 
         dispatch(updateRelaysLoadingByUrl({ [relay.url]: false }))
       })
@@ -91,18 +90,16 @@ export const initRelays = () => async (dispatch: AppDispatch, getState: GetState
         console.log("relay.on error: ", relay.url, e)
         relay.close()
         handled = true
-        dispatch(
-          updateRelays({
-            [relay.url]: relay,
-          })
-        )
+        handledCount++
+        handledRelays[relay.url] = relay
+
         dispatch(updateRelaysLoadingByUrl({ [relay.url]: false }))
       })
     } catch (e) {
       console.log("error with init relay", relayUrl, e)
 
       handled = true
-
+      handledCount++
       dispatch(
         // @ts-expect-error
         updateRelays({
@@ -116,11 +113,23 @@ export const initRelays = () => async (dispatch: AppDispatch, getState: GetState
       if (handled) return
 
       if (relay) {
+        handledCount++
+
         dispatch(updateRelays({ [relayUrl]: relay }))
         dispatch(updateRelaysLoadingByUrl({ [relayUrl]: false }))
       }
     }, 1000)
   })
+
+  const interval = setInterval(() => {
+    dispatch(updateRelays(handledRelays))
+    handledRelays = {}
+
+    if (handledCount === relayUrls.length) {
+      clearInterval(interval)
+      dispatch(updateRelays(handledRelays))
+    }
+  }, 1000)
 }
 
 export const doToggleRelay = (relayUrl: string) => async (dispatch: AppDispatch, getState: GetState) => {
@@ -168,9 +177,10 @@ export const doRemoveRelay = (relayUrl: string) => async (dispatch: AppDispatch,
   } = getState()
 
   const relay = relaysByUrl[relayUrl]
+
   if (relay) {
     try {
-      await relay.close()
+      relay.close()
     } catch (e) {
       console.log("error closing relay", e)
     }
