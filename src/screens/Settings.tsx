@@ -1,6 +1,6 @@
 import React from "react"
-import { View, ScrollView, Pressable, Modal } from "react-native"
-import { Button, Text, useTheme, Icon, Divider } from "@ui-kitten/components"
+import { View, ScrollView, Pressable, Alert, Modal } from "react-native"
+import { Button, Text, useTheme, Icon, Divider, Input } from "@ui-kitten/components"
 import { nip19 } from "nostr-tools"
 import * as Clipboard from "expo-clipboard"
 
@@ -88,18 +88,36 @@ const RelayManagement = () => {
   const relaysLoadingByUrl = useRelaysLoadingByUrl()
   const relaysByUrl = useRelaysByUrl()
   const [addingRelay, setAddingRelay] = React.useState(false)
+  const [draftRelay, setDraftRelay] = React.useState("")
 
   const relayLength = Object.values(relaysByUrl).length
 
-  const handleRelayToggle = (relayUrl) => {
+  const handleRelayToggle = (relay) => {
+    Alert.alert("Update relay", relay.url, [
+      {
+        text: relay.status === 1 ? `Disconnect` : "Connect",
+        onPress: () => dispatch(doToggleRelay(relay.url)),
+      },
+      {
+        text: "Remove from list",
+        onPress: () => console.log("Cancel Pressed"),
+      },
+      { text: "Cancel", style: "cancel" },
+    ])
+  }
+
+  const handleAddRelay = () => {
+    const relayUrl = draftRelay.trim()
+    if (!relayUrl) {
+      return
+    }
+
     dispatch(doToggleRelay(relayUrl))
   }
 
-  const rightAccessory = () => (
-    <Button appearance="ghost" onPress={() => setAddingRelay(false)}>
-      <Text>Cancel</Text>
-    </Button>
-  )
+  React.useEffect(() => {
+    setAddingRelay(false)
+  }, [relayLength])
 
   return (
     <View style={{ marginBottom: 32 }}>
@@ -134,7 +152,7 @@ const RelayManagement = () => {
               }
 
           return (
-            <Pressable key={relay.url} onPress={() => handleRelayToggle(relay.url)}>
+            <Pressable key={relay.url} onPress={() => handleRelayToggle(relay)}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", margin: 16 }}>
                 <Text>
                   {relay.url}
@@ -164,9 +182,27 @@ const RelayManagement = () => {
               hideBack
               title="Add Relay"
               alignment="center"
-              accessoryRight={rightAccessory}
+              accessoryRight={
+                <Button appearance="ghost" onPress={() => setAddingRelay(false)}>
+                  <Text>Cancel</Text>
+                </Button>
+              }
             />
-            <Text>Add relay</Text>
+            <Divider />
+
+            <View style={{ flex: 1, paddingRight: 16, paddingLeft: 16 }}>
+              <Input
+                label="Relay url"
+                autoCapitalize="none"
+                multiline
+                placeholder="wss://test.relay.nostr"
+                value={draftRelay}
+                onChangeText={(newContent) => setDraftRelay(newContent)}
+              />
+              <Button style={{ marginTop: 16, borderRadius: 10 }} onPress={handleAddRelay}>
+                Add
+              </Button>
+            </View>
           </Layout>
         </Modal>
       )}
