@@ -11,7 +11,7 @@ const UserMention = ({ pubkey }) => {
 }
 
 const NoteMention = ({ id }) => {
-  return <Link src={`n:${id}`} label={`@${nip19.noteEncode(id)}`} />
+  return <Link src={`e:${id}`} label={`@${nip19.noteEncode(id)}`} />
 }
 
 export const Mention = ({ tag }) => {
