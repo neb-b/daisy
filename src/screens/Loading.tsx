@@ -29,7 +29,6 @@ export function LoadingScreen({ navigation }) {
   }, [hasRelayConnection, pubkey, reset])
 
   React.useEffect(() => {
-    console.log("hasRelayConnection", hasRelayConnection)
     if (hasRelayConnection) {
       return reset({ index: 0, routes: [{ name: "Home" }] })
     }

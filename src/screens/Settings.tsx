@@ -6,7 +6,7 @@ import * as Clipboard from "expo-clipboard"
 
 import { useDispatch } from "store"
 import { useUser, useRelaysByUrl, useRelaysLoadingByUrl } from "store/hooks"
-import { logout, doToggleRelay } from "store/settingsSlice"
+import { logout, doToggleRelay, doRemoveRelay } from "store/settingsSlice"
 import { TopNavigation, Layout } from "components"
 
 export function SettingsScreen({ navigation }) {
@@ -100,7 +100,7 @@ const RelayManagement = () => {
       },
       {
         text: "Remove from list",
-        onPress: () => console.log("Cancel Pressed"),
+        onPress: () => dispatch(doRemoveRelay(relay.url)),
       },
       { text: "Cancel", style: "cancel" },
     ])
@@ -126,6 +126,7 @@ const RelayManagement = () => {
           Relays
         </Text>
         <Button
+          style={{ marginRight: -5 }}
           accessoryLeft={(props) => <Icon {...props} name="plus-outline" />}
           appearance="ghost"
           onPress={() => setAddingRelay(true)}
@@ -148,7 +149,7 @@ const RelayManagement = () => {
               }
             : {
                 name: "alert-circle-outline",
-                fill: theme["color-error-500"],
+                fill: theme["color-danger-500"],
               }
 
           return (
@@ -190,11 +191,12 @@ const RelayManagement = () => {
             />
             <Divider />
 
-            <View style={{ flex: 1, paddingRight: 16, paddingLeft: 16 }}>
+            <View style={{ flex: 1, paddingRight: 16, paddingLeft: 16, paddingTop: 16 }}>
               <Input
+                autoFocus
+                autoComplete="off"
                 label="Relay url"
                 autoCapitalize="none"
-                multiline
                 placeholder="wss://test.relay.nostr"
                 value={draftRelay}
                 onChangeText={(newContent) => setDraftRelay(newContent)}

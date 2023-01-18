@@ -40,13 +40,19 @@ export const settingsSlice = createSlice({
     updateRelaysLoadingByUrl(state, action: PayloadAction<Record<string, boolean>>) {
       state.relaysLoadingByUrl = { ...state.relaysLoadingByUrl, ...action.payload }
     },
+    deleteRelay(state, action: PayloadAction<string>) {
+      const { [action.payload]: _, ...rest } = state.relaysByUrl
+      const { [action.payload]: __, ...restLoading } = state.relaysLoadingByUrl
+      state.relaysByUrl = rest
+      state.relaysLoadingByUrl = restLoading
+    },
     logout: (state) => {
       state.user = {}
     },
   },
 })
 
-export const { updateRelays, updateRelaysLoadingByUrl, updateTheme, updateUser, logout } =
+export const { updateRelays, deleteRelay, updateRelaysLoadingByUrl, updateTheme, updateUser, logout } =
   settingsSlice.actions
 
 export const initRelays = () => async (dispatch: AppDispatch, getState: GetState) => {
@@ -94,11 +100,13 @@ export const initRelays = () => async (dispatch: AppDispatch, getState: GetState
       })
     } catch (e) {
       console.log("error with init relay", relayUrl, e)
-      relay = relayInit(relayUrl)
+
+      handled = true
 
       dispatch(
+        // @ts-expect-error
         updateRelays({
-          [relayUrl]: relay,
+          [relayUrl]: { url: relayUrl, status: 0 },
         })
       )
       dispatch(updateRelaysLoadingByUrl({ [relay.url]: false }))
@@ -120,7 +128,7 @@ export const doToggleRelay = (relayUrl: string) => async (dispatch: AppDispatch,
     settings: { relaysByUrl },
   } = getState()
 
-  const relay = relaysByUrl[relayUrl]
+  const existingRelay = relaysByUrl[relayUrl]
 
   dispatch(
     updateRelaysLoadingByUrl({
@@ -128,7 +136,7 @@ export const doToggleRelay = (relayUrl: string) => async (dispatch: AppDispatch,
     })
   )
 
-  if (!relay) {
+  if (!existingRelay) {
     connectToRelay(relayUrl, ({ relay }) => {
       dispatch(updateRelays({ [relay.url]: relay }))
       dispatch(updateRelaysLoadingByUrl({ [relay.url]: false }))
@@ -137,16 +145,14 @@ export const doToggleRelay = (relayUrl: string) => async (dispatch: AppDispatch,
     return
   }
 
-  if (relay?.status === 1) {
-    await relay.close()
-    return dispatch(updateRelays({ [relayUrl]: relay }))
-  } else if (!relay?.status) {
+  if (existingRelay?.status === 1) {
+    await existingRelay.close()
+    dispatch(updateRelays({ [relayUrl]: existingRelay }))
+  } else if (!existingRelay?.status) {
+    await existingRelay.close()
     connectToRelay(relayUrl, ({ relay }) => {
       dispatch(updateRelays({ [relay.url]: relay }))
     })
-  } else {
-    await relay.connect()
-    dispatch(updateRelays({ [relayUrl]: relay }))
   }
 
   dispatch(
@@ -154,4 +160,21 @@ export const doToggleRelay = (relayUrl: string) => async (dispatch: AppDispatch,
       [relayUrl]: false,
     })
   )
+}
+
+export const doRemoveRelay = (relayUrl: string) => async (dispatch: AppDispatch, getState: GetState) => {
+  const {
+    settings: { relaysByUrl },
+  } = getState()
+
+  const relay = relaysByUrl[relayUrl]
+  if (relay) {
+    try {
+      await relay.close()
+    } catch (e) {
+      console.log("error closing relay", e)
+    }
+  }
+
+  dispatch(deleteRelay(relayUrl))
 }

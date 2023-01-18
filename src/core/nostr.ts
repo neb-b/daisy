@@ -304,7 +304,6 @@ export const subscribeToNostrEvents = (
 
 const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent> =>
   new Promise((resolve) => {
-    console.log("getEvent", relays)
     relays.forEach((relay) => {
       const sub = relay.sub([{ ...filter }])
       sub.on("event", (event) => {

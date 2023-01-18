@@ -69,6 +69,8 @@ export function AuthScreen({ navigation }) {
           {enteringPrivateKey && (
             <View>
               <Input
+                autoComplete="off"
+                autoCapitalize="none"
                 label={(props) => <Text {...props}>Private Key</Text>}
                 placeholder="nsec..."
                 value={privateKey}
