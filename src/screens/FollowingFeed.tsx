@@ -70,8 +70,25 @@ export function FollowingFeedScreen() {
 
       <Button
         onPress={() => setCreatingNote(true)}
-        style={{ position: "absolute", bottom: 16, right: 16, height: 50, width: 50, borderRadius: 50 / 2 }}
-        accessoryLeft={(props) => <Icon name="plus-outline" {...props} />}
+        style={{
+          position: "absolute",
+          bottom: 16,
+          right: 16,
+          height: 50,
+          width: 50,
+          borderRadius: 50 / 2,
+        }}
+        accessoryLeft={({ style }: { style: object }) => {
+          return (
+            <Icon
+              name="plus-outline"
+              style={{
+                ...style,
+                // tintColor: "black",
+              }}
+            />
+          )
+        }}
       />
 
       {creatingNote && (

@@ -22,7 +22,7 @@ export function SettingsScreen({ navigation }) {
     <Layout>
       <TopNavigation title="Settings" alignment="center" />
       <Divider />
-      <ScrollView style={{ paddingTop: 16, paddingLeft: 8, paddingRight: 8 }}>
+      <ScrollView style={{ paddingTop: 16, paddingLeft: 8, paddingRight: 8, paddingBottom: 16 }}>
         <RelayManagement />
 
         {user.pubkey && user.privateKey && (
@@ -36,8 +36,8 @@ export function SettingsScreen({ navigation }) {
           </>
         )}
 
-        <View style={{ marginTop: 32 }}>
-          <Button appearance="outline" onPress={handleLogout}>
+        <View style={{ marginTop: 32, marginBottom: 64 }}>
+          <Button appearance="ghost" onPress={handleLogout}>
             Logout
           </Button>
         </View>
@@ -72,7 +72,7 @@ function SettingsCard({ title, value, isHidden = false }) {
       </Text>
       <View
         style={{
-          backgroundColor: theme["background-basic-color-3"],
+          backgroundColor: theme["background-basic-color-2"],
           padding: 16,
           borderTopLeftRadius: 10,
           borderTopRightRadius: 10,
@@ -102,11 +102,11 @@ function SettingsCard({ title, value, isHidden = false }) {
       </View>
       {isHidden && (
         <>
-          <Divider style={{ backgroundColor: theme["background-basic-color-4"] }} />
+          <Divider style={{ backgroundColor: theme["background-basic-color-3"] }} />
           <View
             style={{
               flex: 1,
-              backgroundColor: theme["background-basic-color-3"],
+              backgroundColor: theme["background-basic-color-2"],
               padding: 16,
               borderBottomLeftRadius: 10,
               borderBottomRightRadius: 10,
@@ -174,7 +174,7 @@ const RelayManagement = () => {
           onPress={() => setAddingRelay(true)}
         ></Button>
       </View>
-      <View style={{ backgroundColor: theme["background-basic-color-3"], borderRadius: 10 }}>
+      <View style={{ backgroundColor: theme["background-basic-color-2"], borderRadius: 10 }}>
         {Object.values(relaysByUrl).map((relay, i) => {
           const connected = relay.status === 1
           const loading = relaysLoadingByUrl[relay.url]
@@ -182,7 +182,7 @@ const RelayManagement = () => {
           const iconProps = connected
             ? {
                 name: "checkmark-outline",
-                fill: theme["color-primary-500"],
+                fill: theme["color-success-500"],
               }
             : loading
             ? {
@@ -204,7 +204,7 @@ const RelayManagement = () => {
                 <Icon height={20} width={20} {...iconProps} />
               </View>
               {i !== relayLength - 1 && (
-                <Divider style={{ backgroundColor: theme["background-basic-color-4"] }} />
+                <Divider style={{ backgroundColor: theme["background-basic-color-3"] }} />
               )}
             </Pressable>
           )

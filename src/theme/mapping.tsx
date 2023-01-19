@@ -1,22 +1,17 @@
 export const mapping = {
   components: {
     Button: {
-      meta: {
-        scope: "all",
-        parameters: {},
-        variantGroups: {},
-        states: {},
-        appearances: {
-          primary: {
-            default: true,
-          },
-        },
-      },
+      meta: {},
       appearances: {
-        primary: {
-          mapping: {
-            borderRadius: 10,
-            color: "background-basic-color-1",
+        filled: {
+          mapping: {},
+          variantGroups: {
+            status: {
+              primary: {
+                textColor: "color-basic-1000",
+                iconTintColor: "color-basic-1000",
+              },
+            },
           },
         },
       },
