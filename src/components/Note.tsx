@@ -10,12 +10,19 @@ import { Avatar, NoteContent, NoteActions } from "components"
 
 type Props = {
   threadId?: string
+  insideThread?: boolean
   id: string
   style?: object
   hideActions?: boolean
 }
 
-export const Note: React.FC<Props> = ({ id, style = {}, threadId, hideActions = false }) => {
+export const Note: React.FC<Props> = ({
+  id,
+  style = {},
+  threadId,
+  insideThread = false,
+  hideActions = false,
+}) => {
   const navigation = useNavigation()
   const note = useNote(id)
   const profile = useProfile(note?.pubkey)
@@ -41,7 +48,10 @@ export const Note: React.FC<Props> = ({ id, style = {}, threadId, hideActions = 
           {note.repostedBy && <RepostAuthor pubkey={note.repostedBy} />}
 
           <View style={{ flexDirection: "row", alignItems: isHighlightedNote ? "center" : "flex-start" }}>
-            <Avatar pubkey={note.pubkey} />
+            <View style={{ alignItems: "center" }}>
+              <Avatar pubkey={note.pubkey} />
+              {insideThread && <Divider style={{ width: 1, flex: 1, marginBottom: -24, marginTop: 8 }} />}
+            </View>
             <View style={{ flex: 1, marginLeft: 8 }}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text style={{ fontSize: 16, fontWeight: "bold" }}>
@@ -76,7 +86,7 @@ export const Note: React.FC<Props> = ({ id, style = {}, threadId, hideActions = 
           )}
         </View>
       </Pressable>
-      {!hideActions && <Divider />}
+      {!hideActions && !insideThread && <Divider />}
     </>
   )
 }

@@ -14,12 +14,18 @@ export function ThreadScreen({ route }) {
   } = route
   const dispatch = useDispatch()
   const { notes, loading } = useThread(id)
+  const indexOfHighlightedNote = notes.indexOf(id)
 
   React.useEffect(() => {
     dispatch(doFetchRepliesInThread(id))
   }, [id])
 
-  const renderNote = React.useCallback(({ item }) => <Note threadId={id} key={item} id={item} />, [id])
+  const renderNote = React.useCallback(
+    ({ item, index }) => (
+      <Note threadId={id} key={item} id={item} insideThread={index < indexOfHighlightedNote} />
+    ),
+    [id, indexOfHighlightedNote]
+  )
 
   const keyExtractor = React.useCallback((item) => item, [])
 
