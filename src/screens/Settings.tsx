@@ -23,7 +23,7 @@ export function SettingsScreen({ navigation }) {
       <TopNavigation title="Settings" alignment="center" />
       <Divider />
       <ScrollView style={{ paddingTop: 16, paddingLeft: 8, paddingRight: 8 }}>
-        {/* <RelayManagement /> */}
+        <RelayManagement />
 
         {user.pubkey && user.privateKey && (
           <>
