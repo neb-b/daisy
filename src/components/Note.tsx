@@ -9,40 +9,44 @@ import { timeSince } from "utils/time"
 import { Avatar, NoteContent, NoteActions } from "components"
 
 type Props = {
-  isThread?: boolean
+  threadId?: string
   id: string
   style?: object
-  isSimple?: boolean
+  hideActions?: boolean
 }
 
-export const Note: React.FC<Props> = ({ id, style = {}, isThread = false, isSimple = false }) => {
+export const Note: React.FC<Props> = ({ id, style = {}, threadId, hideActions = false }) => {
   const navigation = useNavigation()
   const note = useNote(id)
   const profile = useProfile(note?.pubkey)
   const profileContent = profile?.content
+  const isHighlightedNote = id === threadId
 
   if (!note) return null
 
   return (
     <>
       {/* @ts-expect-error */}
-      <Pressable onPress={() => (isThread ? () => {} : navigation.navigate("Thread", { id }))} style={{}}>
+      <Pressable onPress={() => (threadId ? () => {} : navigation.navigate("Thread", { id }))} style={{}}>
         <View
           style={{
             flexDirection: "column",
             paddingTop: 16,
             paddingBottom: 16,
-            paddingLeft: 8,
-            paddingRight: 8,
+            paddingLeft: 16,
+            paddingRight: 16,
             ...style,
           }}
         >
           {note.repostedBy && <RepostAuthor pubkey={note.repostedBy} />}
 
-          <View style={{ flexDirection: "row" }}>
+          <View style={{ flexDirection: "row", alignItems: isHighlightedNote ? "center" : "flex-start" }}>
             <Avatar pubkey={note.pubkey} />
             <View style={{ flex: 1, marginLeft: 8 }}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                  {profileContent?.name || note.pubkey.slice(0, 6)}
+                </Text>
                 <Text style={{ fontSize: 16, fontWeight: "bold" }}>
                   {profileContent?.name || note.pubkey.slice(0, 6)}
                 </Text>
@@ -56,13 +60,23 @@ export const Note: React.FC<Props> = ({ id, style = {}, isThread = false, isSimp
                 <ReplyText pubkeysOrProfiles={note.replyingToProfiles} />
               )}
 
-              <NoteContent note={note} />
-              {!isSimple && <NoteActions id={note.id} />}
+              {!isHighlightedNote && (
+                <>
+                  <NoteContent note={note} />
+                  {!hideActions && <NoteActions id={note.id} />}
+                </>
+              )}
             </View>
           </View>
+          {isHighlightedNote && (
+            <View style={{ marginTop: 8, paddingBottom: 8 }}>
+              <NoteContent note={note} size="large" />
+              {!hideActions && <NoteActions id={note.id} size="large" />}
+            </View>
+          )}
         </View>
       </Pressable>
-      {!isSimple && <Divider />}
+      {!hideActions && <Divider />}
     </>
   )
 }

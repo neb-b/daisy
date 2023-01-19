@@ -12,9 +12,10 @@ type Props = {
   isThread?: boolean
   id: string
   style?: object
+  size?: "small" | "large"
 }
 
-export const NoteActions: React.FC<Props> = ({ id }) => {
+export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
   const note = useNote(id)
   const { reactions, liked } = useReactions(id)
   const reposted = useReposted(id)
@@ -24,10 +25,12 @@ export const NoteActions: React.FC<Props> = ({ id }) => {
 
   const defaultColor = theme["color-basic-600"]
   const interactedColor = theme["color-primary-500"]
+  const isLarge = size === "large"
+  const iconSize = isLarge ? 20 : 16
 
   const iconProps = {
-    height: 16,
-    width: 16,
+    height: iconSize,
+    width: iconSize,
     fill: defaultColor,
   }
 
@@ -73,7 +76,14 @@ export const NoteActions: React.FC<Props> = ({ id }) => {
             name={liked ? "heart" : "heart-outline"}
           />
           {reactions.length > 0 && (
-            <Text style={{ color: liked ? interactedColor : defaultColor, fontSize: 12, marginLeft: 8 }}>
+            <Text
+              style={{
+                color: liked ? interactedColor : defaultColor,
+                fontSize: isLarge ? 16 : 12,
+                // fontWeight: isLarge ? "bold" : undefined,
+                marginLeft: 8,
+              }}
+            >
               {reactions.length}
             </Text>
           )}

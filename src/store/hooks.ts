@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux"
 import { nostrEventKinds } from "core/nostr"
 import type { RootState } from "./index"
+import { acc } from "react-native-reanimated"
 
 export const useUser = () => {
   const { user } = useSelector((state: RootState) => state.settings)
@@ -84,36 +85,56 @@ export const useThread = (noteId: string) => {
     return { notes: [], loading }
   }
 
-  const replyIdsMap = note.tags
+  const highlightedNoteReplyIds = note.tags
+    .slice()
     .filter((tag) => tag[0] === "e")
-    .reduce((acc, tag) => {
-      const referenceId = tag[1]
-      acc[referenceId] = true
-      return acc
-    }, {})
+    .map((tag) => tag[1])
 
-  const replies = Object.values(notesById).reduce((acc, noteFromNoteById) => {
-    const noteTags = noteFromNoteById.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
+  if (!highlightedNoteReplyIds.length) {
+    // This is a top level message
+    // TODO: also get replies to this
+    return { notes: [noteId], loading }
+  }
 
-    if (replyIdsMap[noteFromNoteById.id]) {
-      acc.push(noteFromNoteById.id)
-    } else {
-      noteTags.forEach((id) => {
-        if (replyIdsMap[id]) {
-          acc.push(noteFromNoteById.id)
-        }
-      })
-    }
+  if (highlightedNoteReplyIds.length === 1) {
+    // Responding to a top level thread
+    // TODO: also get replies to this
+    // TODO: also get replies to top level thread id
+    return { notes: [highlightedNoteReplyIds[0], noteId], loading }
+  }
 
-    return acc
-  }, [])
+  // This is a reply to a message in the middle of a thread
+  // Get reply chain for this specific message
+  // TODO: Get all messages between directReplyId and topLevelReplyId
 
-  const notes = [...Array.from(new Set([noteId, ...replies]))]
-    .map((id: string) => notesById[id])
-    .sort((a, b) => a.created_at - b.created_at)
-    .map((note) => note.id)
+  const topLevelReplyId = highlightedNoteReplyIds[0]
+  const directReplyId = highlightedNoteReplyIds[1]
+  return { notes: [topLevelReplyId, directReplyId, noteId], loading }
 
-  return { notes, loading }
+  // const replies = Object.values(notesById).reduce((acc, noteFromNoteById) => {
+  //   const noteTags = noteFromNoteById.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
+
+  //   if (replyIdsMap[noteFromNoteById.id]) {
+  //     acc.push(noteFromNoteById.id)
+  //   } else {
+  //     noteTags.forEach((id) => {
+  //       if (replyIdsMap[id]) {
+  //         acc.push(noteFromNoteById.id)
+  //       }
+  //     })
+  //   }
+
+  //   return acc
+  // }, [])
+
+  // const replies = Object.values(replyIdsMap).reduce((acc, noteId) => {})
+
+  // const notes = [...Array.from(new Set([noteId, ...replies]))]
+  //   .map((id: string) => notesById[id])
+  //   .sort((a, b) => a.created_at - b.created_at)
+  //   .map((note) => note.id)
+
+  // return { notes, loading }
 }
 
 export const useNote = (

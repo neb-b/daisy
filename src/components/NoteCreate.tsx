@@ -37,7 +37,7 @@ export const NoteCreate: React.FC<Props> = ({ closeModal, id }) => {
         <Divider />
 
         <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
-          {note && <Note id={id} isSimple />}
+          {note && <Note id={id} hideActions />}
           <View style={{ flex: 1, paddingRight: 16, paddingLeft: 16, marginTop: 16 }}>
             <Input
               label={id ? "Reply" : "Post"}
