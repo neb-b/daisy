@@ -2,7 +2,7 @@
   "expo": {
     "name": "Nostr Daisy",
     "slug": "nostr-daisy",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
