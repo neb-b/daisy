@@ -25,7 +25,7 @@ export const defaultRelays = [
   "wss://nostr.oxtr.dev",
 ]
 
-const GET_EVENTS_LIMIT = 50
+const GET_EVENTS_LIMIT = 75
 const TIMEOUT = 500
 
 type ConnectionEventCbArg = {
@@ -94,7 +94,8 @@ export const getReplies = async (
 
 export const getEventsFromPubkeys = async (
   relays: Relay[],
-  pubkeys: string[]
+  pubkeys: string[],
+  limit?: number
 ): Promise<{
   notes: NostrEvent[]
   profiles: Record<string, NostrProfileEvent>
@@ -102,10 +103,17 @@ export const getEventsFromPubkeys = async (
   reactions: Record<string, NostrReactionEvent[]>
 }> =>
   new Promise(async (resolve) => {
-    const notes = await getNostrEvents(relays, {
+    const filter = {
       authors: pubkeys,
       kinds: [nostrEventKinds.note, nostrEventKinds.repost],
-    })
+    }
+
+    if (limit) {
+      // @ts-expect-error
+      filter.limit = limit
+    }
+
+    const notes = await getNostrEvents(relays, filter)
 
     const { related, profiles, reactions } = await getRelatedEvents(relays, notes)
 

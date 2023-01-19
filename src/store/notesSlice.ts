@@ -132,7 +132,7 @@ export const doFetchProfileNotes = (pubkey: string) => async (dispatch: AppDispa
 
   const relays = Object.values(relaysByUrl).filter((relay) => relaysLoadingByUrl[relay.url] !== true)
 
-  const { notes, profiles, related, reactions } = await getEventsFromPubkeys(relays, [pubkey])
+  const { notes, profiles, related, reactions } = await getEventsFromPubkeys(relays, [pubkey], 20)
 
   dispatch(
     updateNotesAndProfiles({
