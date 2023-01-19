@@ -5,7 +5,7 @@ import { useNavigation } from "@react-navigation/native"
 import { nip19 } from "nostr-tools"
 
 import { useNote, useProfile } from "store/hooks"
-import { timeSince } from "utils/time"
+import { timeSince, fullDateString } from "utils/time"
 import { Avatar, NoteContent, NoteActions } from "components"
 
 type Props = {
@@ -54,19 +54,30 @@ export const Note: React.FC<Props> = ({
             </View>
             <View style={{ flex: 1, marginLeft: 8 }}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-                  {profileContent?.name || note.pubkey.slice(0, 6)}
-                </Text>
-                <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-                  {profileContent?.name || note.pubkey.slice(0, 6)}
+                <Text style={{ fontSize: 14, fontWeight: "bold" }}>
+                  {profileContent?.display_name || note.pubkey.slice(0, 6)}
                 </Text>
 
-                <Text appearance="hint" style={{ fontSize: 16, marginLeft: 4 }}>
-                  {timeSince(note.created_at)}
-                </Text>
+                {!isHighlightedNote && profileContent?.name && (
+                  <Text appearance="hint" style={{ fontSize: 14, marginLeft: 4 }}>
+                    @{profileContent?.name}
+                  </Text>
+                )}
+
+                {!isHighlightedNote && (
+                  <Text appearance="hint" style={{ fontSize: 14, marginLeft: 4 }}>
+                    {timeSince(note.created_at)}
+                  </Text>
+                )}
               </View>
 
-              {note.replyingToProfiles?.length > 0 && (
+              {isHighlightedNote && profileContent?.name && (
+                <Text appearance="hint" style={{ fontSize: 14, marginBottom: 4 }}>
+                  @{profileContent?.name}
+                </Text>
+              )}
+
+              {!isHighlightedNote && note.replyingToProfiles?.length > 0 && (
                 <ReplyText pubkeysOrProfiles={note.replyingToProfiles} />
               )}
 
@@ -81,6 +92,11 @@ export const Note: React.FC<Props> = ({
           {isHighlightedNote && (
             <View style={{ marginTop: 8, paddingBottom: 8 }}>
               <NoteContent note={note} size="large" />
+
+              <Text appearance="hint" style={{ fontSize: 14, marginTop: 32 }}>
+                {fullDateString(note.created_at)}
+              </Text>
+              <Divider style={{ marginTop: 16, marginBottom: 8 }} />
               {!hideActions && <NoteActions id={note.id} size="large" />}
             </View>
           )}

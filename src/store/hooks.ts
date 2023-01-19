@@ -109,7 +109,19 @@ export const useThread = (noteId: string) => {
 
   const topLevelReplyId = highlightedNoteReplyIds[0]
   const directReplyId = highlightedNoteReplyIds[1]
-  return { notes: [topLevelReplyId, directReplyId, noteId], loading }
+
+  const repliesToHighlightedNote = Object.values(notesById).reduce((acc, noteFromNoteById) => {
+    const noteTags = noteFromNoteById.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
+
+    // Direct replies only
+    if (noteTags[0] === noteId) {
+      acc.push(noteFromNoteById.id)
+    }
+
+    return acc
+  }, [])
+
+  return { notes: [topLevelReplyId, directReplyId, noteId, ...repliesToHighlightedNote], loading }
 
   // const replies = Object.values(notesById).reduce((acc, noteFromNoteById) => {
   //   const noteTags = noteFromNoteById.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])

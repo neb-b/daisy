@@ -42,6 +42,7 @@ declare type NostrEvent = NostrNoteEvent | NostrProfileEvent | NostrContactListE
 declare type NostrProfileContent = {
   picture?: string
   name?: string
+  display_name?: string
   about?: string
   nip05?: string
   website?: string
