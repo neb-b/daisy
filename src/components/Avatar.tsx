@@ -34,7 +34,7 @@ export const Avatar: React.FC<Props> = ({ pubkey, size = 40, ...rest }) => {
           ...rest,
         }}
       >
-        {!picture ? (
+        {picture ? (
           <Image
             source={{
               uri: `https://media.nostr.band/thumbs/${lastFourOfPubkey}/${pubkey}-picture-64`,
