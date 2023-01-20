@@ -14,7 +14,7 @@ export const Avatar: React.FC<Props> = ({ pubkey, size = 40, ...rest }) => {
   const note = useProfile(pubkey)
   const theme = useTheme()
   const picture = note?.content?.picture
-  const lastFourOfPubkey = pubkey.slice(-4)
+  const lastFourOfPubkey = pubkey?.slice(-4)
 
   return (
     <Pressable

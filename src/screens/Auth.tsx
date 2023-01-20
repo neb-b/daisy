@@ -55,9 +55,14 @@ export function AuthScreen({ navigation }) {
     <Layout style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <View style={{ padding: 16, width: "100%" }}>
-          <Text category="h1" style={{ marginBottom: 24, fontSize: 48, textAlign: "center" }}>
+          <Text category="h1" style={{ fontSize: 48, textAlign: "center" }}>
             {enteringPrivateKey ? "Login" : "Daisy"}
           </Text>
+          {!enteringPrivateKey && (
+            <Text category="h4" style={{ textAlign: "center", marginBottom: 24 }}>
+              A Nostr Client
+            </Text>
+          )}
           {!enteringPrivateKey && (
             <View style={{ flexDirection: "column" }}>
               {/* <Button onPress={handleSignup} style={{ marginBottom: 8 }}>
@@ -67,7 +72,7 @@ export function AuthScreen({ navigation }) {
             </View>
           )}
           {enteringPrivateKey && (
-            <View>
+            <View style={{ marginTop: 24 }}>
               <Input
                 autoComplete="off"
                 autoCapitalize="none"
