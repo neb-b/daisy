@@ -34,7 +34,7 @@ export const Note: React.FC<Props> = ({
   return (
     <>
       {/* @ts-expect-error */}
-      <Pressable onPress={() => (threadId ? () => {} : navigation.navigate("Thread", { id }))} style={{}}>
+      <Pressable onPress={() => navigation.push("Thread", { id })}>
         <View
           style={{
             flexDirection: "column",
