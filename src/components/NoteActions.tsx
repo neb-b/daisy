@@ -1,5 +1,5 @@
 import React from "react"
-import { View, Pressable, Share, Modal } from "react-native"
+import { View, Pressable, Share, Modal, Alert } from "react-native"
 import { useTheme, Icon, Text } from "@ui-kitten/components"
 
 import { NoteCreate } from "components"
@@ -47,13 +47,20 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
   }
 
   const handleRepost = () => {
-    dispatch(
-      doPublishNote({
-        kind: nostrEventKinds.repost,
-        content: JSON.stringify(note),
-        repostOf: id,
-      })
-    )
+    Alert.alert("Boost", "Are you sure you want to boost this?", [
+      {
+        text: "Boost",
+        onPress: () =>
+          dispatch(
+            doPublishNote({
+              kind: nostrEventKinds.repost,
+              content: JSON.stringify(note),
+              repostOf: id,
+            })
+          ),
+      },
+      { text: "Cancel", style: "cancel" },
+    ])
   }
 
   const handleLike = () => {
