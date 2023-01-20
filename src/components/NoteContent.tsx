@@ -32,43 +32,45 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
   }
 
   return (
-    <View style={{ marginTop: 5, paddingRight: 13, flexDirection: "row", flexWrap: "wrap" }}>
-      {note.content.split(noteOrUrlRegex).map((text, i) => {
-        if (typeof text === "undefined") {
-          return <React.Fragment key={i} />
-        }
+    <>
+      <View style={{ marginTop: 5, paddingRight: 13, flexDirection: "row", flexWrap: "wrap" }}>
+        {note.content.split(noteOrUrlRegex).map((text, i) => {
+          if (typeof text === "undefined") {
+            return <React.Fragment key={i} />
+          }
 
-        if (isImage(text)) {
+          if (isImage(text)) {
+            return (
+              <View key={i} style={{ width: "100%", height: 150 }}>
+                <Image src={text} />
+              </View>
+            )
+          }
+
+          if (isUrl(text)) {
+            return <Link key={text + i} label={text} src={text} size={size} />
+          }
+
+          if (isMention(text)) {
+            const tagIndex = text.match(/#\[([0-9]+)]/)[1]
+            const tag = note.tags[tagIndex]
+
+            return <Mention key={i} tag={tag} size={size} />
+          }
+
           return (
-            <View key={i} style={{ width: "100%", height: 150 }}>
-              <Image src={text} />
-            </View>
+            <Text
+              key={i}
+              style={{
+                fontSize: size === "small" ? 16 : 20,
+                flexWrap: "wrap",
+              }}
+            >
+              {text}
+            </Text>
           )
-        }
-
-        if (isUrl(text)) {
-          return <Link key={text + i} label={text} src={text} size={size} />
-        }
-
-        if (isMention(text)) {
-          const tagIndex = text.match(/#\[([0-9]+)]/)[1]
-          const tag = note.tags[tagIndex]
-
-          return <Mention key={i} tag={tag} size={size} />
-        }
-
-        return (
-          <Text
-            key={i}
-            style={{
-              fontSize: size === "small" ? 16 : 20,
-              flexWrap: "wrap",
-            }}
-          >
-            {text}
-          </Text>
-        )
-      })}
+        })}
+      </View>
 
       {firstNoteUrl && (
         <LinkPreview
@@ -84,7 +86,6 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
                   backgroundColor: theme["background-basic-color-3"],
                   borderRadius: 10,
                   marginTop: 16,
-                  width: "100%",
                 }}
               >
                 <View
@@ -105,8 +106,8 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
                     }}
                   />
                 </View>
-                <View style={{ padding: 8, borderRadius: 10 }}>
-                  <Text style={{ fontWeight: "bold" }}>{linkPreview.previewData.title}</Text>
+                <View style={{ padding: 8, flex: 1 }}>
+                  <Text style={{ flex: 1, fontWeight: "bold" }}>{linkPreview.previewData.title}</Text>
                   <Text style={{ paddingTop: 4, paddingBottom: 4 }}>{domain}</Text>
                 </View>
               </View>
@@ -114,6 +115,6 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
           }}
         />
       )}
-    </View>
+    </>
   )
 }

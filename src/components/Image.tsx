@@ -4,7 +4,7 @@ import { Image as BaseImage } from "react-native"
 export const Image = React.memo(({ src, style = {} }: { src: string; style?: {} }) => {
   return (
     <BaseImage
-      resizeMode="cover"
+      resizeMode="contain"
       source={{ uri: src }}
       style={{
         width: undefined,
@@ -12,6 +12,7 @@ export const Image = React.memo(({ src, style = {} }: { src: string; style?: {} 
         flex: 1,
         alignSelf: "stretch",
         borderRadius: 10,
+        backgroundColor: "black",
         ...style,
       }}
     />
