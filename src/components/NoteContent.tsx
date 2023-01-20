@@ -29,14 +29,14 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
         }
 
         if (isUrl(text)) {
-          return <Link key={text} label={text} src={text} />
+          return <Link key={text} label={text} src={text} size={size} />
         }
 
         if (isMention(text)) {
           const tagIndex = text.match(/#\[([0-9]+)]/)[1]
           const tag = note.tags[tagIndex]
 
-          return <Mention key={i} tag={tag} />
+          return <Mention key={i} tag={tag} size={size} />
         }
 
         return (

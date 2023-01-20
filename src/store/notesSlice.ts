@@ -147,7 +147,7 @@ export const doFetchProfileNotes = (pubkey: string) => async (dispatch: AppDispa
 
 export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
   const { settings: settingsState, notes: notesState } = getState()
-  const { contactListsByPubkey, notesById } = notesState
+  const { contactListsByPubkey, reactionsByNoteId } = notesState
   const contactList = contactListsByPubkey[settingsState.user.pubkey]
   const pubkeys = [settingsState.user.pubkey, ...contactList.tags.map((tag) => tag[1])]
 
@@ -167,9 +167,9 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
     })
   )
 
-  dispatch(updateReactionsByNoteId(reactions))
   dispatch(updatefeedsByIdOrPubkey({ following: Array.from(new Set(notes.map((note) => note.id))) }))
   dispatch(updateloadingByIdOrPubkey({ following: false }))
+  dispatch(updateReactionsByNoteId(reactions))
 
   const filter = {
     authors: pubkeys,
@@ -185,6 +185,7 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
         const noteIdReactionIsFor = note.tags.find((tag) => tag[0] === "e")?.[1]
         const currentReactions = notesState.reactionsByNoteId[noteIdReactionIsFor] || []
 
+        // @ts-expect-error
         return dispatch(updateReactionsByNoteId({ [noteIdReactionIsFor]: [...currentReactions, note] }))
       }
 

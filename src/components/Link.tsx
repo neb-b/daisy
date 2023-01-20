@@ -5,9 +5,10 @@ import { useNavigation } from "@react-navigation/native"
 type Props = {
   label: string
   src: string
+  size?: "small" | "large"
 }
 
-export const Link = ({ label, src }: Props) => {
+export const Link = ({ label, src, size }: Props) => {
   const theme = useTheme()
   const navigation = useNavigation()
 
@@ -27,7 +28,7 @@ export const Link = ({ label, src }: Props) => {
 
   return (
     <Pressable onPress={handleLinkPress}>
-      <Text style={{ color: theme["color-primary-500"] }}>{label}</Text>
+      <Text style={{ color: theme["color-primary-500"], fontSize: size === "large" ? 20 : 16 }}>{label}</Text>
     </Pressable>
   )
 }

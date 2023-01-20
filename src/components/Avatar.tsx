@@ -1,5 +1,6 @@
 import { View, Image, Pressable } from "react-native"
 import { useNavigation } from "@react-navigation/native"
+import { Icon, useTheme } from "@ui-kitten/components"
 
 import { useProfile } from "store/hooks"
 
@@ -11,33 +12,46 @@ type Props = {
 export const Avatar: React.FC<Props> = ({ pubkey, size = 40, ...rest }) => {
   const { navigate } = useNavigation()
   const note = useProfile(pubkey)
+  const theme = useTheme()
   const picture = note?.content?.picture
+  const lastFourOfPubkey = pubkey.slice(-4)
 
   return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size ? size / 2 : 10,
-        backgroundColor: "black",
-        ...rest,
-      }}
+    <Pressable
+      onPress={() =>
+        // @ts-expect-error
+        navigate("Profile", {
+          pubkey,
+        })
+      }
     >
-      <Pressable
-        onPress={() =>
-          // @ts-expect-error
-          navigate("Profile", {
-            pubkey,
-          })
-        }
+      <View
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size ? size / 2 : 10,
+          backgroundColor: theme["color-basic-1000"],
+          ...rest,
+        }}
       >
-        <Image
-          source={{
-            uri: picture || `https://www.gravatar.com/avatar/${pubkey}?s=128&d=retro`,
-          }}
-          style={{ height: size, width: size, borderRadius: size ? size / 2 : 10, resizeMode: "stretch" }}
-        />
-      </Pressable>
-    </View>
+        {!picture ? (
+          <Image
+            source={{
+              uri: `https://media.nostr.band/thumbs/${lastFourOfPubkey}/${pubkey}-picture-64`,
+            }}
+            style={{ height: size, width: size, borderRadius: size ? size / 2 : 10, resizeMode: "stretch" }}
+          />
+        ) : (
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+            <Icon
+              height={25}
+              width={25}
+              name="person-outline"
+              style={{ tintColor: theme["color-primary-300"] }}
+            />
+          </View>
+        )}
+      </View>
+    </Pressable>
   )
 }
