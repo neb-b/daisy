@@ -147,7 +147,7 @@ export const doFetchProfileNotes = (pubkey: string) => async (dispatch: AppDispa
 
 export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
   const { settings: settingsState, notes: notesState } = getState()
-  const { contactListsByPubkey } = notesState
+  const { contactListsByPubkey, notesById } = notesState
   const contactList = contactListsByPubkey[settingsState.user.pubkey]
   const pubkeys = [settingsState.user.pubkey, ...contactList.tags.map((tag) => tag[1])]
 
@@ -173,14 +173,21 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
 
   const filter = {
     authors: pubkeys,
-    kinds: [nostrEventKinds.note, nostrEventKinds.repost],
+    kinds: [nostrEventKinds.note, nostrEventKinds.repost, nostrEventKinds.reaction],
     since: Math.floor(Date.now() / 1000),
   }
 
   const subscriptions = subscribeToNostrEvents(
     relays,
     filter,
-    (note: NostrEvent, related: NostrEvent[], profiles: Record<string, NostrProfile>) => {
+    (note: NostrEvent, related?: NostrEvent[], profiles?: Record<string, NostrProfile>) => {
+      if (note.kind === nostrEventKinds.reaction) {
+        const noteIdReactionIsFor = note.tags.find((tag) => tag[0] === "e")?.[1]
+        const currentReactions = notesState.reactionsByNoteId[noteIdReactionIsFor] || []
+
+        return dispatch(updateReactionsByNoteId({ [noteIdReactionIsFor]: [...currentReactions, note] }))
+      }
+
       dispatch(
         updateNotesAndProfiles({
           notes: [note, ...related],
@@ -253,9 +260,12 @@ export const doPublishNote =
       settings: settingsState,
       notes: { notesById },
     } = getState()
-    const { user } = settingsState
+    const {
+      user: { pubkey, privateKey },
+      relaysByUrl,
+    } = settingsState
 
-    if (!user.pubkey || !user.privateKey) {
+    if (!pubkey || !privateKey) {
       console.log("no user found")
       return
     }
@@ -272,14 +282,7 @@ export const doPublishNote =
       tags.push(["e", repostOf])
     }
 
-    const note = await publishNote(
-      Object.values(settingsState.relaysByUrl),
-      // @ts-expect-error
-      settingsState.user,
-      kind,
-      content,
-      tags
-    )
+    const note = await publishNote(Object.values(relaysByUrl), { pubkey, privateKey }, kind, content, tags)
 
     dispatch(updateNotesById({ [note.id]: note }))
     dispatch(addNoteToFeedById({ feedId: "following", noteId: note.id }))
@@ -288,52 +291,55 @@ export const doPublishNote =
     }
   }
 
-export const doToggleFollow = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
-  const { settings: settingsState, notes: notesState } = getState()
-  const { user, relaysByUrl } = settingsState
-  const { contactListsByPubkey } = notesState
-  const contactList = contactListsByPubkey[user.pubkey]
-  const isCurrentlyFollowing = contactList.tags.some((tag) => tag[1] === pubkey)
+export const doToggleFollow =
+  (newFollowPubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
+    const { settings: settingsState, notes: notesState } = getState()
+    const {
+      user: { pubkey, privateKey },
+      relaysByUrl,
+    } = settingsState
+    const { contactListsByPubkey } = notesState
+    const contactList = contactListsByPubkey[pubkey]
+    const isCurrentlyFollowing = contactList.tags.some((tag) => tag[1] === newFollowPubkey)
 
-  if (!contactList) {
-    console.log("unable to find contactList")
-    return
+    if (!contactList) {
+      console.log("unable to find contactList")
+      return
+    }
+
+    if (!pubkey || !privateKey) {
+      console.log("no user found")
+      return
+    }
+
+    let newTags = contactList.tags.slice()
+
+    if (isCurrentlyFollowing) {
+      // remove from following
+      newTags = newTags.filter((tag) => tag[1] !== newFollowPubkey)
+    } else {
+      newTags.push(["p", newFollowPubkey])
+    }
+
+    await publishNote(
+      Object.values(relaysByUrl),
+      { pubkey, privateKey },
+      nostrEventKinds.contactList,
+      "",
+      newTags
+    )
+
+    // TODO: only dispatch state if we get success from publishNote
+    // currently seeing the contact list be saved, but not received as success from relays after publish
+    dispatch(
+      updateContactListsByPubkey({
+        [pubkey]: {
+          ...contactList,
+          tags: newTags,
+        },
+      })
+    )
   }
-
-  if (!user.pubkey || !user.privateKey) {
-    console.log("no user found")
-    return
-  }
-
-  let newTags = contactList.tags.slice()
-
-  if (isCurrentlyFollowing) {
-    // remove from following
-    newTags = newTags.filter((tag) => tag[1] !== pubkey)
-  } else {
-    newTags.push(["p", pubkey])
-  }
-
-  await publishNote(
-    Object.values(relaysByUrl),
-    // @ts-expect-error
-    user,
-    nostrEventKinds.contactList,
-    "",
-    newTags
-  )
-
-  // TODO: only dispatch state if we get success from publishNote
-  // currently seeing the contact list be saved, but not received as success from relays after publish
-  dispatch(
-    updateContactListsByPubkey({
-      [user.pubkey]: {
-        ...contactList,
-        tags: newTags,
-      },
-    })
-  )
-}
 
 export const doLike = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
   const { settings: settingsState, notes: notesState } = getState()
@@ -347,19 +353,7 @@ export const doLike = (noteId: string) => async (dispatch: AppDispatch, getState
     return
   }
 
-  const nostrEvent = (await publishNote(
-    Object.values(settingsState.relaysByUrl),
-    { pubkey, privateKey },
-    nostrEventKinds.reaction,
-    "🤙",
-    [["e", noteId]]
-  )) as unknown
-
-  const reaction = nostrEvent as NostrReactionEvent
-
-  if (reaction.id) {
-    const currentReactions = notesState.reactionsByNoteId[noteId] || []
-
-    dispatch(updateReactionsByNoteId({ [noteId]: [...currentReactions, reaction] }))
-  }
+  await publishNote(Object.values(relaysByUrl), { pubkey, privateKey }, nostrEventKinds.reaction, "+", [
+    ["e", noteId],
+  ])
 }

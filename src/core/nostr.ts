@@ -285,7 +285,7 @@ const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<No
 export const subscribeToNostrEvents = (
   relays: Relay[],
   filter: NostrFilter,
-  handleEvent: (NostrEvent, related: NostrEvent[], profiles: Record<string, NostrProfileEvent>) => void
+  handleEvent: (NostrEvent, related?: NostrEvent[], profiles?: Record<string, NostrProfileEvent>) => void
 ): Sub[] => {
   const subscriptions = []
   relays.forEach((relay) => {
@@ -293,9 +293,12 @@ export const subscribeToNostrEvents = (
     subscriptions.push(sub)
 
     sub.on("event", async (event: NostrEvent) => {
-      const { related, profiles } = await getRelatedEvents(relays, [event])
-
-      handleEvent(event, related, profiles)
+      if (event.kind === nostrEventKinds.note || event.kind === nostrEventKinds.repost) {
+        const { related, profiles } = await getRelatedEvents(relays, [event])
+        handleEvent(event, related, profiles)
+      } else {
+        handleEvent(event)
+      }
     })
 
     sub.on("eose", () => {
@@ -372,15 +375,12 @@ export const publishNote = async (
         }
 
         console.log(`${relay.url} has accepted our event`)
-        relay.close()
       })
       pub.on("seen", () => {
         console.log(`we saw the event on ${relay.url}`)
-        relay.close()
       })
       pub.on("failed", (reason) => {
         console.log(`failed to publish to ${relay.url}: ${reason}`)
-        relay.close()
       })
     })
 
