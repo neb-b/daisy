@@ -16,5 +16,14 @@ export const mapping = {
         },
       },
     },
+    Divider: {
+      appearances: {
+        default: {
+          mapping: {
+            backgroundColor: "color-basic-1000",
+          },
+        },
+      },
+    },
   },
 }
