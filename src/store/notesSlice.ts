@@ -358,3 +358,33 @@ export const doLike = (noteId: string) => async (dispatch: AppDispatch, getState
     ["e", noteId],
   ])
 }
+
+export const doUpdateProfile =
+  (profile: NostrProfileContent, onSuccess: () => void) =>
+  async (dispatch: AppDispatch, getState: GetState) => {
+    const { settings: settingsState } = getState()
+    const {
+      user: { pubkey, privateKey },
+      relaysByUrl,
+    } = settingsState
+
+    if (!pubkey || !privateKey) {
+      console.log("no user found")
+      return
+    }
+
+    const profileResponse = (await publishNote(
+      Object.values(relaysByUrl),
+      { pubkey, privateKey },
+      nostrEventKinds.profile,
+      JSON.stringify(profile)
+    )) as unknown
+
+    const updatedProfile = profileResponse as NostrProfile
+    try {
+      updatedProfile.content = JSON.parse(updatedProfile.content)
+    } catch (e) {}
+
+    dispatch(updateProfilesByPubkey({ [pubkey]: updatedProfile }))
+    onSuccess()
+  }

@@ -46,6 +46,8 @@ declare type NostrProfileContent = {
   about?: string
   nip05?: string
   website?: string
+  banner?: string
+  lud06?: string
 }
 
 declare type NostrProfile = NostrProfileEvent & {

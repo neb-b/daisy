@@ -3,6 +3,7 @@ import { View } from "react-native"
 import { Button, Divider, Text, Spinner } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
 import { nip19 } from "nostr-tools"
+import { useNavigation } from "@react-navigation/native"
 
 import { Layout } from "components/Layout"
 import { Avatar } from "components/Avatar"
@@ -17,6 +18,8 @@ export function ProfileScreen({ route }) {
     params: { pubkey },
   } = route
   const dispatch = useDispatch()
+  const navigation = useNavigation()
+
   const user = useUser()
   const profile = useProfile(pubkey)
   const contactList = useContactList(user?.pubkey)
@@ -48,18 +51,36 @@ export function ProfileScreen({ route }) {
       <View style={{ padding: 16, paddingTop: 0, flex: 1 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Avatar pubkey={pubkey} size={75} />
-          {!isMe && 
+          {isMe ? (
+            <Button
+              appearance="outline"
+              style={{ marginBottom: "auto" }}
+              // @ts-expect-error
+              onPress={() => navigation.navigate("ProfileEdit")}
+            >
+              Edit Profile
+            </Button>
+          ) : (
             <Button
               appearance={isFollowing ? "outline" : "primary"}
               style={{ marginBottom: "auto" }}
               onPress={handleToggleFollow}
             >
               {isFollowing ? "Unfollow" : "Follow"}
-            </Button>}
+            </Button>
+          )}
         </View>
-        {profileContent?.name && (
-          <Text style={{ fontWeight: "bold", fontSize: 16, marginTop: 16 }}>{profileContent.name}</Text>
-        )}
+        <View>
+          {profileContent?.display_name && (
+            <Text style={{ fontWeight: "bold", fontSize: 16, marginTop: 16 }}>{profileContent.name}</Text>
+          )}
+          {profileContent?.name && (
+            <Text appearance={profileContent.display_name ? "hint" : undefined} style={{ fontSize: 16 }}>
+              @{profileContent.name}
+            </Text>
+          )}
+        </View>
+
         <Text style={{ fontSize: 16, marginTop: 4 }}>{npub.slice(0, 24)}...</Text>
         {profileContent?.about && (
           <Text style={{ marginTop: 8, fontSize: 16, lineHeight: 16 }}>{profileContent.about}</Text>
