@@ -165,8 +165,14 @@ export const doToggleRelay = (relayUrl: string) => async (dispatch: AppDispatch,
   if (existingRelay?.status === 1) {
     await existingRelay.close()
     dispatch(updateRelays({ [relayUrl]: existingRelay }))
+  } else if (existingRelay?.status === 3) {
+    connectToRelay(relayUrl, ({ relay }) => {
+      dispatch(updateRelays({ [relay.url]: relay }))
+    })
   } else if (!existingRelay?.status) {
-    await existingRelay.close()
+    if (existingRelay.close) {
+      await existingRelay.close()
+    }
     connectToRelay(relayUrl, ({ relay }) => {
       dispatch(updateRelays({ [relay.url]: relay }))
     })

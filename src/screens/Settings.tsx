@@ -159,6 +159,7 @@ const RelayManagement = () => {
 
   React.useEffect(() => {
     setAddingRelay(false)
+    setDraftRelay("")
   }, [relayLength])
 
   return (
