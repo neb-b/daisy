@@ -20,6 +20,7 @@ export function FollowingFeedScreen() {
   const appState = React.useRef(AppState.currentState)
   const [appVisible, setAppVisible] = React.useState(appState.current === "active")
   const hasContactList = contactList?.tags?.length > 0
+  const showLoading = loading && notes.length === 0
 
   React.useEffect(() => {
     if (!hasContactList) {
@@ -58,13 +59,13 @@ export function FollowingFeedScreen() {
       <TopNavigation title="Feed" alignment="center" />
       <Divider />
 
-      {loading && (
+      {showLoading && (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <Spinner />
         </View>
       )}
 
-      {!loading && notes?.length > 0 && (
+      {!showLoading && notes?.length > 0 && (
         <FlashList estimatedItemSize={190} data={notes} renderItem={renderNote} keyExtractor={keyExtractor} />
       )}
 
