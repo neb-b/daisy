@@ -7,9 +7,10 @@ import { Image, Link, Mention } from "components"
 
 type Props = {
   note: NostrNoteEvent | NostrRepostEvent
+  size?: "small" | "large"
 }
 
-export const NoteContent: React.FC<Props> = ({ note }) => {
+export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
   if (!note) return null
 
   return (
@@ -42,7 +43,7 @@ export const NoteContent: React.FC<Props> = ({ note }) => {
           <Text
             key={i}
             style={{
-              fontSize: 16,
+              fontSize: size === "small" ? 16 : 20,
               flexWrap: "wrap",
             }}
           >

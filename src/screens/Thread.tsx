@@ -1,5 +1,5 @@
 import React from "react"
-import { View, Pressable } from "react-native"
+import { View } from "react-native"
 import { Divider, Spinner } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
 
@@ -8,31 +8,23 @@ import { useThread } from "store/hooks"
 import { doFetchRepliesInThread } from "store/notesSlice"
 import { useDispatch } from "store"
 
-export function ThreadScreen({ navigation, route }) {
+export function ThreadScreen({ route }) {
   const {
     params: { id },
   } = route
   const dispatch = useDispatch()
   const { notes, loading } = useThread(id)
+  const indexOfHighlightedNote = notes.indexOf(id)
 
   React.useEffect(() => {
     dispatch(doFetchRepliesInThread(id))
   }, [id])
 
   const renderNote = React.useCallback(
-    ({ item }) => (
-      <Pressable
-        onPress={() => navigation.navigate("Thread", { id: item })}
-        style={{
-          paddingLeft: 10,
-          paddingRight: 15,
-          paddingTop: 10,
-        }}
-      >
-        <Note isThread key={item} id={item} />
-      </Pressable>
+    ({ item, index }) => (
+      <Note threadId={id} key={item} id={item} insideThread={index < indexOfHighlightedNote} />
     ),
-    []
+    [id, indexOfHighlightedNote]
   )
 
   const keyExtractor = React.useCallback((item) => item, [])

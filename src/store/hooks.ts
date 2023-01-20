@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux"
 import { nostrEventKinds } from "core/nostr"
 import type { RootState } from "./index"
+import { acc } from "react-native-reanimated"
 
 export const useUser = () => {
   const { user } = useSelector((state: RootState) => state.settings)
@@ -84,36 +85,77 @@ export const useThread = (noteId: string) => {
     return { notes: [], loading }
   }
 
-  const replyIdsMap = note.tags
-    .filter((tag) => tag[0] === "e")
-    .reduce((acc, tag) => {
-      const referenceId = tag[1]
-      acc[referenceId] = true
-      return acc
-    }, {})
-
-  const replies = Object.values(notesById).reduce((acc, noteFromNoteById) => {
-    const noteTags = noteFromNoteById.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
-
-    if (replyIdsMap[noteFromNoteById.id]) {
-      acc.push(noteFromNoteById.id)
-    } else {
-      noteTags.forEach((id) => {
-        if (replyIdsMap[id]) {
-          acc.push(noteFromNoteById.id)
-        }
-      })
+  let noteToDisplay = note
+  if (note.kind === nostrEventKinds.repost) {
+    const repostedId = note.tags.find((tag) => tag[0] === "e")?.[1]
+    const repostedNote = notesById[repostedId]
+    if (repostedNote) {
+      noteToDisplay = repostedNote
     }
+  }
 
-    return acc
-  }, [])
+  const highlightedNoteReplyIds = noteToDisplay.tags
+    .slice()
+    .filter((tag) => tag[0] === "e")
+    .map((tag) => tag[1])
 
-  const notes = [...Array.from(new Set([noteId, ...replies]))]
-    .map((id: string) => notesById[id])
+  const repliesToHighlightedNote = Object.values(notesById)
+    .reduce((acc, noteFromNoteById) => {
+      const noteTags = noteFromNoteById.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
+
+      if (noteTags[0] === noteToDisplay.id && noteFromNoteById.kind !== nostrEventKinds.repost) {
+        acc.push(noteFromNoteById)
+      }
+
+      return acc
+    }, [])
     .sort((a, b) => a.created_at - b.created_at)
     .map((note) => note.id)
 
-  return { notes, loading }
+  if (!highlightedNoteReplyIds.length) {
+    // This is a top level message
+    // Get direct replies to this message
+    return { notes: [noteToDisplay.id, ...repliesToHighlightedNote], loading }
+  }
+
+  if (highlightedNoteReplyIds.length === 1) {
+    // The highlighted note is replying to the top of a thread
+    // Get other replies to this highlighted note
+    return {
+      notes: [highlightedNoteReplyIds[0], noteToDisplay.id, ...repliesToHighlightedNote],
+      loading,
+    }
+  }
+
+  // This is a reply to a message in the middle of a thread
+  // Get reply chain for this specific message
+  const topLevelReplyId = highlightedNoteReplyIds[0]
+  const directReplyId = highlightedNoteReplyIds[1]
+
+  const travelUpThread = (noteId: string) => {
+    const note = notesById[noteId]
+    const noteIdReplyingToId = note?.tags.filter(
+      (tag) => tag[0] === "e" && tag[1] !== topLevelReplyId
+    )?.[0]?.[1]
+
+    if (!noteIdReplyingToId) {
+      return [noteId]
+    }
+
+    return [...travelUpThread(noteIdReplyingToId), noteId]
+  }
+
+  const repliesBetweenHighlightedNoteAndTopLevelNote = travelUpThread(directReplyId)
+
+  return {
+    notes: [
+      topLevelReplyId,
+      ...repliesBetweenHighlightedNoteAndTopLevelNote,
+      noteId,
+      ...repliesToHighlightedNote,
+    ],
+    loading,
+  }
 }
 
 export const useNote = (

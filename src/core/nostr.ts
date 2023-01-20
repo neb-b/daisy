@@ -164,7 +164,7 @@ const getRelatedEvents = async (
 
     const reactionEventsPromise = getNostrEvents(relays, {
       kinds: [nostrEventKinds.reaction],
-      "#e": [...repliesSet, ...repostsSet, ...notes.map((note) => note.id)],
+      ids: [...repliesSet, ...repostsSet, ...notes.map((note) => note.id)],
     })
 
     const [replyEvents, repostEvents, reactionEvents] = await Promise.all([
