@@ -72,10 +72,15 @@ export function ProfileScreen({ route }) {
         </View>
         <View>
           {profileContent?.display_name && (
-            <Text style={{ fontWeight: "bold", fontSize: 16, marginTop: 16 }}>{profileContent.name}</Text>
+            <Text style={{ fontWeight: "bold", fontSize: 16, marginTop: 16 }}>
+              {profileContent.display_name}
+            </Text>
           )}
           {profileContent?.name && (
-            <Text appearance={profileContent.display_name ? "hint" : undefined} style={{ fontSize: 16 }}>
+            <Text
+              appearance={profileContent.display_name ? "hint" : undefined}
+              style={{ fontWeight: profileContent?.display_name ? undefined : "bold", fontSize: 16 }}
+            >
               @{profileContent.name}
             </Text>
           )}

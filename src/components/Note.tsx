@@ -55,10 +55,10 @@ export const Note: React.FC<Props> = ({
             <View style={{ flex: 1, marginLeft: 8 }}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text style={{ fontSize: 14, fontWeight: "bold" }}>
-                  {profileContent?.display_name || note.pubkey.slice(0, 6)}
+                  {profileContent?.display_name || profileContent?.name || note.pubkey.slice(0, 6)}
                 </Text>
 
-                {!isHighlightedNote && profileContent?.name && (
+                {!isHighlightedNote && profileContent?.name && profileContent?.display_name && (
                   <Text appearance="hint" style={{ fontSize: 14, marginLeft: 4 }}>
                     @{profileContent?.name}
                   </Text>
