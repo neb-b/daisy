@@ -17,6 +17,7 @@ function BottomTabBar({ navigation, state }) {
         onSelect={(index) => navigation.navigate(state.routeNames[index])}
       >
         <BottomNavigationTab icon={(props) => <Icon {...props} name="home-outline" />} />
+        <BottomNavigationTab icon={(props) => <Icon {...props} name="bell-outline" />} />
         <BottomNavigationTab icon={(props) => <Icon {...props} name="settings-outline" />} />
       </BottomNavigation>
     </>

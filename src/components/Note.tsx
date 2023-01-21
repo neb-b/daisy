@@ -144,7 +144,7 @@ function RepostAuthor({ pubkey }) {
   const repostAuthor = profile?.content?.name || pubkey.slice(0, 6)
 
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 20, marginBottom: 8 }}>
+    <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 24, marginBottom: 8 }}>
       <Icon name="flip-2-outline" style={{ height: 16, width: 16, tintColor: theme["color-basic-600"] }} />
       <Text appearance="hint" style={{ marginLeft: 8 }}>
         {repostAuthor} boosted
