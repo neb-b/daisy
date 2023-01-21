@@ -33,20 +33,20 @@ export const Note: React.FC<Props> = ({
 
   return (
     <>
-      {/* @ts-expect-error */}
-      <Pressable onPress={() => navigation.push("Thread", { id })}>
-        <View
-          style={{
-            flexDirection: "column",
-            paddingTop: 16,
-            paddingBottom: 16,
-            paddingLeft: 16,
-            paddingRight: 16,
-            ...style,
-          }}
-        >
-          {note.repostedBy && <RepostAuthor pubkey={note.repostedBy} />}
+      <View
+        style={{
+          flexDirection: "column",
+          paddingTop: 16,
+          paddingBottom: 16,
+          paddingLeft: 16,
+          paddingRight: 16,
+          ...style,
+        }}
+      >
+        {note.repostedBy && <RepostAuthor pubkey={note.repostedBy} />}
 
+        {/* @ts-expect-error */}
+        <Pressable onPress={() => navigation.push("Thread", { id })}>
           <View style={{ flexDirection: "row", alignItems: isHighlightedNote ? "center" : "flex-start" }}>
             <View style={{ alignItems: "center" }}>
               <Avatar pubkey={note.pubkey} />
@@ -100,8 +100,8 @@ export const Note: React.FC<Props> = ({
               {!hideActions && <NoteActions id={note.id} size="large" />}
             </View>
           )}
-        </View>
-      </Pressable>
+        </Pressable>
+      </View>
       {!hideActions && !insideThread && <Divider />}
     </>
   )
@@ -139,16 +139,26 @@ function ReplyText({ pubkeysOrProfiles }) {
 }
 
 function RepostAuthor({ pubkey }) {
+  const navigation = useNavigation()
   const theme = useTheme()
   const profile = useProfile(pubkey)
   const repostAuthor = profile?.content?.name || pubkey.slice(0, 6)
 
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 24, marginBottom: 8 }}>
-      <Icon name="flip-2-outline" style={{ height: 16, width: 16, tintColor: theme["color-basic-600"] }} />
-      <Text appearance="hint" style={{ marginLeft: 8 }}>
-        {repostAuthor} boosted
-      </Text>
-    </View>
+    <Pressable
+      onPress={() =>
+        // @ts-expect-error
+        navigation.navigate("Profile", {
+          pubkey,
+        })
+      }
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 24, marginBottom: 8 }}>
+        <Icon name="flip-2-outline" style={{ height: 16, width: 16, tintColor: theme["color-basic-600"] }} />
+        <Text appearance="hint" style={{ marginLeft: 8 }}>
+          {repostAuthor} boosted
+        </Text>
+      </View>
+    </Pressable>
   )
 }
