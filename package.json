@@ -29,7 +29,7 @@
     "expo": "47.0.13",
     "expo-clipboard": "4.0.1",
     "expo-random": "13.0.0",
-    "expo-splash-screen": "0.17.5",
+    "expo-splash-screen": "^0.17.5",
     "expo-status-bar": "1.4.2",
     "nostr-tools": "1.0.1",
     "react": "18.1.0",

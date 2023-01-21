@@ -1,6 +1,6 @@
 import React from "react"
-import { SafeAreaView } from "react-native"
-import { Layout, Text } from "@ui-kitten/components"
+import * as SplashScreen from "expo-splash-screen"
+
 import { useUser } from "store/hooks"
 import { useDispatch } from "store"
 import { initRelays } from "store/settingsSlice"
@@ -10,26 +10,28 @@ export function LoadingScreen({ navigation }) {
   const dispatch = useDispatch()
   const { pubkey } = useUser()
 
+  const hideSplashScreen = React.useCallback(async () => {
+    await SplashScreen.hideAsync()
+  }, [])
+
   React.useEffect(() => {
     dispatch(initRelays())
   }, [dispatch])
 
   React.useEffect(() => {
     if (pubkey) {
-      return reset({ index: 0, routes: [{ name: "Home" }] })
+      reset({ index: 0, routes: [{ name: "Home" }] })
+    } else {
+      reset({
+        index: 0,
+        routes: [{ name: "Auth" }],
+      })
     }
 
-    return reset({
-      index: 0,
-      routes: [{ name: "Auth" }],
-    })
-  }, [pubkey, reset])
+    setTimeout(() => {
+      hideSplashScreen()
+    }, 500)
+  }, [pubkey, reset, hideSplashScreen])
 
-  return (
-    <Layout style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <Layout style={{ flex: 1, alignItems: "center", justifyContent: "center" }}></Layout>
-      </SafeAreaView>
-    </Layout>
-  )
+  return null
 }
