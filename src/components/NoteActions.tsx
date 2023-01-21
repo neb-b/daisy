@@ -80,7 +80,6 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
               style={{
                 color: reposted ? interactedColor : defaultColor,
                 fontSize: isLarge ? 16 : 12,
-                // fontWeight: isLarge ? "bold" : undefined,
                 marginLeft: 8,
               }}
             >

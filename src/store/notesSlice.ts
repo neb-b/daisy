@@ -184,6 +184,7 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
       if (note.kind === nostrEventKinds.reaction) {
         const noteIdReactionIsFor = note.tags.find((tag) => tag[0] === "e")?.[1]
         const currentReactions = notesState.reactionsByNoteId[noteIdReactionIsFor] || []
+        // TODO: this is wrong, resets to 0 when a new reaction comes in
 
         // @ts-expect-error
         return dispatch(updateReactionsByNoteId({ [noteIdReactionIsFor]: [...currentReactions, note] }))
@@ -211,6 +212,10 @@ export const unsubscribeFromFollowingFeed = () => (dispatch: AppDispatch, getSta
   })
 
   dispatch(updateSubscriptionsById({ following: [] }))
+}
+
+export const doFetchNotifications = () => async (dispatch: AppDispatch, getState: GetState) => {
+  console.log("fetch")
 }
 
 export const doFetchRepliesInThread =

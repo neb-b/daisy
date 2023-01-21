@@ -70,11 +70,9 @@ export function ProfileScreen({ route }) {
             </Button>
           )}
         </View>
-        <View>
+        <View style={{ marginTop: 16 }}>
           {profileContent?.display_name && (
-            <Text style={{ fontWeight: "bold", fontSize: 16, marginTop: 16 }}>
-              {profileContent.display_name}
-            </Text>
+            <Text style={{ fontWeight: "bold", fontSize: 16 }}>{profileContent.display_name}</Text>
           )}
           {profileContent?.name && (
             <Text

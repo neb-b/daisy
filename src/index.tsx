@@ -48,17 +48,19 @@ function AppWrapper({ children }) {
 
 function App() {
   return (
-    <Provider store={store}>
-      <SafeAreaProvider>
-        <ThemeWrapper>
-          <AppWrapper>
-            <NavigationContainer>
-              <HomeStackNavigator />
-            </NavigationContainer>
-          </AppWrapper>
-        </ThemeWrapper>
-      </SafeAreaProvider>
-    </Provider>
+    <View style={{ flex: 1, backgroundColor: "080808" }}>
+      <Provider store={store}>
+        <SafeAreaProvider>
+          <ThemeWrapper>
+            <AppWrapper>
+              <NavigationContainer>
+                <HomeStackNavigator />
+              </NavigationContainer>
+            </AppWrapper>
+          </ThemeWrapper>
+        </SafeAreaProvider>
+      </Provider>
+    </View>
   )
 }
 export default App
