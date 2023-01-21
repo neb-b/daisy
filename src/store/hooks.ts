@@ -225,20 +225,24 @@ export const useReposted = (noteId: string) => {
 
   const notes = Object.values(notesById)
   let reposted = false
+  let count = 0
+
   for (let i = 0; i < notes.length; i++) {
     const note = notes[i]
     if (note.kind === nostrEventKinds.repost) {
       const isMe = note.pubkey === user.pubkey
       const isNoteMatch = note.tags.find((tag) => tag[0] === "e")?.[1] === noteId
 
-      if (isMe && isNoteMatch) {
-        reposted = true
-        break
+      if (isNoteMatch) {
+        count++
+        if (isMe) {
+          reposted = true
+        }
       }
     }
   }
 
-  return reposted
+  return { repostedCount: count, reposted }
 }
 
 export const useRelaysByUrl = () => {

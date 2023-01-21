@@ -18,7 +18,7 @@ type Props = {
 export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
   const note = useNote(id)
   const { reactions, liked } = useReactions(id)
-  const reposted = useReposted(id)
+  const { repostedCount, reposted } = useReposted(id)
   const theme = useTheme()
   const dispatch = useDispatch()
   const [creatingNote, setCreatingNote] = React.useState(false)
@@ -73,8 +73,20 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
         <Pressable onPress={handleReply}>
           <Icon {...iconProps} name="message-circle-outline" />
         </Pressable>
-        <Pressable onPress={handleRepost}>
+        <Pressable style={{ flexDirection: "row", alignItems: "center" }} onPress={handleRepost}>
           <Icon {...iconProps} name="flip-2-outline" fill={reposted ? interactedColor : iconProps.fill} />
+          {repostedCount > 0 && (
+            <Text
+              style={{
+                color: reposted ? interactedColor : defaultColor,
+                fontSize: isLarge ? 16 : 12,
+                // fontWeight: isLarge ? "bold" : undefined,
+                marginLeft: 8,
+              }}
+            >
+              {repostedCount}
+            </Text>
+          )}
         </Pressable>
         <Pressable style={{ flexDirection: "row", alignItems: "center" }} onPress={handleLike}>
           <Icon
@@ -87,7 +99,6 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
               style={{
                 color: liked ? interactedColor : defaultColor,
                 fontSize: isLarge ? 16 : 12,
-                // fontWeight: isLarge ? "bold" : undefined,
                 marginLeft: 8,
               }}
             >
