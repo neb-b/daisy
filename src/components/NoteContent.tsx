@@ -2,7 +2,6 @@ import React from "react"
 import { View } from "react-native"
 import { useTheme, Text } from "@ui-kitten/components"
 import { LinkPreview } from "@flyerhq/react-native-link-preview"
-import { URL } from "react-native-url-polyfill"
 
 import { isImage, isUrl, isMention, noteOrUrlRegex, urlRegex } from "utils/note"
 import { Image, Link, Mention } from "components"
