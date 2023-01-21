@@ -100,7 +100,6 @@ export const getEventsFromPubkeys = async (
   notes: NostrEvent[]
   profiles: Record<string, NostrProfileEvent>
   related: NostrEvent[]
-  reactions: Record<string, NostrReactionEvent[]>
 }> =>
   new Promise(async (resolve) => {
     const filter = {
@@ -115,9 +114,9 @@ export const getEventsFromPubkeys = async (
 
     const notes = await getNostrEvents(relays, filter)
 
-    const { related, profiles, reactions } = await getRelatedEvents(relays, notes)
+    const { related, profiles } = await getRelatedEvents(relays, notes)
 
-    resolve({ notes, related, profiles, reactions })
+    resolve({ notes, related, profiles })
   })
 
 export const getEventsForPubkey = async (
@@ -128,7 +127,6 @@ export const getEventsForPubkey = async (
   notes: NostrEvent[]
   profiles: Record<string, NostrProfileEvent>
   related: NostrEvent[]
-  reactions: Record<string, NostrReactionEvent[]>
 }> =>
   new Promise(async (resolve) => {
     const filter = {
@@ -143,9 +141,9 @@ export const getEventsForPubkey = async (
 
     const notes = await getNostrEvents(relays, filter)
 
-    const { related, profiles, reactions } = await getRelatedEvents(relays, notes)
+    const { related, profiles } = await getRelatedEvents(relays, notes)
 
-    resolve({ notes, related, profiles, reactions })
+    resolve({ notes, related, profiles })
   })
 
 const getRelatedEvents = async (
@@ -154,7 +152,6 @@ const getRelatedEvents = async (
 ): Promise<{
   related: NostrEvent[]
   profiles: Record<string, NostrProfileEvent>
-  reactions: Record<string, NostrReactionEvent[]>
 }> =>
   new Promise(async (resolve) => {
     const alreadyFetchedReposts = []
@@ -178,32 +175,12 @@ const getRelatedEvents = async (
       }
     })
 
-    const replyEventsPromise = getNostrEvents(relays, {
-      kinds: [nostrEventKinds.note],
+    const relatedNotes = await getNostrEvents(relays, {
+      kinds: [nostrEventKinds.note, nostrEventKinds.repost],
       limit: repliesSet.size,
-      ids: Array.from(repliesSet),
-    })
-
-    const repostEventsPromise = getNostrEvents(relays, {
-      kinds: [nostrEventKinds.note],
-      limit: repostsSet.size,
-      ids: Array.from(repostsSet),
-    })
-
-    const reactionEventsPromise = getNostrEvents(relays, {
-      kinds: [nostrEventKinds.reaction],
+      ids: Array.from(new Set([...repliesSet, ...repostsSet])),
       "#e": [...repliesSet, ...repostsSet, ...notes.map((note) => note.id)],
     })
-
-    const [replyEvents, repostEvents, reactionEvents] = await Promise.all([
-      replyEventsPromise,
-      repostEventsPromise,
-      reactionEventsPromise,
-    ])
-
-    const prunedReactionEvents = reactionEvents.filter(
-      (note: NostrEvent) => note.content === "+" || note.content === "🤙" || note.content === "❤️"
-    )
 
     // Get profiles from all the events
     const profilePubkeysSet = new Set<string>()
@@ -215,10 +192,7 @@ const getRelatedEvents = async (
     alreadyFetchedReposts.forEach((event) => {
       profilePubkeysSet.add(event.pubkey)
     })
-    repostEvents.forEach((event) => {
-      profilePubkeysSet.add(event.pubkey)
-    })
-    replyEvents.forEach((event) => {
+    relatedNotes.forEach((event) => {
       profilePubkeysSet.add(event.pubkey)
     })
 
@@ -242,26 +216,13 @@ const getRelatedEvents = async (
       userProfileInfos[profileEvent.pubkey] = user
     })
 
-    const reactionsById = {}
-    prunedReactionEvents.forEach((reaction) => {
-      const eventId = reaction.tags[0][1]
-      if (eventId) {
-        if (!reactionsById[eventId]) {
-          reactionsById[eventId] = [reaction]
-        } else {
-          reactionsById[eventId].push(reaction)
-        }
-      }
-    })
-
     resolve({
-      related: [...alreadyFetchedReposts, ...repostEvents, ...replyEvents],
+      related: [...alreadyFetchedReposts, ...relatedNotes],
       profiles: userProfileInfos,
-      reactions: reactionsById,
     })
   })
 
-const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent[]> =>
+export const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent[]> =>
   new Promise((resolve) => {
     const limit = filter?.limit || GET_EVENTS_LIMIT
     const eventsById: Record<string, NostrEvent> = {}
@@ -269,6 +230,10 @@ const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Promise<No
     let returned = false
 
     relays.forEach((relay) => {
+      if (!relay.sub) {
+        return
+      }
+
       const sub = relay.sub([
         {
           limit,
@@ -317,6 +282,10 @@ export const subscribeToNostrEvents = (
 ): Sub[] => {
   const subscriptions = []
   relays.forEach((relay) => {
+    if (!relay.sub) {
+      return
+    }
+
     const sub = relay.sub([{ ...filter }])
     subscriptions.push(sub)
 
@@ -340,6 +309,10 @@ export const subscribeToNostrEvents = (
 const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent> =>
   new Promise((resolve) => {
     relays.forEach((relay) => {
+      if (!relay.sub) {
+        return
+      }
+
       const sub = relay.sub([{ ...filter }])
       sub.on("event", (event) => {
         const nostrEvent = <NostrEvent>event

@@ -5,6 +5,7 @@ import type { Sub } from "nostr-tools"
 
 import {
   getProfile,
+  getNostrEvents,
   getEventsFromPubkeys,
   getEventsForPubkey,
   subscribeToNostrEvents,
@@ -133,7 +134,7 @@ export const doFetchProfileNotes = (pubkey: string) => async (dispatch: AppDispa
 
   const relays = Object.values(relaysByUrl).filter((relay) => relaysLoadingByUrl[relay.url] !== true)
 
-  const { notes, profiles, related, reactions } = await getEventsFromPubkeys(relays, [pubkey], 20)
+  const { notes, profiles, related } = await getEventsFromPubkeys(relays, [pubkey], 20)
 
   dispatch(
     updateNotesAndProfiles({
@@ -143,12 +144,12 @@ export const doFetchProfileNotes = (pubkey: string) => async (dispatch: AppDispa
   )
   dispatch(updatefeedsByIdOrPubkey({ [pubkey]: Array.from(new Set(notes.map((note) => note.id))) }))
   dispatch(updateloadingByIdOrPubkey({ [pubkey]: false }))
-  dispatch(updateReactionsByNoteId(reactions))
+  dispatch(doFetchReactionsForNotes([...notes, ...related].map((note) => note.id)))
 }
 
 export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
   const { settings: settingsState, notes: notesState } = getState()
-  const { contactListsByPubkey, reactionsByNoteId } = notesState
+  const { contactListsByPubkey } = notesState
   const contactList = contactListsByPubkey[settingsState.user.pubkey]
   const pubkeys = [settingsState.user.pubkey, ...contactList.tags.map((tag) => tag[1])]
 
@@ -159,7 +160,7 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
     (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
   )
 
-  const { notes, profiles, related, reactions } = await getEventsFromPubkeys(relays, pubkeys)
+  const { notes, profiles, related } = await getEventsFromPubkeys(relays, pubkeys)
 
   dispatch(
     updateNotesAndProfiles({
@@ -170,7 +171,6 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
 
   dispatch(updatefeedsByIdOrPubkey({ following: Array.from(new Set(notes.map((note) => note.id))) }))
   dispatch(updateloadingByIdOrPubkey({ following: false }))
-  dispatch(updateReactionsByNoteId(reactions))
 
   const filter = {
     authors: pubkeys,
@@ -183,9 +183,9 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
     filter,
     (note: NostrEvent, related?: NostrEvent[], profiles?: Record<string, NostrProfile>) => {
       if (note.kind === nostrEventKinds.reaction) {
+        const { reactionsByNoteId } = getState().notes
         const noteIdReactionIsFor = note.tags.find((tag) => tag[0] === "e")?.[1]
-        const currentReactions = notesState.reactionsByNoteId[noteIdReactionIsFor] || []
-        // TODO: this is wrong, resets to 0 when a new reaction comes in
+        const currentReactions = reactionsByNoteId[noteIdReactionIsFor] || []
 
         // @ts-expect-error
         return dispatch(updateReactionsByNoteId({ [noteIdReactionIsFor]: [...currentReactions, note] }))
@@ -202,7 +202,42 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
   )
 
   dispatch(updateSubscriptionsById({ following: subscriptions }))
+
+  // After everything is setup, fetch reactions for the notes in the feed
+  dispatch(doFetchReactionsForNotes([...notes, ...related].map((note) => note.id)))
 }
+
+export const doFetchReactionsForNotes =
+  (noteIds: string[]) => async (dispatch: AppDispatch, getState: GetState) => {
+    const {
+      settings: settingsState,
+      notes: { reactionsByNoteId },
+    } = getState()
+
+    const { relaysByUrl, relaysLoadingByUrl } = settingsState
+    const relays = Object.values(relaysByUrl).filter(
+      (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
+    )
+
+    const reactions = await getNostrEvents(relays, {
+      kinds: [nostrEventKinds.reaction],
+      "#e": noteIds,
+    })
+
+    const newReactionsByNoteId = Object.assign({}, reactionsByNoteId)
+    reactions.forEach((note: unknown) => {
+      const reaction = note as NostrReactionEvent
+
+      const noteIdReactionIsFor = reaction.tags.find((tag) => tag[0] === "e")?.[1]
+      if (newReactionsByNoteId[noteIdReactionIsFor] === undefined) {
+        newReactionsByNoteId[noteIdReactionIsFor] = [reaction]
+      } else {
+        newReactionsByNoteId[noteIdReactionIsFor].push(reaction)
+      }
+    })
+
+    dispatch(updateReactionsByNoteId(newReactionsByNoteId))
+  }
 
 export const unsubscribeFromFollowingFeed = () => (dispatch: AppDispatch, getState: GetState) => {
   const { notes: notesState } = getState()
@@ -225,7 +260,7 @@ export const doFetchNotifications = () => async (dispatch: AppDispatch, getState
     (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
   )
 
-  const { notes, profiles, related, reactions } = await getEventsForPubkey(relays, user.pubkey)
+  const { notes, profiles, related } = await getEventsForPubkey(relays, user.pubkey)
 
   dispatch(
     updateNotesAndProfiles({
@@ -236,7 +271,7 @@ export const doFetchNotifications = () => async (dispatch: AppDispatch, getState
 
   dispatch(updatefeedsByIdOrPubkey({ notifications: Array.from(new Set(notes.map((note) => note.id))) }))
   dispatch(updateloadingByIdOrPubkey({ notifications: false }))
-  dispatch(updateReactionsByNoteId(reactions))
+  dispatch(doFetchReactionsForNotes([...notes, ...related].map((note) => note.id)))
 }
 
 export const doFetchRepliesInThread =
