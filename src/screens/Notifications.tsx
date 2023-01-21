@@ -2,6 +2,7 @@ import React from "react"
 import { View } from "react-native"
 import { Divider, Spinner } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
+import { useFocusEffect } from "@react-navigation/native"
 
 import { useDispatch } from "store"
 import { doFetchNotifications } from "store/notesSlice"
@@ -13,9 +14,11 @@ export function NotificationsScreen() {
   const { loading, notes } = useFeed("notifications")
   const showLoading = loading && notes.length === 0
 
-  React.useEffect(() => {
-    dispatch(doFetchNotifications())
-  }, [])
+  useFocusEffect(
+    React.useCallback(() => {
+      dispatch(doFetchNotifications())
+    }, [])
+  )
 
   const renderNote = React.useCallback(({ item }) => <Note key={item} id={item} />, [])
   const keyExtractor = React.useCallback((item) => item, [])
