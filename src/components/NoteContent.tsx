@@ -5,6 +5,9 @@ import { LinkPreview } from "@flyerhq/react-native-link-preview"
 
 import { isImage, isUrl, isMention, noteOrUrlRegex, urlRegex } from "utils/note"
 import { Image, Link, Mention } from "components"
+import { Dimensions } from "react-native"
+
+const WINDOW_WIDTH = Dimensions.get("window").width
 
 type Props = {
   note: NostrNoteEvent | NostrRepostEvent
@@ -38,6 +41,12 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
             return <React.Fragment key={i} />
           }
 
+          if (text === "\n") {
+            // Force full width line break
+            // This is weird because these text pieces are flex items inside a flex wrap container
+            return <View key={i} style={{ width: WINDOW_WIDTH }} />
+          }
+
           if (isImage(text)) {
             return (
               <View key={i} style={{ width: "100%", height: 150 }}>
@@ -62,7 +71,9 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
               key={i}
               style={{
                 fontSize: size === "small" ? 16 : 20,
-                flexWrap: "wrap",
+                flex: 0,
+                // flexWrap: "wrap",
+                // width: "100%",
               }}
             >
               {text}

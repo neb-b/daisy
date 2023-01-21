@@ -251,7 +251,7 @@ export const unsubscribeFromFollowingFeed = () => (dispatch: AppDispatch, getSta
 }
 
 export const doFetchNotifications = () => async (dispatch: AppDispatch, getState: GetState) => {
-  const { settings: settingsState, notes: notesState } = getState()
+  const { settings: settingsState } = getState()
 
   dispatch(updateloadingByIdOrPubkey({ notifications: true }))
 
@@ -260,7 +260,7 @@ export const doFetchNotifications = () => async (dispatch: AppDispatch, getState
     (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
   )
 
-  const { notes, profiles, related } = await getEventsForPubkey(relays, user.pubkey)
+  const { notes, profiles, related } = await getEventsForPubkey(relays, user.pubkey, 30)
 
   dispatch(
     updateNotesAndProfiles({
