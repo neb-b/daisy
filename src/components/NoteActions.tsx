@@ -26,7 +26,7 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
   const defaultColor = theme["color-basic-600"]
   const interactedColor = theme["color-primary-500"]
   const isLarge = size === "large"
-  const iconSize = isLarge ? 20 : 16
+  const iconSize = isLarge ? 20 : 18
 
   const iconProps = {
     height: iconSize,
@@ -69,7 +69,7 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
 
   return (
     <>
-      <View style={{ flexDirection: "row", marginTop: 16, marginRight: 16, justifyContent: "space-between" }}>
+      <View style={{ flexDirection: "row", marginTop: 16, marginRight: 8, justifyContent: "space-between" }}>
         <Pressable onPress={handleReply}>
           <Icon {...iconProps} name="message-circle-outline" />
         </Pressable>
