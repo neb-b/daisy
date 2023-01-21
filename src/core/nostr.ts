@@ -120,6 +120,34 @@ export const getEventsFromPubkeys = async (
     resolve({ notes, related, profiles, reactions })
   })
 
+export const getEventsForPubkey = async (
+  relays: Relay[],
+  pubkey: string,
+  limit?: number
+): Promise<{
+  notes: NostrEvent[]
+  profiles: Record<string, NostrProfileEvent>
+  related: NostrEvent[]
+  reactions: Record<string, NostrReactionEvent[]>
+}> =>
+  new Promise(async (resolve) => {
+    const filter = {
+      "#p": [pubkey],
+      kinds: [nostrEventKinds.note, nostrEventKinds.repost],
+    }
+
+    if (limit) {
+      // @ts-expect-error
+      filter.limit = limit
+    }
+
+    const notes = await getNostrEvents(relays, filter)
+
+    const { related, profiles, reactions } = await getRelatedEvents(relays, notes)
+
+    resolve({ notes, related, profiles, reactions })
+  })
+
 const getRelatedEvents = async (
   relays: Relay[],
   notes: NostrEvent[]

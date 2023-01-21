@@ -6,6 +6,7 @@ import type { Sub } from "nostr-tools"
 import {
   getProfile,
   getEventsFromPubkeys,
+  getEventsForPubkey,
   subscribeToNostrEvents,
   publishNote,
   nostrEventKinds,
@@ -215,7 +216,27 @@ export const unsubscribeFromFollowingFeed = () => (dispatch: AppDispatch, getSta
 }
 
 export const doFetchNotifications = () => async (dispatch: AppDispatch, getState: GetState) => {
-  console.log("fetch")
+  const { settings: settingsState, notes: notesState } = getState()
+
+  dispatch(updateloadingByIdOrPubkey({ notifications: true }))
+
+  const { user, relaysByUrl, relaysLoadingByUrl } = settingsState
+  const relays = Object.values(relaysByUrl).filter(
+    (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
+  )
+
+  const { notes, profiles, related, reactions } = await getEventsForPubkey(relays, user.pubkey)
+
+  dispatch(
+    updateNotesAndProfiles({
+      notes: [...notes, ...related],
+      profiles,
+    })
+  )
+
+  dispatch(updatefeedsByIdOrPubkey({ notifications: Array.from(new Set(notes.map((note) => note.id))) }))
+  dispatch(updateloadingByIdOrPubkey({ notifications: false }))
+  dispatch(updateReactionsByNoteId(reactions))
 }
 
 export const doFetchRepliesInThread =
