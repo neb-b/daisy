@@ -175,12 +175,20 @@ const getRelatedEvents = async (
       }
     })
 
-    const relatedNotes = await getNostrEvents(relays, {
+    const relatedRes = getNostrEvents(relays, {
       kinds: [nostrEventKinds.note, nostrEventKinds.repost],
       limit: repliesSet.size,
-      ids: Array.from(new Set([...repliesSet, ...repostsSet])),
+      ids: Array.from(repostsSet),
       "#e": [...repliesSet, ...repostsSet, ...notes.map((note) => note.id)],
     })
+
+    const replyRes = getNostrEvents(relays, {
+      kinds: [nostrEventKinds.note],
+      limit: repliesSet.size,
+      ids: Array.from(repliesSet),
+    })
+
+    const [relatedNotes, replyNotes] = await Promise.all([relatedRes, replyRes])
 
     // Get profiles from all the events
     const profilePubkeysSet = new Set<string>()
@@ -193,6 +201,9 @@ const getRelatedEvents = async (
       profilePubkeysSet.add(event.pubkey)
     })
     relatedNotes.forEach((event) => {
+      profilePubkeysSet.add(event.pubkey)
+    })
+    replyNotes.forEach((event) => {
       profilePubkeysSet.add(event.pubkey)
     })
 
@@ -217,7 +228,7 @@ const getRelatedEvents = async (
     })
 
     resolve({
-      related: [...alreadyFetchedReposts, ...relatedNotes],
+      related: [...alreadyFetchedReposts, ...relatedNotes, ...replyNotes],
       profiles: userProfileInfos,
     })
   })

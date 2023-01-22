@@ -103,7 +103,7 @@ export const useThread = (noteId: string) => {
     .reduce((acc, noteFromNoteById) => {
       const noteTags = noteFromNoteById.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
 
-      if (noteTags[0] === noteToDisplay.id && noteFromNoteById.kind !== nostrEventKinds.repost) {
+      if (noteTags.includes(noteToDisplay.id) && noteFromNoteById.kind !== nostrEventKinds.repost) {
         acc.push(noteFromNoteById)
       }
 
