@@ -49,7 +49,7 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
 
           if (isImage(text)) {
             return (
-              <View key={i} style={{ width: "100%", height: 150 }}>
+              <View key={i} style={{ width: "100%", height: 150, marginTop: 8 }}>
                 <Image src={text} />
               </View>
             )
