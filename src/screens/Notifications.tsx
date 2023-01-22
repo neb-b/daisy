@@ -25,7 +25,7 @@ export function NotificationsScreen() {
 
   return (
     <Layout>
-      <TopNavigation title="Feed" alignment="center" />
+      <TopNavigation title="Notifications" alignment="center" />
       <Divider />
 
       {showLoading && (
