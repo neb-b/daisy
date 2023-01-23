@@ -1,4 +1,5 @@
 import React from "react"
+import { Image } from "react-native"
 import { TopNavigationAction, TopNavigation as BaseTopNavigation, Icon } from "@ui-kitten/components"
 import { useNavigation } from "@react-navigation/native"
 
@@ -40,6 +41,10 @@ export const TopNavigation = ({ title, hideProfileLink, hideBack, ...rest }: Pro
   )
   const profileLink = React.useCallback(() => <Avatar pubkey={user.pubkey} size={35} />, [user.pubkey])
   const accessoryLeft = hideProfileLink ? (hideBack ? null : backAction) : profileLink
+  const titleImage = React.useCallback(
+    () => <Image source={require("../../assets/icon.png")} style={{ height: 40, width: 40 }} />,
+    []
+  )
 
-  return <BaseTopNavigation accessoryLeft={accessoryLeft} title={title} alignment="center" {...rest} />
+  return <BaseTopNavigation accessoryLeft={accessoryLeft} title={titleImage} {...rest} />
 }

@@ -293,21 +293,21 @@ export const doFetchRepliesInThread =
     const note = notesById[noteId]
     const replyIds = note.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
 
-    const { notes, related, profiles, reactions } = await getReplies(
-      Object.values(settingsState.relaysByUrl),
-      [noteId, ...replyIds]
-    )
+    const { notes, related, profiles } = await getReplies(Object.values(settingsState.relaysByUrl), [
+      noteId,
+      ...replyIds,
+    ])
 
     dispatch(updateloadingByIdOrPubkey({ [noteId]: false }))
 
-    if (!notes.length && !reactions.length) {
+    if (!notes.length) {
       return
     }
 
     const fetched = [...notes, ...related]
 
     dispatch(updateNotesAndProfiles({ notes: fetched, profiles }))
-    dispatch(updateReactionsByNoteId(reactions))
+    dispatch(doFetchReactionsForNotes(fetched.map((note) => note.id)))
   }
 
 export const doPublishNote =
