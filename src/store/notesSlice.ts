@@ -12,6 +12,7 @@ import {
   nostrEventKinds,
   getReplies,
 } from "core/nostr"
+import { noteMentionRegex } from "utils/note"
 
 export interface NotesState {
   loading: boolean
@@ -183,10 +184,20 @@ const doPopulateFeed =
 
     const profilePubkeySet = new Set<string>()
     const repostIdSet = new Set<string>()
+    const mentionsSet = new Set<string>()
 
     let reposts = []
     events.forEach((event: unknown) => {
       const note = event as NostrNoteEvent | NostrRepostEvent
+
+      const mentions = note.content.match(noteMentionRegex) || []
+      mentions.forEach((mention) => {
+        const tagIndex = mention.match(/#\[([0-9]+)]/)[1]
+        const tag = note.tags[tagIndex]
+        if (tag && tag[0] === "e") {
+          mentionsSet.add(tag[1])
+        }
+      })
 
       // Find users that need to be fetched
       profilePubkeySet.add(note.pubkey)
@@ -218,32 +229,38 @@ const doPopulateFeed =
       updateNotesById([...events, ...reposts].reduce((acc, note) => ({ ...acc, [note.id]: note }), {}))
     )
 
-    let additionalReposts = []
-    if (repostIdSet.size > 0) {
-      additionalReposts = await getNostrEvents(relays, {
+    let additionalNotes = []
+    if (repostIdSet.size > 0 || mentionsSet.size > 0) {
+      const combinedSet = new Set([...repostIdSet, ...mentionsSet])
+      additionalNotes = await getNostrEvents(relays, {
         kinds: [nostrEventKinds.note],
-        ids: Array.from(repostIdSet),
+        ids: Array.from(combinedSet),
+        limit: combinedSet.size,
       })
 
-      additionalReposts.forEach((repost) => {
+      additionalNotes.forEach((repost) => {
         profilePubkeySet.add(repost.pubkey)
       })
     }
 
-    console.log("fetching profiles")
     const profiles = await getNostrEvents(relays, {
       kinds: [nostrEventKinds.profile],
       authors: Array.from(profilePubkeySet),
       limit: profilePubkeySet.size,
     })
-    console.log("fetched profiles: ", profiles.length)
 
     dispatch(
       updateProfilesByPubkey(profiles.reduce((acc, profile) => ({ ...acc, [profile.pubkey]: profile }), {}))
     )
+    dispatch(
+      updateNotesById({
+        ...additionalNotes.reduce((acc, note) => ({ ...acc, [note.id]: note }), {}),
+      })
+    )
+
     dispatch(updatefeedsByIdOrPubkey({ [feedId]: events.map((note) => note.id) }))
     dispatch(updateloadingByIdOrPubkey({ [feedId]: false }))
-    dispatch(doFetchReactionsForNotes([...events, ...reposts].map((note) => note.id)))
+    dispatch(doFetchReactionsForNotes([...events, ...reposts, ...additionalNotes].map((note) => note.id)))
   }
 
 export const doFetchReactionsForNotes =

@@ -75,7 +75,6 @@ export const doSubscribeToRelays =
         subscriptions = [...subscriptions, { url: relay.url, sub }]
 
         sub.on("event", async (event: unknown) => {
-          console.log("new event")
           const {
             notes: { reactionsByNoteId, profilesByPubkey, notesById },
           } = getState()
@@ -116,6 +115,8 @@ export const doSubscribeToRelays =
           const idsInEvent = {
             [eventId]: true,
           }
+
+          // TODO: handle mentions for new notes
 
           //
           // For reposts, the reposted note might be encoded in the newly received event

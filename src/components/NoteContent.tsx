@@ -40,7 +40,6 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
     const tag = note.tags[tagIndex]
     if (tag && tag[0] === "e") {
       noteMention = tag[1]
-      console.log("mention", noteMention)
     }
   })
 
