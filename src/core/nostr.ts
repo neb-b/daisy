@@ -331,6 +331,10 @@ export const publishNote = async (
   let returned = false
   return new Promise((resolve) => {
     relays.forEach((relay) => {
+      if (!relay.publish) {
+        return
+      }
+
       const pub = relay.publish(event)
 
       pub.on("ok", () => {
