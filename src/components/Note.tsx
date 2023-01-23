@@ -14,6 +14,7 @@ type Props = {
   id: string
   style?: object
   hideActions?: boolean
+  hideAvatar?: boolean
 }
 
 export const Note: React.FC<Props> = ({
@@ -22,6 +23,7 @@ export const Note: React.FC<Props> = ({
   threadId,
   insideThread = false,
   hideActions = false,
+  hideAvatar = false,
 }) => {
   const navigation = useNavigation()
   const note = useNote(id)
@@ -48,10 +50,12 @@ export const Note: React.FC<Props> = ({
         {/* @ts-expect-error */}
         <Pressable onPress={() => navigation.push("Thread", { id })}>
           <View style={{ flexDirection: "row", alignItems: isHighlightedNote ? "center" : "flex-start" }}>
-            <View style={{ alignItems: "center" }}>
-              <Avatar pubkey={note.pubkey} />
-              {insideThread && <Divider style={{ width: 1, flex: 1, marginBottom: -24, marginTop: 8 }} />}
-            </View>
+            {!hideAvatar && (
+              <View style={{ alignItems: "center" }}>
+                <Avatar pubkey={note.pubkey} />
+                {insideThread && <Divider style={{ width: 1, flex: 1, marginBottom: -24, marginTop: 8 }} />}
+              </View>
+            )}
             <View style={{ flex: 1, marginLeft: 8 }}>
               <NoteAuthor isHighlightedNote={isHighlightedNote} note={note} profileContent={profileContent} />
 

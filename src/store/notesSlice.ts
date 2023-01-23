@@ -24,21 +24,6 @@ export interface NotesState {
   reactionsByNoteId: Record<string, NostrReactionEvent[]>
 }
 
-// const noteWithMention  = {
-//   content: "Welcome to the nostr family 🔮⚡️ This should be helpful: #[2]",
-//   created_at: 1674514887,
-//   id: "e444b0bfe7bdb0da9c580908e5ece6bbfb0764f527ca8ab72d6dac06d48f5694",
-//   kind: 1,
-//   pubkey: "b93049a6e2547a36a7692d90e4baa809012526175546a17337454def9ab69d30",
-//   replyingToProfiles: ["136c80140d71cad202d9d493b19fbe77f4314ce4a57e2a1e4f82842861262d31"],
-//   sig: "d5413a4cc707dde88993f2beb229897faf171b100a8135ba7e11c9130fe6faa82de64158e652dbc4b0178355f4c757f10b7583a5dbd479cbc01c328750e3cb82",
-//   tags: [
-//     ["e", "3ab90aa420bff4d5181e3741af51c80f935be1b4afc5d916641cb518b62a4850"],
-//     ["p", "136c80140d71cad202d9d493b19fbe77f4314ce4a57e2a1e4f82842861262d31"],
-//     ["e", "5222361b78833d775dfb6a47e6dc0b5fbc761c4c11e34ce0315f5dd4bec0a318"],
-//   ],
-// }
-
 const initialState = {
   notesById: {},
   profilesByPubkey: {},

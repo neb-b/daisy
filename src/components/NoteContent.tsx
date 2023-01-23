@@ -3,8 +3,8 @@ import { View } from "react-native"
 import { useTheme, Text } from "@ui-kitten/components"
 import { LinkPreview } from "@flyerhq/react-native-link-preview"
 
-import { isImage, isUrl, isMention, noteOrUrlRegex, urlRegex } from "utils/note"
-import { Image, Link, Mention } from "components"
+import { isImage, isUrl, isMention, noteOrUrlRegex, urlRegex, noteMentionRegex } from "utils/note"
+import { Image, Link, Mention, Note } from "components"
 import { Dimensions } from "react-native"
 
 const WINDOW_WIDTH = Dimensions.get("window").width
@@ -32,6 +32,17 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
     const url = new URL(firstNoteUrl)
     domain = url.hostname
   }
+
+  let noteMention
+  const mentions = note.content.match(noteMentionRegex) || []
+  mentions.forEach((mention) => {
+    const tagIndex = mention.match(/#\[([0-9]+)]/)[1]
+    const tag = note.tags[tagIndex]
+    if (tag && tag[0] === "e") {
+      noteMention = tag[1]
+      console.log("mention", noteMention)
+    }
+  })
 
   return (
     <>
@@ -72,8 +83,6 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
               style={{
                 fontSize: size === "small" ? 16 : 20,
                 flex: 0,
-                // flexWrap: "wrap",
-                // width: "100%",
               }}
             >
               {text}
@@ -124,6 +133,18 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
             )
           }}
         />
+      )}
+      {noteMention && (
+        <View
+          style={{
+            marginTop: 16,
+            borderWidth: 1,
+            borderRadius: 10,
+            borderColor: theme["color-basic-900"],
+          }}
+        >
+          <Note id={noteMention} hideActions hideAvatar />
+        </View>
       )}
     </>
   )
