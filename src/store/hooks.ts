@@ -265,3 +265,9 @@ export const useHasRelayConnection = () => {
     !!Object.values(relaysByUrl).find((relay) => relay.status === 1 && typeof relay.on === "function")
   )
 }
+
+export const useSubscriptions = () => {
+  const { subscriptionsByFeedId } = useSelector((state: RootState) => state.subscriptions)
+
+  return subscriptionsByFeedId
+}

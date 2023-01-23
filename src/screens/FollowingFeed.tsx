@@ -1,5 +1,5 @@
 import React from "react"
-import { Modal, AppState, View } from "react-native"
+import { Modal, View } from "react-native"
 import { Button, Divider, Icon, Spinner } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
 
@@ -8,8 +8,6 @@ import { doPopulateFollowingFeed, unsubscribeFromFollowingFeed } from "store/not
 import { useContactList, useFeed, useUser } from "store/hooks"
 import { Layout, Note, NoteCreate, TopNavigation } from "components"
 
-type MyAppState = "active" | "background" | "inactive"
-
 export function FollowingFeedScreen() {
   const dispatch = useDispatch()
   const [creatingNote, setCreatingNote] = React.useState(false)
@@ -17,36 +15,13 @@ export function FollowingFeedScreen() {
   const user = useUser()
 
   const contactList = useContactList(user.pubkey)
-  const appState = React.useRef(AppState.currentState)
-  const [appVisible, setAppVisible] = React.useState(appState.current === "active")
   const hasContactList = contactList?.tags?.length > 0
   const showLoading = loading && notes.length === 0
 
   React.useEffect(() => {
-    if (!hasContactList) {
-      return
-    }
-
-    const subscription = AppState.addEventListener("change", (nextAppState: MyAppState) => {
-      if (!appVisible && nextAppState === "active") {
-        // TODO: only fetch new notes instead of repopulating the whole feed
-        // will need to detect if it was inactive or background I think
-        dispatch(doPopulateFollowingFeed())
-      } else if (appVisible && (nextAppState === "inactive" || nextAppState === "background")) {
-        dispatch(unsubscribeFromFollowingFeed())
-      }
-      appState.current = nextAppState
-      setAppVisible(appState.current === "active")
-    })
-    return () => {
-      subscription.remove()
-    }
-  }, [hasContactList, appVisible, setAppVisible, dispatch])
-
-  React.useEffect(() => {
     if (hasContactList) {
       setTimeout(() => {
-        dispatch(doPopulateFollowingFeed())
+        // dispatch(doPopulateFollowingFeed())
       }, 500)
     }
   }, [hasContactList])

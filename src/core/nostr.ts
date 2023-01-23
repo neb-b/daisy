@@ -286,37 +286,6 @@ export const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Pro
     })
   })
 
-export const subscribeToNostrEvents = (
-  relays: Relay[],
-  filter: NostrFilter,
-  handleEvent: (NostrEvent, related?: NostrEvent[], profiles?: Record<string, NostrProfileEvent>) => void
-): Sub[] => {
-  const subscriptions = []
-  relays.forEach((relay) => {
-    if (!relay.sub) {
-      return
-    }
-
-    const sub = relay.sub([{ ...filter }])
-    subscriptions.push(sub)
-
-    sub.on("event", async (event: NostrEvent) => {
-      if (event.kind === nostrEventKinds.note || event.kind === nostrEventKinds.repost) {
-        const { related, profiles } = await getRelatedEvents(relays, [event])
-        handleEvent(event, related, profiles)
-      } else {
-        handleEvent(event)
-      }
-    })
-
-    sub.on("eose", () => {
-      sub.unsub()
-    })
-  })
-
-  return subscriptions
-}
-
 const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent> =>
   new Promise((resolve) => {
     relays.forEach((relay) => {
