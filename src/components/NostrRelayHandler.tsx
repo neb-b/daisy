@@ -25,7 +25,6 @@ export const NostrRelayHandler = () => {
       dispatch(doSubscribeToRelays("following"))
       dispatch(doSubscribeToRelays("notifications"))
     }
-
     return () => {
       dispatch(doUnsubscribeFromRelays("following"))
       dispatch(doUnsubscribeFromRelays("notifications"))

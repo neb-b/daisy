@@ -1,7 +1,6 @@
 import { useSelector } from "react-redux"
 import { nostrEventKinds } from "core/nostr"
 import type { RootState } from "./index"
-import { acc } from "react-native-reanimated"
 
 export const useUser = () => {
   const { user } = useSelector((state: RootState) => state.settings)
@@ -42,7 +41,15 @@ export const useFeed = (feedIdOrPubkey: string) => {
   return {
     loading,
     notes: feed
-      .map((noteId) => notesById[noteId])
+      .reduce((acc, noteId) => {
+        const note = notesById[noteId]
+
+        if (note) {
+          return [...acc, note]
+        }
+
+        return acc
+      }, [])
       .sort((a, b) => b.created_at - a.created_at)
       .map((note) => note.id),
   }
@@ -176,6 +183,7 @@ export const useNote = (
     const repostedId = note.tags.find((tag) => tag[0] === "e")?.[1]
     const repostedNote = notesById[repostedId]
 
+    // console.log("repostedNote", repostedNote)
     if (!repostedNote) {
       return
     }

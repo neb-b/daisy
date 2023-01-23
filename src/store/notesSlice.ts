@@ -37,7 +37,7 @@ export const notesSlice = createSlice({
   name: "notes",
   initialState,
   reducers: {
-    updateNotesById(state, action: PayloadAction<Record<string, NostrNoteEvent>>) {
+    updateNotesById(state, action: PayloadAction<Record<string, NostrNoteEvent | NostrRepostEvent>>) {
       state.notesById = { ...state.notesById, ...action.payload }
     },
 

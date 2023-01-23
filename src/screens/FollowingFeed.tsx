@@ -4,7 +4,7 @@ import { Button, Divider, Icon, Spinner } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
 
 import { useDispatch } from "store"
-import { doPopulateFollowingFeed, unsubscribeFromFollowingFeed } from "store/notesSlice"
+import { doPopulateFollowingFeed } from "store/notesSlice"
 import { useContactList, useFeed, useUser } from "store/hooks"
 import { Layout, Note, NoteCreate, TopNavigation } from "components"
 
@@ -20,9 +20,7 @@ export function FollowingFeedScreen() {
 
   React.useEffect(() => {
     if (hasContactList) {
-      setTimeout(() => {
-        // dispatch(doPopulateFollowingFeed())
-      }, 500)
+      dispatch(doPopulateFollowingFeed())
     }
   }, [hasContactList])
 
@@ -60,7 +58,6 @@ export function FollowingFeedScreen() {
               name="plus-outline"
               style={{
                 ...style,
-                // tintColor: "black",
               }}
             />
           )

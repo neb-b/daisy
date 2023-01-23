@@ -16,6 +16,8 @@ export const Avatar: React.FC<Props> = ({ pubkey, size = 40, ...rest }) => {
   const picture = note?.content?.picture
   const lastFourOfPubkey = pubkey?.slice(-4)
 
+  const avatarUri = `https://media.nostr.band/thumbs/${lastFourOfPubkey}/${pubkey}-picture-64`
+
   return (
     <Pressable
       onPress={() =>
@@ -37,7 +39,7 @@ export const Avatar: React.FC<Props> = ({ pubkey, size = 40, ...rest }) => {
         {picture ? (
           <Image
             source={{
-              uri: `https://media.nostr.band/thumbs/${lastFourOfPubkey}/${pubkey}-picture-64`,
+              uri: avatarUri,
             }}
             style={{ height: size, width: size, borderRadius: size ? size / 2 : 10, resizeMode: "stretch" }}
           />
