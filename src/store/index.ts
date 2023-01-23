@@ -6,21 +6,18 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import { persistStore, persistReducer } from "redux-persist"
 import { notesSlice } from "./notesSlice"
 import { settingsSlice } from "./settingsSlice"
-
+import { subscriptionsSlice } from "./subscriptionsSlice"
 
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: [
-    //
-    "settings",
-    // "notes",
-  ],
+  whitelist: ["settings"],
 }
 
 const rootReducer = combineReducers({
   notes: notesSlice.reducer,
   settings: settingsSlice.reducer,
+  subscriptions: subscriptionsSlice.reducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

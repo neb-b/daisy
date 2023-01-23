@@ -135,7 +135,6 @@ export const initRelays = () => async (dispatch: AppDispatch, getState: GetState
 
     if (handledCount === relayUrls.length) {
       clearInterval(interval)
-      dispatch(updateRelays(handledRelays))
     }
   }, 1000)
 }

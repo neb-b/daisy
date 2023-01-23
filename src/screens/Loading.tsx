@@ -30,7 +30,7 @@ export function LoadingScreen({ navigation }) {
 
     setTimeout(() => {
       hideSplashScreen()
-    }, 500)
+    }, 1000)
   }, [pubkey, reset, hideSplashScreen])
 
   return null

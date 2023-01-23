@@ -8,13 +8,11 @@ import {
   getNostrEvents,
   getEventsFromPubkeys,
   getEventsForPubkey,
-  subscribeToNostrEvents,
   publishNote,
   nostrEventKinds,
   getReplies,
 } from "core/nostr"
 
-// TODO: store reactions/replies by id of the note they're reacting to?
 export interface NotesState {
   loading: boolean
   notesById: Record<string, NostrNoteEvent | NostrRepostEvent>
@@ -23,7 +21,6 @@ export interface NotesState {
   feedsByIdOrPubkey: Record<string, string[]>
   feedsByPubkey: Record<string, string[]>
   loadingByIdOrPubkey: Record<string, boolean>
-  subscriptionsById: Record<string, Sub[]>
   reactionsByNoteId: Record<string, NostrReactionEvent[]>
 }
 
@@ -33,7 +30,6 @@ const initialState = {
   feedsByIdOrPubkey: {},
   contactListsByPubkey: {},
   loadingByIdOrPubkey: {},
-  subscriptionsById: {},
   reactionsByNoteId: {},
 } as NotesState
 
@@ -41,7 +37,7 @@ export const notesSlice = createSlice({
   name: "notes",
   initialState,
   reducers: {
-    updateNotesById(state, action: PayloadAction<Record<string, NostrNoteEvent>>) {
+    updateNotesById(state, action: PayloadAction<Record<string, NostrNoteEvent | NostrRepostEvent>>) {
       state.notesById = { ...state.notesById, ...action.payload }
     },
 
@@ -172,37 +168,6 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
   dispatch(updatefeedsByIdOrPubkey({ following: Array.from(new Set(notes.map((note) => note.id))) }))
   dispatch(updateloadingByIdOrPubkey({ following: false }))
 
-  const filter = {
-    authors: pubkeys,
-    kinds: [nostrEventKinds.note, nostrEventKinds.repost, nostrEventKinds.reaction],
-    since: Math.floor(Date.now() / 1000),
-  }
-
-  const subscriptions = subscribeToNostrEvents(
-    relays,
-    filter,
-    (note: NostrEvent, related?: NostrEvent[], profiles?: Record<string, NostrProfile>) => {
-      if (note.kind === nostrEventKinds.reaction) {
-        const { reactionsByNoteId } = getState().notes
-        const noteIdReactionIsFor = note.tags.find((tag) => tag[0] === "e")?.[1]
-        const currentReactions = reactionsByNoteId[noteIdReactionIsFor] || []
-
-        // @ts-expect-error
-        return dispatch(updateReactionsByNoteId({ [noteIdReactionIsFor]: [...currentReactions, note] }))
-      }
-
-      dispatch(
-        updateNotesAndProfiles({
-          notes: [note, ...related],
-          profiles,
-        })
-      )
-      dispatch(addNoteToFeedById({ feedId: "following", noteId: note.id }))
-    }
-  )
-
-  dispatch(updateSubscriptionsById({ following: subscriptions }))
-
   // After everything is setup, fetch reactions for the notes in the feed
   dispatch(doFetchReactionsForNotes([...notes, ...related].map((note) => note.id)))
 }
@@ -238,17 +203,6 @@ export const doFetchReactionsForNotes =
 
     dispatch(updateReactionsByNoteId(newReactionsByNoteId))
   }
-
-export const unsubscribeFromFollowingFeed = () => (dispatch: AppDispatch, getState: GetState) => {
-  const { notes: notesState } = getState()
-  const { subscriptionsById } = notesState
-
-  subscriptionsById.following.forEach((subscription) => {
-    subscription.unsub()
-  })
-
-  dispatch(updateSubscriptionsById({ following: [] }))
-}
 
 export const doFetchNotifications = () => async (dispatch: AppDispatch, getState: GetState) => {
   const { settings: settingsState } = getState()

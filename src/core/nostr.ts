@@ -25,7 +25,7 @@ export const defaultRelays = [
   "wss://nostr.oxtr.dev",
 ]
 
-const GET_EVENTS_LIMIT = 75
+const GET_EVENTS_LIMIT = 5
 const TIMEOUT = 500
 
 type ConnectionEventCbArg = {
@@ -71,26 +71,6 @@ export const connectToRelay = async (relayEndpoint, cb: (ConnectionEventCbArg) =
     cb({ relay, success: false })
   }, 1000)
 }
-
-export const getReplies = async (
-  relays: Relay[],
-  eventIds: string[]
-): Promise<{
-  notes: NostrEvent[]
-  profiles: Record<string, NostrProfileEvent>
-  related: NostrEvent[]
-  reactions: Record<string, NostrReactionEvent[]>
-}> =>
-  new Promise(async (resolve) => {
-    const notes = await getNostrEvents(relays, {
-      kinds: [nostrEventKinds.note],
-      "#e": eventIds,
-    })
-
-    const { related, profiles, reactions } = await getRelatedEvents(relays, notes)
-
-    resolve({ notes, related, profiles, reactions })
-  })
 
 export const getEventsFromPubkeys = async (
   relays: Relay[],
@@ -143,7 +123,7 @@ export const getEventsForPubkey = async (
 
     const { related, profiles } = await getRelatedEvents(relays, notes)
 
-    resolve({ notes, related, profiles })
+    resolve({ notes, related: [], profiles: {} })
   })
 
 const getRelatedEvents = async (
@@ -213,19 +193,10 @@ const getRelatedEvents = async (
       limit: profilePubkeysSet.size,
     })) as NostrProfileEvent[]
 
-    const userProfileInfos = {}
-    profilesEvents.forEach((profileEvent) => {
-      const { content, ...userMetadata } = profileEvent
-      let user = userMetadata
-
-      try {
-        const userInfo = JSON.parse(content) as NostrProfileContent
-        // @ts-expect-error
-        user = { ...user, content: userInfo }
-      } catch (e) {}
-
-      userProfileInfos[profileEvent.pubkey] = user
-    })
+    const userProfileInfos = profilesEvents.reduce((acc, profileEvent) => {
+      acc[profileEvent.pubkey] = profileEvent
+      return acc
+    }, {})
 
     resolve({
       related: [...alreadyFetchedReposts, ...relatedNotes, ...replyNotes],
@@ -255,8 +226,22 @@ export const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Pro
       sub.on("event", (event) => {
         const nostrEvent = <NostrEvent>event
 
+        let newEvent = nostrEvent
+        if (nostrEvent.kind === nostrEventKinds.profile) {
+          const { content: possiblyStringifiedContent, ...rest } = nostrEvent
+          if (typeof possiblyStringifiedContent === "string") {
+            try {
+              const content = JSON.parse(possiblyStringifiedContent)
+              newEvent = { content, ...rest }
+            } catch (e) {
+              console.log("error parsing content", e)
+              console.log("", nostrEvent)
+            }
+          }
+        }
+
         // ts-expect-error
-        eventsById[nostrEvent.id] = nostrEvent
+        eventsById[nostrEvent.id] = newEvent
 
         fetchedCount++
 
@@ -286,38 +271,7 @@ export const getNostrEvents = async (relays: Relay[], filter?: NostrFilter): Pro
     })
   })
 
-export const subscribeToNostrEvents = (
-  relays: Relay[],
-  filter: NostrFilter,
-  handleEvent: (NostrEvent, related?: NostrEvent[], profiles?: Record<string, NostrProfileEvent>) => void
-): Sub[] => {
-  const subscriptions = []
-  relays.forEach((relay) => {
-    if (!relay.sub) {
-      return
-    }
-
-    const sub = relay.sub([{ ...filter }])
-    subscriptions.push(sub)
-
-    sub.on("event", async (event: NostrEvent) => {
-      if (event.kind === nostrEventKinds.note || event.kind === nostrEventKinds.repost) {
-        const { related, profiles } = await getRelatedEvents(relays, [event])
-        handleEvent(event, related, profiles)
-      } else {
-        handleEvent(event)
-      }
-    })
-
-    sub.on("eose", () => {
-      sub.unsub()
-    })
-  })
-
-  return subscriptions
-}
-
-const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent> =>
+export const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<NostrEvent> =>
   new Promise((resolve) => {
     relays.forEach((relay) => {
       if (!relay.sub) {
@@ -335,12 +289,12 @@ const getNostrEvent = async (relays: Relay[], filter?: NostrFilter): Promise<Nos
             const content = JSON.parse(stringifedContent)
             resolve({ content, ...rest })
           } catch (e) {
-            console.log("error parsing content", e)
-            console.log("", nostrEvent)
+            resolve(nostrEvent)
           }
         }
         sub.unsub()
       })
+
       sub.on("eose", () => {
         sub.unsub()
       })
@@ -426,3 +380,22 @@ export const getProfile = async (
 
   return { profile: profileRes, contactList: contactListRes }
 }
+
+export const getReplies = async (
+  relays: Relay[],
+  eventIds: string[]
+): Promise<{
+  notes: NostrEvent[]
+  profiles: Record<string, NostrProfileEvent>
+  related: NostrEvent[]
+}> =>
+  new Promise(async (resolve) => {
+    const notes = await getNostrEvents(relays, {
+      kinds: [nostrEventKinds.note],
+      "#e": eventIds,
+    })
+
+    const { related, profiles } = await getRelatedEvents(relays, notes)
+
+    resolve({ notes, related, profiles })
+  })

@@ -14,6 +14,7 @@ import { store, persistor } from "store"
 import { HomeStackNavigator } from "navigation/StackNavigator"
 import { dark } from "theme/dark"
 import { mapping } from "theme/mapping"
+import { NostrRelayHandler } from "components"
 
 function ThemeWrapper({ children }) {
   const { theme } = useSelector((state: RootState) => state.settings)
@@ -51,6 +52,7 @@ function App() {
     <View style={{ flex: 1, backgroundColor: "080808" }}>
       <Provider store={store}>
         <SafeAreaProvider>
+          <NostrRelayHandler />
           <ThemeWrapper>
             <AppWrapper>
               <NavigationContainer>

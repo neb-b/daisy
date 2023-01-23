@@ -142,7 +142,7 @@ function RepostAuthor({ pubkey }) {
   const navigation = useNavigation()
   const theme = useTheme()
   const profile = useProfile(pubkey)
-  const repostAuthor = profile?.content?.name || pubkey.slice(0, 6)
+  const repostAuthor = profile?.content?.name || profile?.content?.display_name || pubkey.slice(0, 6)
 
   return (
     <Pressable
