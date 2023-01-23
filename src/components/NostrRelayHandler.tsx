@@ -22,19 +22,19 @@ export const NostrRelayHandler = () => {
   ).length
 
   React.useEffect(() => {
-    // if (hasContactList) {
-    //   dispatch(doSubscribeToRelays("following"))
-    //   dispatch(doSubscribeToRelays("notifications"))
-    // }
-    // return () => {
-    //   dispatch(doUnsubscribeFromRelays("following"))
-    //   dispatch(doUnsubscribeFromRelays("notifications"))
-    // }
+    if (hasContactList) {
+      dispatch(doSubscribeToRelays("following"))
+      dispatch(doSubscribeToRelays("notifications"))
+    }
+    return () => {
+      dispatch(doUnsubscribeFromRelays("following"))
+      dispatch(doUnsubscribeFromRelays("notifications"))
+    }
   }, [hasContactList, relaysCount])
 
   React.useEffect(() => {
     if (hasContactList) {
-      // dispatch(doPopulateFollowingFeed())
+      dispatch(doPopulateFollowingFeed())
     }
   }, [hasContactList])
 
