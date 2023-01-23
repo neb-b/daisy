@@ -2,16 +2,7 @@ import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
 import type { Sub } from "nostr-tools"
 
-import {
-  getProfile,
-  getNostrEvent,
-  getNostrEvents,
-  getEventsFromPubkeys,
-  getEventsForPubkey,
-  publishNote,
-  nostrEventKinds,
-  getReplies,
-} from "core/nostr"
+import { getNostrEvent, getNostrEvents, nostrEventKinds } from "core/nostr"
 import type { AppDispatch, GetState } from "store"
 import {
   updateReactionsByNoteId,

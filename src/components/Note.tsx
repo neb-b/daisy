@@ -1,5 +1,5 @@
 import React from "react"
-import { View, Pressable } from "react-native"
+import { View, Pressable, Dimensions } from "react-native"
 import { Text, Divider, useTheme, Icon } from "@ui-kitten/components"
 import { useNavigation } from "@react-navigation/native"
 import { nip19 } from "nostr-tools"
@@ -53,29 +53,7 @@ export const Note: React.FC<Props> = ({
               {insideThread && <Divider style={{ width: 1, flex: 1, marginBottom: -24, marginTop: 8 }} />}
             </View>
             <View style={{ flex: 1, marginLeft: 8 }}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold" }}>
-                  {profileContent?.display_name || profileContent?.name || note.pubkey.slice(0, 6)}
-                </Text>
-
-                {!isHighlightedNote && profileContent?.name && profileContent?.display_name && (
-                  <Text appearance="hint" style={{ fontSize: 14, marginLeft: 4 }}>
-                    @{profileContent?.name}
-                  </Text>
-                )}
-
-                {!isHighlightedNote && (
-                  <Text appearance="hint" style={{ fontSize: 14, marginLeft: 4 }}>
-                    {timeSince(note.created_at)}
-                  </Text>
-                )}
-              </View>
-
-              {isHighlightedNote && profileContent?.name && (
-                <Text appearance="hint" style={{ fontSize: 14, marginBottom: 4 }}>
-                  @{profileContent?.name}
-                </Text>
-              )}
+              <NoteAuthor isHighlightedNote={isHighlightedNote} note={note} profileContent={profileContent} />
 
               {!isHighlightedNote && note.replyingToProfiles?.length > 0 && (
                 <ReplyText pubkeysOrProfiles={note.replyingToProfiles} />
@@ -160,5 +138,79 @@ function RepostAuthor({ pubkey }) {
         </Text>
       </View>
     </Pressable>
+  )
+}
+
+const NoteAuthor = ({ profileContent, isHighlightedNote, note }) => {
+  return (
+    <>
+      <View style={{ flexDirection: "row" }}>
+        <Text
+          numberOfLines={1}
+          style={{ fontSize: 14, fontWeight: "bold", maxWidth: Dimensions.get("window").width - 116 }}
+        >
+          {profileContent?.display_name || profileContent?.name || note.pubkey.slice(0, 6)}{" "}
+          {!isHighlightedNote && profileContent?.name && profileContent?.display_name && (
+            <Text
+              appearance="hint"
+              style={{
+                fontSize: 14,
+                marginLeft: 4,
+              }}
+            >
+              @{profileContent?.name}
+            </Text>
+          )}
+        </Text>
+
+        {!isHighlightedNote && (
+          <Text appearance="hint" style={{ fontSize: 14, marginLeft: 8 }}>
+            {timeSince(note.created_at)}
+          </Text>
+        )}
+      </View>
+
+      {isHighlightedNote && profileContent?.name && (
+        <Text appearance="hint" style={{ fontSize: 14, marginBottom: 4, flex: 1 }}>
+          @{profileContent?.name}
+        </Text>
+      )}
+    </>
+  )
+
+  return (
+    <>
+      <View style={{ flexDirection: "row", alignItems: "center", overflow: "hidden", flexWrap: "nowrap" }}>
+        <Text numberOfLines={1} style={{ fontSize: 14, fontWeight: "bold" }}>
+          {"flkdsjflkdsjflksdjflksdfjlsdjflsd" ||
+            profileContent?.display_name ||
+            profileContent?.name ||
+            note.pubkey.slice(0, 6)}{" "}
+          {!isHighlightedNote && profileContent?.name && profileContent?.display_name && (
+            <Text
+              appearance="hint"
+              style={{
+                fontSize: 14,
+                marginLeft: 4,
+              }}
+            >
+              @{profileContent?.name}
+            </Text>
+          )}
+        </Text>
+
+        {!isHighlightedNote && (
+          <Text appearance="hint" style={{ fontSize: 14, marginLeft: 4 }}>
+            {timeSince(note.created_at)}
+          </Text>
+        )}
+      </View>
+
+      {isHighlightedNote && profileContent?.name && (
+        <Text appearance="hint" style={{ fontSize: 14, marginBottom: 4 }}>
+          @{profileContent?.name}
+        </Text>
+      )}
+    </>
   )
 }
