@@ -266,8 +266,8 @@ export const useHasRelayConnection = () => {
   )
 }
 
-export const useSubscriptions = () => {
+export const useSubscriptionsByFeedId = (feedId) => {
   const { subscriptionsByFeedId } = useSelector((state: RootState) => state.subscriptions)
 
-  return subscriptionsByFeedId
+  return subscriptionsByFeedId[feedId] || []
 }

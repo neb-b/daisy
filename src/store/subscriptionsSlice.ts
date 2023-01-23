@@ -46,6 +46,7 @@ export const doSubscribeToRelays =
     const contactList = contactListsByPubkey[settingsState.user.pubkey]
     const pubkeys = [settingsState.user.pubkey, ...contactList.tags.map((tag) => tag[1])]
     const relays = Object.values(relaysByUrl)
+    // console.log("relays", relays)
 
     const filters = {
       following: {
@@ -62,7 +63,8 @@ export const doSubscribeToRelays =
 
     const filter = filters[feedId]
 
-    const subscriptions = []
+    let subscriptions: Subscription[] = []
+
     relays.forEach((relay) => {
       if (!relay.sub) {
         return
@@ -70,16 +72,10 @@ export const doSubscribeToRelays =
 
       try {
         const sub = relay.sub([{ ...filter }])
-        subscriptions.push({ url: relay.url, sub })
-        console.log("following - subscribed to relay: ", relay.url)
-        sub.on("event", async (event: NostrEvent) => {
-          console.log("event", event)
-        })
+        subscriptions = [...subscriptions, { url: relay.url, sub }]
 
-        sub.on("eose", () => {
-          console.log("eose: ", relay.url)
-          sub.unsub()
-          dispatch(doRemoveRelaySubscriptionFromFeed(relay.url, feedId))
+        sub.on("event", async (event: NostrEvent) => {
+          console.log("event", event.kind)
         })
       } catch (e) {
         console.log("error subscribing to relay: ", relay.url, e)
@@ -99,4 +95,18 @@ const doRemoveRelaySubscriptionFromFeed =
     const currentSubscriptionsForFeedId = subscriptionsByFeedId[feedId]
     const newSubscriptionsForFeedId = currentSubscriptionsForFeedId.filter((sub) => sub.url !== relayUrl)
     dispatch(updateSubscriptionsByFeedId({ [feedId]: newSubscriptionsForFeedId }))
+  }
+
+export const doUnsubscribeFromRelays =
+  (feedId: "following" | "notifications") => async (dispatch: AppDispatch, getState: GetState) => {
+    const {
+      subscriptions: { subscriptionsByFeedId },
+    } = getState()
+
+    const subscriptions = subscriptionsByFeedId[feedId]
+    subscriptions?.forEach(({ sub }) => {
+      sub.unsub()
+    })
+
+    dispatch(updateSubscriptionsByFeedId({ [feedId]: [] }))
   }
