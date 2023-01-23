@@ -143,34 +143,108 @@ export const doFetchProfileNotes = (pubkey: string) => async (dispatch: AppDispa
   dispatch(doFetchReactionsForNotes([...notes, ...related].map((note) => note.id)))
 }
 
+export const doPopulateNotificationsFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
+  const { settings: settingsState } = getState()
+
+  const filter = {
+    "#p": [settingsState.user.pubkey],
+    kinds: [nostrEventKinds.note, nostrEventKinds.repost],
+  }
+
+  dispatch(doPopulateFeed("notifications", filter))
+}
+
 export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
   const { settings: settingsState, notes: notesState } = getState()
   const { contactListsByPubkey } = notesState
   const contactList = contactListsByPubkey[settingsState.user.pubkey]
   const pubkeys = [settingsState.user.pubkey, ...contactList.tags.map((tag) => tag[1])]
 
-  dispatch(updateloadingByIdOrPubkey({ following: true }))
+  const filter = {
+    authors: pubkeys,
+    kinds: [nostrEventKinds.note, nostrEventKinds.repost],
+  }
 
-  const { relaysByUrl, relaysLoadingByUrl } = settingsState
-  const relays = Object.values(relaysByUrl).filter(
-    (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
-  )
-
-  const { notes, profiles, related } = await getEventsFromPubkeys(relays, pubkeys)
-
-  dispatch(
-    updateNotesAndProfiles({
-      notes: [...notes, ...related],
-      profiles,
-    })
-  )
-
-  dispatch(updatefeedsByIdOrPubkey({ following: Array.from(new Set(notes.map((note) => note.id))) }))
-  dispatch(updateloadingByIdOrPubkey({ following: false }))
-
-  // After everything is setup, fetch reactions for the notes in the feed
-  dispatch(doFetchReactionsForNotes([...notes, ...related].map((note) => note.id)))
+  dispatch(doPopulateFeed("following", filter))
 }
+
+const doPopulateFeed =
+  (feedId: string, filter: NostrFilter) => async (dispatch: AppDispatch, getState: GetState) => {
+    const { settings: settingsState, notes: notesState } = getState()
+
+    const { relaysByUrl, relaysLoadingByUrl } = settingsState
+    const relays = Object.values(relaysByUrl).filter(
+      (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
+    )
+
+    dispatch(updateloadingByIdOrPubkey({ [feedId]: true }))
+
+    const events = await getNostrEvents(relays, filter)
+
+    const profilePubkeySet = new Set<string>()
+    const repostIdSet = new Set<string>()
+
+    let reposts = []
+    events.forEach((event: unknown) => {
+      const note = event as NostrNoteEvent | NostrRepostEvent
+
+      // Find users that need to be fetched
+      profilePubkeySet.add(note.pubkey)
+      note.tags.forEach((tag) => {
+        if (tag[0] === "p") {
+          profilePubkeySet.add(tag[1])
+        }
+      })
+
+      if (note.kind === nostrEventKinds.repost) {
+        const repost = event as NostrRepostEvent
+        const parentNoteIdFromRepost = repost.tags.find((tag) => tag[0] === "e")?.[1]
+
+        try {
+          const repostedEvent = JSON.parse(repost.content)
+          profilePubkeySet.add(repostedEvent.pubkey)
+          reposts = [...reposts, repostedEvent]
+        } catch (e) {
+          // No data encoded in the repost event
+          // Need to fetch it separately
+          if (!events.find((event) => event.id === parentNoteIdFromRepost)) {
+            repostIdSet.add(parentNoteIdFromRepost)
+          }
+        }
+      }
+    })
+
+    dispatch(
+      updateNotesById([...events, ...reposts].reduce((acc, note) => ({ ...acc, [note.id]: note }), {}))
+    )
+
+    let additionalReposts = []
+    if (repostIdSet.size > 0) {
+      additionalReposts = await getNostrEvents(relays, {
+        kinds: [nostrEventKinds.note],
+        ids: Array.from(repostIdSet),
+      })
+
+      additionalReposts.forEach((repost) => {
+        profilePubkeySet.add(repost.pubkey)
+      })
+    }
+
+    console.log("fetching profiles")
+    const profiles = await getNostrEvents(relays, {
+      kinds: [nostrEventKinds.profile],
+      authors: Array.from(profilePubkeySet),
+      limit: profilePubkeySet.size,
+    })
+    console.log("fetched profiles: ", profiles.length)
+
+    dispatch(
+      updateProfilesByPubkey(profiles.reduce((acc, profile) => ({ ...acc, [profile.pubkey]: profile }), {}))
+    )
+    dispatch(updatefeedsByIdOrPubkey({ [feedId]: events.map((note) => note.id) }))
+    dispatch(updateloadingByIdOrPubkey({ [feedId]: false }))
+    dispatch(doFetchReactionsForNotes([...events, ...reposts].map((note) => note.id)))
+  }
 
 export const doFetchReactionsForNotes =
   (noteIds: string[]) => async (dispatch: AppDispatch, getState: GetState) => {
@@ -189,7 +263,7 @@ export const doFetchReactionsForNotes =
       "#e": noteIds,
     })
 
-    const newReactionsByNoteId = Object.assign({}, reactionsByNoteId)
+    let newReactionsByNoteId = Object.assign({}, reactionsByNoteId)
     reactions.forEach((note: unknown) => {
       const reaction = note as NostrReactionEvent
 
@@ -197,36 +271,15 @@ export const doFetchReactionsForNotes =
       if (newReactionsByNoteId[noteIdReactionIsFor] === undefined) {
         newReactionsByNoteId[noteIdReactionIsFor] = [reaction]
       } else {
-        newReactionsByNoteId[noteIdReactionIsFor].push(reaction)
+        newReactionsByNoteId = {
+          ...newReactionsByNoteId,
+          noteIdReactionIsFor: [...newReactionsByNoteId[noteIdReactionIsFor], reaction],
+        }
       }
     })
 
     dispatch(updateReactionsByNoteId(newReactionsByNoteId))
   }
-
-export const doFetchNotifications = () => async (dispatch: AppDispatch, getState: GetState) => {
-  const { settings: settingsState } = getState()
-
-  dispatch(updateloadingByIdOrPubkey({ notifications: true }))
-
-  const { user, relaysByUrl, relaysLoadingByUrl } = settingsState
-  const relays = Object.values(relaysByUrl).filter(
-    (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
-  )
-
-  const { notes, profiles, related } = await getEventsForPubkey(relays, user.pubkey, 30)
-
-  dispatch(
-    updateNotesAndProfiles({
-      notes: [...notes, ...related],
-      profiles,
-    })
-  )
-
-  dispatch(updatefeedsByIdOrPubkey({ notifications: Array.from(new Set(notes.map((note) => note.id))) }))
-  dispatch(updateloadingByIdOrPubkey({ notifications: false }))
-  dispatch(doFetchReactionsForNotes([...notes, ...related].map((note) => note.id)))
-}
 
 export const doFetchRepliesInThread =
   (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {

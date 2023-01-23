@@ -5,7 +5,7 @@ import { FlashList } from "@shopify/flash-list"
 import { useFocusEffect } from "@react-navigation/native"
 
 import { useDispatch } from "store"
-import { doFetchNotifications } from "store/notesSlice"
+import { doPopulateNotificationsFeed } from "store/notesSlice"
 import { useFeed } from "store/hooks"
 import { Layout, Note, TopNavigation } from "components"
 
@@ -16,7 +16,7 @@ export function NotificationsScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      dispatch(doFetchNotifications())
+      dispatch(doPopulateNotificationsFeed())
     }, [])
   )
 

@@ -149,7 +149,7 @@ const NoteAuthor = ({ profileContent, isHighlightedNote, note }) => {
           numberOfLines={1}
           style={{ fontSize: 14, fontWeight: "bold", maxWidth: Dimensions.get("window").width - 116 }}
         >
-          {profileContent?.display_name || profileContent?.name || note.pubkey.slice(0, 6)}{" "}
+          {profileContent?.display_name || profileContent?.name || nip19.npubEncode(note.pubkey).slice(0, 8)}{" "}
           {!isHighlightedNote && profileContent?.name && profileContent?.display_name && (
             <Text
               appearance="hint"
@@ -172,42 +172,6 @@ const NoteAuthor = ({ profileContent, isHighlightedNote, note }) => {
 
       {isHighlightedNote && profileContent?.name && (
         <Text appearance="hint" style={{ fontSize: 14, marginBottom: 4, flex: 1 }}>
-          @{profileContent?.name}
-        </Text>
-      )}
-    </>
-  )
-
-  return (
-    <>
-      <View style={{ flexDirection: "row", alignItems: "center", overflow: "hidden", flexWrap: "nowrap" }}>
-        <Text numberOfLines={1} style={{ fontSize: 14, fontWeight: "bold" }}>
-          {"flkdsjflkdsjflksdjflksdfjlsdjflsd" ||
-            profileContent?.display_name ||
-            profileContent?.name ||
-            note.pubkey.slice(0, 6)}{" "}
-          {!isHighlightedNote && profileContent?.name && profileContent?.display_name && (
-            <Text
-              appearance="hint"
-              style={{
-                fontSize: 14,
-                marginLeft: 4,
-              }}
-            >
-              @{profileContent?.name}
-            </Text>
-          )}
-        </Text>
-
-        {!isHighlightedNote && (
-          <Text appearance="hint" style={{ fontSize: 14, marginLeft: 4 }}>
-            {timeSince(note.created_at)}
-          </Text>
-        )}
-      </View>
-
-      {isHighlightedNote && profileContent?.name && (
-        <Text appearance="hint" style={{ fontSize: 14, marginBottom: 4 }}>
           @{profileContent?.name}
         </Text>
       )}

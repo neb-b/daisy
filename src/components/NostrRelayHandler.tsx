@@ -3,6 +3,7 @@ import { AppState } from "react-native"
 
 import { useDispatch } from "store"
 import { useContactList, useUser, useRelaysByUrl } from "store/hooks"
+import { doPopulateFollowingFeed } from "store/notesSlice"
 import { doSubscribeToRelays, doUnsubscribeFromRelays } from "store/subscriptionsSlice"
 
 type MyAppState = "active" | "background" | "inactive"
@@ -30,6 +31,12 @@ export const NostrRelayHandler = () => {
       dispatch(doUnsubscribeFromRelays("notifications"))
     }
   }, [hasContactList, relaysCount])
+
+  React.useEffect(() => {
+    if (hasContactList) {
+      dispatch(doPopulateFollowingFeed())
+    }
+  }, [hasContactList])
 
   React.useEffect(() => {
     if (!hasContactList) {

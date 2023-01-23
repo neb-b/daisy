@@ -50,11 +50,13 @@ export const doSubscribeToRelays =
         authors: pubkeys,
         kinds: [nostrEventKinds.note, nostrEventKinds.repost, nostrEventKinds.reaction],
         since: Math.floor(Date.now() / 1000),
+        limit: 0,
       },
       notifications: {
         "#p": [settingsState.user.pubkey],
         kinds: [nostrEventKinds.note, nostrEventKinds.repost],
         since: Math.floor(Date.now() / 1000),
+        limit: 0,
       },
     }
 

@@ -1,28 +1,24 @@
 import React from "react"
 import { Modal, View } from "react-native"
-import { Button, Divider, Icon, Spinner } from "@ui-kitten/components"
+import { Button, Divider, Icon, Spinner, Text } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
 
 import { useDispatch } from "store"
 import { doPopulateFollowingFeed } from "store/notesSlice"
 import { useContactList, useFeed, useUser } from "store/hooks"
 import { Layout, Note, NoteCreate, TopNavigation } from "components"
+import { usePrevious } from "utils/usePrevious"
 
+//
+// Following feed is populated in NostrRelayHandler
+//
 export function FollowingFeedScreen() {
-  const dispatch = useDispatch()
   const [creatingNote, setCreatingNote] = React.useState(false)
   const { loading, notes } = useFeed("following")
-  const user = useUser()
+  const prevLoading = usePrevious(loading)
+  const noNotesLoaded = prevLoading && !loading && notes.length === 0
 
-  const contactList = useContactList(user.pubkey)
-  const hasContactList = contactList?.tags?.length > 0
   const showLoading = loading && notes.length === 0
-
-  React.useEffect(() => {
-    if (hasContactList) {
-      dispatch(doPopulateFollowingFeed())
-    }
-  }, [hasContactList])
 
   const renderNote = React.useCallback(({ item }) => <Note key={item} id={item} />, [])
   const keyExtractor = React.useCallback((item) => item, [])
@@ -40,6 +36,12 @@ export function FollowingFeedScreen() {
 
       {!showLoading && notes?.length > 0 && (
         <FlashList estimatedItemSize={190} data={notes} renderItem={renderNote} keyExtractor={keyExtractor} />
+      )}
+
+      {noNotesLoaded && (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <Text>No notes loaded</Text>
+        </View>
       )}
 
       <Button

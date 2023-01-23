@@ -8,7 +8,6 @@ import {
   verifySignature,
   Relay,
 } from "nostr-tools"
-import type { Sub } from "nostr-tools"
 
 export const nostrEventKinds = {
   profile: 0,
@@ -23,10 +22,11 @@ export const defaultRelays = [
   "wss://relay.snort.social",
   "wss://nostr-pub.wellorder.net",
   "wss://nostr.oxtr.dev",
+  "wss://nostr-pub.semisol.dev",
 ]
 
-const GET_EVENTS_LIMIT = 5
-const TIMEOUT = 500
+const GET_EVENTS_LIMIT = 50
+const TIMEOUT = 3000
 
 type ConnectionEventCbArg = {
   success: boolean

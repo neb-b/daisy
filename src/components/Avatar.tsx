@@ -39,7 +39,7 @@ export const Avatar: React.FC<Props> = ({ pubkey, size = 40, ...rest }) => {
         {picture ? (
           <Image
             source={{
-              uri: avatarUri,
+              uri: picture,
             }}
             style={{ height: size, width: size, borderRadius: size ? size / 2 : 10, resizeMode: "stretch" }}
           />
