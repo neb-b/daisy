@@ -92,32 +92,31 @@ export const Note: React.FC<Props> = ({
 }
 
 function ReplyText({ pubkeysOrProfiles }) {
+  const renderReply = React.useCallback((pubkeyOrProfile: string | NostrProfile, index: number) => {
+    const name =
+      typeof pubkeyOrProfile === "string"
+        ? nip19.npubEncode(pubkeyOrProfile).slice(0, 8)
+        : pubkeyOrProfile.content.name || nip19.npubEncode(pubkeyOrProfile.pubkey).slice(0, 6)
+
+    if (index === 0) {
+      return name
+    }
+
+    if (index === 1) {
+      if (pubkeysOrProfiles.length === 2) {
+        return ` & ${name}`
+      }
+      return `, ${name}`
+    }
+
+    if (index === 2) {
+      return `, & ${name}`
+    }
+  }, [])
+
   return (
     <Text appearance="hint" style={{ fontSize: 12 }}>
-      Replying to{" "}
-      {pubkeysOrProfiles
-        .map((p, index) => {
-          const name =
-            typeof p === "string"
-              ? nip19.npubEncode(p).slice(0, 8)
-              : p.content.name || nip19.npubEncode(p.pubkey).slice(0, 6)
-
-          if (index === 0) {
-            return name
-          }
-
-          if (index === 1) {
-            if (pubkeysOrProfiles.length === 2) {
-              return ` & ${name}`
-            }
-            return `, ${name}`
-          }
-
-          if (index === 2) {
-            return `, & ${name}`
-          }
-        })
-        .join("")}
+      Replying to {pubkeysOrProfiles.map(renderReply).join("")}
     </Text>
   )
 }
@@ -128,15 +127,15 @@ function RepostAuthor({ pubkey }) {
   const profile = useProfile(pubkey)
   const repostAuthor = profile?.content?.name || profile?.content?.display_name || pubkey.slice(0, 6)
 
+  const handleRepostPress = React.useCallback(() => {
+    // @ts-expect-error
+    navigation.navigate("Profile", {
+      pubkey,
+    })
+  }, [pubkey])
+
   return (
-    <Pressable
-      onPress={() =>
-        // @ts-expect-error
-        navigation.navigate("Profile", {
-          pubkey,
-        })
-      }
-    >
+    <Pressable onPress={handleRepostPress}>
       <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 24, marginBottom: 8 }}>
         <Icon name="flip-2-outline" style={{ height: 16, width: 16, tintColor: theme["color-basic-600"] }} />
         <Text appearance="hint" style={{ marginLeft: 8 }}>

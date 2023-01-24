@@ -43,51 +43,53 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
     }
   })
 
+  const renderNoteContent = React.useCallback((text, i) => {
+    if (typeof text === "undefined") {
+      return <React.Fragment key={i} />
+    }
+
+    if (text === "\n") {
+      // Force full width line break
+      // This is weird because these text pieces are flex items inside a flex wrap container
+      return <View key={i} style={{ width: WINDOW_WIDTH }} />
+    }
+
+    if (isImage(text)) {
+      return (
+        <View key={i} style={{ width: "100%", height: 150, marginTop: 8 }}>
+          <Image src={text} />
+        </View>
+      )
+    }
+
+    if (isUrl(text)) {
+      return <Link key={text + i} label={text} src={text} size={size} />
+    }
+
+    if (isMention(text)) {
+      const tagIndex = text.match(/#\[([0-9]+)]/)[1]
+      const tag = note.tags[tagIndex]
+
+      return <Mention key={i} tag={tag} size={size} />
+    }
+
+    return (
+      <Text
+        key={i}
+        style={{
+          fontSize: size === "small" ? 16 : 20,
+          flex: 0,
+        }}
+      >
+        {text}
+      </Text>
+    )
+  }, [])
+
   return (
     <>
       <View style={{ marginTop: 5, paddingRight: 13, flexDirection: "row", flexWrap: "wrap" }}>
-        {note.content.split(noteOrUrlRegex).map((text, i) => {
-          if (typeof text === "undefined") {
-            return <React.Fragment key={i} />
-          }
-
-          if (text === "\n") {
-            // Force full width line break
-            // This is weird because these text pieces are flex items inside a flex wrap container
-            return <View key={i} style={{ width: WINDOW_WIDTH }} />
-          }
-
-          if (isImage(text)) {
-            return (
-              <View key={i} style={{ width: "100%", height: 150, marginTop: 8 }}>
-                <Image src={text} />
-              </View>
-            )
-          }
-
-          if (isUrl(text)) {
-            return <Link key={text + i} label={text} src={text} size={size} />
-          }
-
-          if (isMention(text)) {
-            const tagIndex = text.match(/#\[([0-9]+)]/)[1]
-            const tag = note.tags[tagIndex]
-
-            return <Mention key={i} tag={tag} size={size} />
-          }
-
-          return (
-            <Text
-              key={i}
-              style={{
-                fontSize: size === "small" ? 16 : 20,
-                flex: 0,
-              }}
-            >
-              {text}
-            </Text>
-          )
-        })}
+        {note.content.split(noteOrUrlRegex).map(renderNoteContent)}
       </View>
 
       {firstNoteUrl && (

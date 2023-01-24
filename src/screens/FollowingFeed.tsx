@@ -1,10 +1,9 @@
 import React from "react"
 import { Modal, View } from "react-native"
 import { Button, Divider, Icon, Text } from "@ui-kitten/components"
-import { FlashList } from "@shopify/flash-list"
 
 import { useFeed } from "store/hooks"
-import { Layout, Note, NoteCreate, TopNavigation, Spinner } from "components"
+import { Layout, Note, NoteCreate, TopNavigation, Spinner, FlashList } from "components"
 import { usePrevious } from "utils/usePrevious"
 
 //
@@ -26,14 +25,7 @@ export function FollowingFeedScreen() {
       <View style={{ position: "relative", flex: 1 }}>
         {loading && <Spinner />}
 
-        {notes?.length > 0 && (
-          <FlashList
-            estimatedItemSize={190}
-            data={notes}
-            renderItem={renderNote}
-            keyExtractor={keyExtractor}
-          />
-        )}
+        {notes?.length > 0 && <FlashList data={notes} renderItem={renderNote} keyExtractor={keyExtractor} />}
 
         {noNotesLoaded && (
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>

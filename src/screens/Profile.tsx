@@ -1,12 +1,11 @@
 import React from "react"
 import { View, ImageBackground, Dimensions } from "react-native"
 import { Button, Divider, Text, useTheme } from "@ui-kitten/components"
-import { FlashList } from "@shopify/flash-list"
 import { nip19 } from "nostr-tools"
 import { useNavigation } from "@react-navigation/native"
 import { LinearGradient } from "expo-linear-gradient"
 
-import { Layout, Avatar, TopNavigation, Note, Spinner, Link } from "components"
+import { Layout, Avatar, TopNavigation, Note, Spinner, Link, FlashList } from "components"
 import { useDispatch } from "store"
 import { useUser, useProfile, useContactList, useProfileNotes } from "store/hooks"
 import { doFetchProfile, doPopulateProfileFeed, doToggleFollow } from "store/notesSlice"
@@ -37,9 +36,9 @@ export function ProfileScreen({ route }) {
     dispatch(doPopulateProfileFeed(pubkey))
   }, [pubkey])
 
-  const handleToggleFollow = () => {
+  const handleToggleFollow = React.useCallback(() => {
     dispatch(doToggleFollow(pubkey))
-  }
+  }, [pubkey])
 
   const renderNote = React.useCallback(({ item }) => {
     if (typeof item !== "string") {
@@ -65,6 +64,11 @@ export function ProfileScreen({ route }) {
 
   const bannerSize = 130
   const blurTopNavigation = scroll >= bannerSize - 48
+
+  const handleProfileEditPress = React.useCallback(() => {
+    // @ts-expect-error
+    navigation.navigate("ProfileEdit")
+  }, [])
 
   const header = (
     <>
@@ -100,8 +104,7 @@ export function ProfileScreen({ route }) {
           {isMe ? (
             <Button
               appearance="outline"
-              // @ts-expect-error
-              onPress={() => navigation.navigate("ProfileEdit")}
+              onPress={handleProfileEditPress}
               style={{
                 backgroundColor: theme["background-color-basic-1"],
               }}
@@ -199,13 +202,11 @@ export function ProfileScreen({ route }) {
 
       <View style={{ flex: 1, position: "relative", zIndex: 3 }}>
         <FlashList
-          scrollEnabled={notes.length > 0}
-          removeClippedSubviews={true}
-          estimatedItemSize={190}
           data={[header, ...(loading ? [] : notes)]}
-          renderItem={renderNote}
           keyExtractor={keyExtractor}
           onScroll={handleScroll}
+          renderItem={renderNote}
+          scrollEnabled={notes.length > 0}
         />
 
         {loading && <Spinner />}
