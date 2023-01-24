@@ -210,13 +210,11 @@ export const doCycleRelays = () => async (dispatch: AppDispatch, getState: GetSt
   const relayUrls = Object.keys(relaysByUrl)
   let count = 0
 
-  console.log("cycle relays")
   relayUrls.forEach(async (relayUrl) => {
     const relay = relaysByUrl[relayUrl]
 
-    let newRelay
     try {
-      await relay.close()
+      relay.close()
     } catch (e) {
       console.log("error closing relay", e)
     } finally {

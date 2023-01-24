@@ -235,8 +235,6 @@ const doPopulateFeed =
       }
     }
 
-    console.log("latest note in feed: ", latestNoteInFeed)
-
     const updatedFilter = latestNoteInFeed
       ? {
           ...filter,

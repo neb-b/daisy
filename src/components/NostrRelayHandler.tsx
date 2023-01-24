@@ -58,6 +58,8 @@ export const NostrRelayHandler = () => {
     }
 
     const subscription = AppState.addEventListener("change", (nextAppState: MyAppState) => {
+      console.log("appVisible", appVisible)
+      console.log("nextAppState", nextAppState)
       if (!appVisible && nextAppState === "active") {
         dispatch(doCycleRelays())
       }
