@@ -13,7 +13,7 @@ export const Spinner = () => {
         left: 0,
         right: 0,
         bottom: 0,
-        marginBottom: 8,
+        marginBottom: 16,
         marginLeft: "auto",
         marginRight: "auto",
         zIndex: 2,
