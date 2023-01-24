@@ -30,7 +30,7 @@ export function ProfileScreen({ route }) {
   const isFollowing = contactList?.tags.find((tag) => tag[0] === "p" && tag[1] === pubkey)?.length > 0
   const npub = nip19.npubEncode(pubkey)
   const isMe = user?.pubkey === pubkey
-  const bannerSize = 130
+  const [scroll, setScroll] = React.useState(0)
 
   React.useEffect(() => {
     dispatch(doFetchProfile(pubkey))
@@ -48,6 +48,23 @@ export function ProfileScreen({ route }) {
 
     return <Note id={item} />
   }, [])
+
+  const keyExtractor = React.useCallback((item) => (typeof item !== "string" ? "header" : item), [])
+
+  const handleScroll = ({ nativeEvent }) => {
+    const scrollY = nativeEvent.contentOffset.y
+    setScroll(scrollY)
+  }
+
+  let avatarSize = 70
+  if (scroll > 0) {
+    avatarSize = avatarSize - scroll
+
+    avatarSize = Math.max(45, avatarSize)
+  }
+
+  const bannerSize = 130
+  const blurTopNavigation = scroll >= bannerSize - 48
 
   const header = (
     <>
@@ -69,16 +86,16 @@ export function ProfileScreen({ route }) {
         >
           <View
             style={{
-              marginTop: -48,
-              borderWidth: 3,
+              marginTop: -1 * (avatarSize - 45),
               borderColor: theme["color-basic-400"],
               backgroundColor: theme["color-basic-400"],
-              height: 96,
-              width: 96,
-              borderRadius: 96 / 2,
+              borderWidth: 3,
+              height: avatarSize + 6,
+              width: avatarSize + 6,
+              borderRadius: (avatarSize + 6) / 2,
             }}
           >
-            <Avatar pubkey={pubkey} size={90} />
+            <Avatar pubkey={pubkey} size={avatarSize} />
           </View>
           {isMe ? (
             <Button
@@ -94,7 +111,7 @@ export function ProfileScreen({ route }) {
           ) : (
             <Button
               appearance={isFollowing ? "outline" : "primary"}
-              style={{ marginBottom: "auto" }}
+              style={{ marginBottom: "auto", backgroundColor: theme["background-color-basic-1"] }}
               onPress={handleToggleFollow}
             >
               {isFollowing ? "Unfollow" : "Follow"}
@@ -157,23 +174,13 @@ export function ProfileScreen({ route }) {
     </>
   )
 
-  const keyExtractor = React.useCallback((item) => (typeof item !== "string" ? "header" : item), [])
-
-  const handleScroll = ({ nativeEvent }) => {
-    const scrollY = nativeEvent.contentOffset.y
-
-    if (scrollY >= bannerSize - 16) {
-      setApplyNavigationBlur(true)
-    } else {
-      setApplyNavigationBlur(false)
-    }
-  }
-
   return (
     <Layout>
       <View style={{ position: "absolute", flex: 1, height: bannerSize, width: "100%" }}>
         <ImageBackground
-          source={require("../../assets/banner.png")}
+          source={
+            profileContent?.banner ? { uri: profileContent.banner } : require("../../assets/banner.png")
+          }
           style={{ width: "100%", height: bannerSize }}
         >
           <LinearGradient
@@ -186,12 +193,13 @@ export function ProfileScreen({ route }) {
         alignment="center"
         hideProfileLink
         style={{
-          backgroundColor: applyNavigationBlur ? "red" : "transparent",
+          backgroundColor: blurTopNavigation ? "rgba(0,0,0,0.6)" : "transparent",
         }}
       />
 
       <View style={{ flex: 1, position: "relative", zIndex: 3 }}>
         <FlashList
+          scrollEnabled={notes.length > 0}
           removeClippedSubviews={true}
           estimatedItemSize={190}
           data={[header, ...(loading ? [] : notes)]}
