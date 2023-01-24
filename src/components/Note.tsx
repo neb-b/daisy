@@ -28,6 +28,7 @@ export const Note: React.FC<Props> = ({
   const navigation = useNavigation()
   const note = useNote(id)
   const profile = useProfile(note?.pubkey)
+  const theme = useTheme()
   const profileContent = profile?.content
   const isHighlightedNote = id === threadId
 
@@ -42,6 +43,7 @@ export const Note: React.FC<Props> = ({
           paddingBottom: 16,
           paddingLeft: 16,
           paddingRight: 16,
+          backgroundColor: theme["background-basic-color-1"],
           ...style,
         }}
       >

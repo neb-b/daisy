@@ -14,9 +14,11 @@ type Props = {
   alignment: string
   hideBack?: boolean
   accessoryRight?: React.ReactNode
+  showLogo?: boolean
+  style?: {}
 }
 
-export const TopNavigation = ({ title, hideProfileLink, hideBack, ...rest }: Props) => {
+export const TopNavigation = ({ title, hideProfileLink, hideBack, showLogo = false, style }: Props) => {
   const dispatch = useDispatch()
   const { goBack } = useNavigation()
   const { pubkey } = useUser()
@@ -42,15 +44,21 @@ export const TopNavigation = ({ title, hideProfileLink, hideBack, ...rest }: Pro
   const profileLink = React.useCallback(() => <Avatar pubkey={user.pubkey} size={35} />, [user.pubkey])
   const accessoryLeft = hideProfileLink ? (hideBack ? null : backAction) : profileLink
   const titleImage = React.useCallback(
-    () => (
-      <View style={{ marginTop: -9 }}>
-        <Image source={require("../../assets/icon.png")} style={{ height: 40, width: 40 }} />
-      </View>
-    ),
-    []
+    () =>
+      showLogo ? (
+        <View style={{ marginTop: -9 }}>
+          <Image source={require("../../assets/icon.png")} style={{ height: 40, width: 40 }} />
+        </View>
+      ) : null,
+    [showLogo]
   )
 
-  // idk
-  // @ts-expect-error
-  return <BaseTopNavigation accessoryLeft={accessoryLeft} title={title || titleImage} {...rest} />
+  return (
+    <BaseTopNavigation
+      alignment="center"
+      accessoryLeft={accessoryLeft}
+      title={title || titleImage}
+      {...style}
+    />
+  )
 }

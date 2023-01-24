@@ -109,23 +109,27 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
                 <View
                   style={{
                     width: "100%",
-                    height: 150,
+                    height: linkPreview.previewData?.image?.url ? 150 : undefined,
                     borderTopRightRadius: 10,
                     borderTopLeftRadius: 10,
                   }}
                 >
-                  <Image
-                    src={linkPreview.previewData?.image?.url}
-                    style={{
-                      borderTopLeftRadius: 10,
-                      borderTopRightRadius: 10,
-                      borderBottomLeftRadius: 0,
-                      borderBottomRightRadius: 0,
-                    }}
-                  />
+                  {linkPreview.previewData?.image?.url && (
+                    <Image
+                      src={linkPreview.previewData.image.url}
+                      style={{
+                        borderTopLeftRadius: 10,
+                        borderTopRightRadius: 10,
+                        borderBottomLeftRadius: 0,
+                        borderBottomRightRadius: 0,
+                      }}
+                    />
+                  )}
                 </View>
                 <View style={{ padding: 8, flex: 1 }}>
-                  <Text style={{ flex: 1, fontWeight: "bold" }}>{linkPreview.previewData.title}</Text>
+                  {false && linkPreview.previewData.title && (
+                    <Text style={{ flex: 1, fontWeight: "bold" }}>{linkPreview.previewData.title}</Text>
+                  )}
                   <Text style={{ paddingTop: 4, paddingBottom: 4 }}>{domain}</Text>
                 </View>
               </View>
