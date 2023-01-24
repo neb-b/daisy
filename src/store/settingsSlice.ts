@@ -213,6 +213,7 @@ export const doCycleRelays = () => async (dispatch: AppDispatch, getState: GetSt
   relayUrls.forEach(async (relayUrl) => {
     const relay = relaysByUrl[relayUrl]
 
+    let newRelay
     try {
       await relay.close()
     } catch (e) {

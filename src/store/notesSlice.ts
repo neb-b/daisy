@@ -122,28 +122,6 @@ export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, 
   }
 }
 
-export const doFetchProfileNotes = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
-  const {
-    settings: { relaysByUrl, relaysLoadingByUrl },
-  } = getState()
-
-  dispatch(updateloadingByIdOrPubkey({ [pubkey]: true }))
-
-  const relays = Object.values(relaysByUrl).filter((relay) => relaysLoadingByUrl[relay.url] !== true)
-
-  const { notes, profiles, related } = await getEventsFromPubkeys(relays, [pubkey], 20)
-
-  dispatch(
-    updateNotesAndProfiles({
-      notes: [...notes, ...related],
-      profiles,
-    })
-  )
-  dispatch(updatefeedsByIdOrPubkey({ [pubkey]: Array.from(new Set(notes.map((note) => note.id))) }))
-  dispatch(updateloadingByIdOrPubkey({ [pubkey]: false }))
-  dispatch(doFetchReactionsForNotes([...notes, ...related].map((note) => note.id)))
-}
-
 export const doPopulateNotificationsFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
   const { settings: settingsState } = getState()
 
@@ -168,6 +146,16 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
 
   dispatch(doPopulateFeed("following", filter))
 }
+
+export const doPopulateProfileFeed =
+  (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
+    const filter = {
+      authors: [pubkey],
+      kinds: [nostrEventKinds.note, nostrEventKinds.repost],
+    }
+
+    dispatch(doPopulateFeed(pubkey, filter))
+  }
 
 const doPopulateFeed =
   (feedId: string, filter: NostrFilter) => async (dispatch: AppDispatch, getState: GetState) => {
@@ -201,8 +189,6 @@ const doPopulateFeed =
         }
       }
     }
-
-    console.log("latest note in feed: ", latestNoteInFeed)
 
     const updatedFilter = latestNoteInFeed
       ? {

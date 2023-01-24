@@ -12,9 +12,10 @@ export const Spinner = () => {
         position: "absolute",
         left: 0,
         right: 0,
+        bottom: 0,
+        marginBottom: 8,
         marginLeft: "auto",
         marginRight: "auto",
-        marginTop: 8,
         zIndex: 2,
         alignItems: "center",
       }}
