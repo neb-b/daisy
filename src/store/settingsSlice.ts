@@ -202,6 +202,10 @@ export const doRemoveRelay = (relayUrl: string) => async (dispatch: AppDispatch,
   dispatch(deleteRelay(relayUrl))
 }
 
+//
+// TODO: this should be smarter
+// only close/reopen relays that are actually disconnected
+//
 export const doCycleRelays = () => async (dispatch: AppDispatch, getState: GetState) => {
   const {
     settings: { relaysByUrl },
