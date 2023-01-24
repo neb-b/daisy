@@ -169,6 +169,42 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
   dispatch(doPopulateFeed("following", filter))
 }
 
+<<<<<<< Updated upstream
+=======
+export const doPopulateThread = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
+  const {
+    notes: { notesById },
+  } = getState()
+
+  const note = notesById[noteId]
+  const replyIds = note.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
+  const filteredReplyIds = replyIds.filter((id) => !notesById[id])
+
+  const filterForReplies = {
+    kinds: [nostrEventKinds.note],
+    "#e": filteredReplyIds,
+  }
+
+  const filterForTopLevel = {
+    kinds: [nostrEventKinds.note],
+    ids: filteredReplyIds,
+  }
+
+  dispatch(doPopulateFeed(noteId, filterForReplies))
+  dispatch(doPopulateFeed(noteId, filterForTopLevel))
+}
+
+export const doPopulateProfileFeed =
+  (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
+    const filter = {
+      authors: [pubkey],
+      kinds: [nostrEventKinds.note, nostrEventKinds.repost],
+    }
+
+    dispatch(doPopulateFeed(pubkey, filter))
+  }
+
+>>>>>>> Stashed changes
 const doPopulateFeed =
   (feedId: string, filter: NostrFilter) => async (dispatch: AppDispatch, getState: GetState) => {
     const {
@@ -331,35 +367,6 @@ export const doFetchReactionsForNotes =
     })
 
     dispatch(updateReactionsByNoteId(newReactionsByNoteId))
-  }
-
-export const doFetchRepliesInThread =
-  (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
-    const {
-      settings: settingsState,
-      notes: { notesById },
-    } = getState()
-
-    dispatch(updateloadingByIdOrPubkey({ [noteId]: true }))
-
-    const note = notesById[noteId]
-    const replyIds = note.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
-
-    const { notes, related, profiles } = await getReplies(Object.values(settingsState.relaysByUrl), [
-      noteId,
-      ...replyIds,
-    ])
-
-    dispatch(updateloadingByIdOrPubkey({ [noteId]: false }))
-
-    if (!notes.length) {
-      return
-    }
-
-    const fetched = [...notes, ...related]
-
-    dispatch(updateNotesAndProfiles({ notes: fetched, profiles }))
-    dispatch(doFetchReactionsForNotes(fetched.map((note) => note.id)))
   }
 
 export const doPublishNote =
