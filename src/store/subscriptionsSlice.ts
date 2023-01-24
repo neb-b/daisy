@@ -4,6 +4,7 @@ import type { Sub } from "nostr-tools"
 
 import { getNostrEvent, getNostrEvents, nostrEventKinds } from "core/nostr"
 import type { AppDispatch, GetState } from "store"
+import { noteMentionRegex } from "utils/note"
 import {
   updateReactionsByNoteId,
   updateNotesById,
@@ -89,6 +90,7 @@ export const doSubscribeToRelays =
           }
 
           eventHistoryMap[eventId] = true
+          const mentionsSet = new Set<string>()
 
           //
           // No associated data is needed for reaction events
@@ -116,8 +118,6 @@ export const doSubscribeToRelays =
             [eventId]: true,
           }
 
-          // TODO: handle mentions for new notes
-
           //
           // For reposts, the reposted note might be encoded in the newly received event
           // If it is, extract it and add it to redux
@@ -140,6 +140,17 @@ export const doSubscribeToRelays =
                   pubkeysInEvent[repostedEvent.pubkey] = true
                   foundRepostDataEncodedInEvent = true
                   dispatch(updateNotesById({ [repostedEvent.id]: repostedEvent }))
+
+                  const mentions = repostedEvent.content.match(noteMentionRegex) || []
+                  for (var i = 0; i < mentions.length; i++) {
+                    const mention = mentions[i]
+                    const tagIndex = mention.match(/#\[([0-9]+)]/)[1]
+                    const tag = repostedEvent.tags[tagIndex]
+                    if (tag && tag[0] === "e") {
+                      mentionsSet.add(tag[1])
+                      break
+                    }
+                  }
                 } catch (e) {}
               }
 
@@ -162,6 +173,17 @@ export const doSubscribeToRelays =
             pubkeysInNote.forEach((pubkey) => {
               pubkeysInEvent[pubkey] = true
             })
+
+            const mentions = note.content.match(noteMentionRegex) || []
+            for (var i = 0; i < mentions.length; i++) {
+              const mention = mentions[i]
+              const tagIndex = mention.match(/#\[([0-9]+)]/)[1]
+              const tag = note.tags[tagIndex]
+              if (tag && tag[0] === "e") {
+                mentionsSet.add(tag[1])
+                break
+              }
+            }
           }
 
           //
@@ -184,6 +206,25 @@ export const doSubscribeToRelays =
               return { ...acc, [profile.pubkey]: profile }
             }, {})
             dispatch(updateProfilesByPubkey(profilesByPubkey))
+          }
+
+          //
+          // Fetch all mentions that are not already in redux
+          //
+          if (mentionsSet.size > 0) {
+            const prunedMentions = Array.from(mentionsSet).filter((id) => !notesById[id])
+            const mentions = await getNostrEvents(relays, {
+              kinds: [nostrEventKinds.note],
+              ids: prunedMentions,
+            })
+
+            dispatch(
+              updateNotesById(
+                mentions.reduce((acc, note) => {
+                  return { ...acc, [note.id]: note }
+                }, {})
+              )
+            )
           }
 
           const idsToFetch = Object.keys(idsInEvent).filter((id) => {

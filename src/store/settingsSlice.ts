@@ -201,3 +201,28 @@ export const doRemoveRelay = (relayUrl: string) => async (dispatch: AppDispatch,
 
   dispatch(deleteRelay(relayUrl))
 }
+
+export const doCycleRelays = () => async (dispatch: AppDispatch, getState: GetState) => {
+  const {
+    settings: { relaysByUrl },
+  } = getState()
+
+  const relayUrls = Object.keys(relaysByUrl)
+  let count = 0
+
+  relayUrls.forEach(async (relayUrl) => {
+    const relay = relaysByUrl[relayUrl]
+
+    try {
+      await relay.close()
+    } catch (e) {
+    } finally {
+      count++
+
+      if (count === relayUrls.length) {
+        console.log("count reached, init relays")
+        dispatch(initRelays())
+      }
+    }
+  })
+}

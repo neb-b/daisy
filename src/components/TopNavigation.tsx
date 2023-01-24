@@ -50,5 +50,7 @@ export const TopNavigation = ({ title, hideProfileLink, hideBack, ...rest }: Pro
     []
   )
 
-  return <BaseTopNavigation accessoryLeft={accessoryLeft} title={titleImage} {...rest} />
+  // idk
+  // @ts-expect-error
+  return <BaseTopNavigation accessoryLeft={accessoryLeft} title={title || titleImage} {...rest} />
 }

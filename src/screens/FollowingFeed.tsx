@@ -25,7 +25,7 @@ export function FollowingFeedScreen() {
 
   return (
     <Layout>
-      <TopNavigation title="Feed" alignment="center" />
+      <TopNavigation alignment="center" />
       <Divider />
 
       {showLoading && (

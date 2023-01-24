@@ -171,16 +171,49 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
 
 const doPopulateFeed =
   (feedId: string, filter: NostrFilter) => async (dispatch: AppDispatch, getState: GetState) => {
-    const { settings: settingsState, notes: notesState } = getState()
+    const {
+      settings: settingsState,
+      notes: { feedsByIdOrPubkey, notesById },
+    } = getState()
 
     const { relaysByUrl, relaysLoadingByUrl } = settingsState
     const relays = Object.values(relaysByUrl).filter(
       (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
     )
 
+    const currentNotesById = Object.assign({}, notesById)
+    const currentFeed = feedsByIdOrPubkey[feedId] || []
+
+    let latestNoteInFeed
+    for (var i = 0; i < currentFeed.length; i++) {
+      const noteId = currentFeed[i]
+      const note = currentNotesById[noteId]
+
+      if (!note) {
+        return
+      }
+
+      if (!latestNoteInFeed) {
+        latestNoteInFeed = note
+      } else {
+        if (latestNoteInFeed.created_at > note.created_at) {
+          latestNoteInFeed = note
+        }
+      }
+    }
+
+    console.log("latest note in feed: ", latestNoteInFeed)
+
+    const updatedFilter = latestNoteInFeed
+      ? {
+          ...filter,
+          since: latestNoteInFeed.created_at,
+        }
+      : filter
+
     dispatch(updateloadingByIdOrPubkey({ [feedId]: true }))
 
-    const events = await getNostrEvents(relays, filter)
+    const events = await getNostrEvents(relays, updatedFilter)
 
     const profilePubkeySet = new Set<string>()
     const repostIdSet = new Set<string>()
@@ -191,13 +224,15 @@ const doPopulateFeed =
       const note = event as NostrNoteEvent | NostrRepostEvent
 
       const mentions = note.content.match(noteMentionRegex) || []
-      mentions.forEach((mention) => {
+      for (var i = 0; i < mentions.length; i++) {
+        const mention = mentions[i]
         const tagIndex = mention.match(/#\[([0-9]+)]/)[1]
         const tag = note.tags[tagIndex]
         if (tag && tag[0] === "e") {
           mentionsSet.add(tag[1])
+          break
         }
-      })
+      }
 
       // Find users that need to be fetched
       profilePubkeySet.add(note.pubkey)
@@ -259,8 +294,8 @@ const doPopulateFeed =
     )
 
     dispatch(updatefeedsByIdOrPubkey({ [feedId]: events.map((note) => note.id) }))
-    dispatch(updateloadingByIdOrPubkey({ [feedId]: false }))
     dispatch(doFetchReactionsForNotes([...events, ...reposts, ...additionalNotes].map((note) => note.id)))
+    dispatch(updateloadingByIdOrPubkey({ [feedId]: false }))
   }
 
 export const doFetchReactionsForNotes =
