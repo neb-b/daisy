@@ -168,7 +168,7 @@ const NoteAuthor = ({ profileContent, isHighlightedNote, note }) => {
         </Text>
 
         {!isHighlightedNote && (
-          <Text appearance="hint" style={{ fontSize: 14, marginLeft: 8 }}>
+          <Text appearance="hint" style={{ fontSize: 14, marginLeft: 4 }}>
             {timeSince(note.created_at)}
           </Text>
         )}

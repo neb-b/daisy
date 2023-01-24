@@ -1,18 +1,17 @@
 import React from "react"
 import { View } from "react-native"
-import { Divider, Spinner } from "@ui-kitten/components"
+import { Divider } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
 import { useFocusEffect } from "@react-navigation/native"
 
 import { useDispatch } from "store"
 import { doPopulateNotificationsFeed } from "store/notesSlice"
 import { useFeed } from "store/hooks"
-import { Layout, Note, TopNavigation } from "components"
+import { Layout, Note, TopNavigation, Spinner } from "components"
 
 export function NotificationsScreen() {
   const dispatch = useDispatch()
   const { loading, notes } = useFeed("notifications")
-  const showLoading = loading && notes.length === 0
 
   useFocusEffect(
     React.useCallback(() => {
@@ -28,15 +27,18 @@ export function NotificationsScreen() {
       <TopNavigation title="Notifications" alignment="center" />
       <Divider />
 
-      {showLoading && (
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <Spinner />
-        </View>
-      )}
+      <View style={{ flex: 1 }}>
+        {loading && <Spinner />}
 
-      {!showLoading && notes?.length > 0 && (
-        <FlashList estimatedItemSize={190} data={notes} renderItem={renderNote} keyExtractor={keyExtractor} />
-      )}
+        {notes?.length > 0 && (
+          <FlashList
+            estimatedItemSize={190}
+            data={notes}
+            renderItem={renderNote}
+            keyExtractor={keyExtractor}
+          />
+        )}
+      </View>
     </Layout>
   )
 }
