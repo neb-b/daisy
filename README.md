@@ -2,7 +2,7 @@
 
 A Nostr client for iOS and Android
 
-![image of Daisy in iOS](/assets/adaptive-icon.png)
+![image of Daisy in iOS](/assets/readme-image.png)
 
 ## Downloads
 
