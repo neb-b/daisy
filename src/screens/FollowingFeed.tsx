@@ -20,7 +20,7 @@ export function FollowingFeedScreen() {
 
   return (
     <Layout>
-      <TopNavigation alignment="center" />
+      <TopNavigation alignment="center" showLogo />
       <Divider />
       <View style={{ position: "relative", flex: 1 }}>
         {loading && <Spinner />}
