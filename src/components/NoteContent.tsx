@@ -1,11 +1,11 @@
 import React from "react"
-import { View } from "react-native"
+import { View, Pressable, Dimensions } from "react-native"
 import { useTheme, Text } from "@ui-kitten/components"
 import { LinkPreview } from "@flyerhq/react-native-link-preview"
+import ImageView from "react-native-image-viewing"
 
 import { isImage, isUrl, isMention, noteOrUrlRegex, urlRegex, noteMentionRegex } from "utils/note"
 import { Image, Link, Mention, Note } from "components"
-import { Dimensions } from "react-native"
 
 const WINDOW_WIDTH = Dimensions.get("window").width
 
@@ -16,6 +16,7 @@ type Props = {
 
 export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
   const theme = useTheme()
+  const [image, setImage] = React.useState("")
 
   if (!note) return null
 
@@ -56,9 +57,13 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
 
     if (isImage(text)) {
       return (
-        <View key={i} style={{ width: "100%", height: 150, marginTop: 8 }}>
+        <Pressable
+          key={i}
+          style={{ width: "100%", height: 150, marginTop: 8 }}
+          onPress={() => setImage(text)}
+        >
           <Image src={text} />
-        </View>
+        </Pressable>
       )
     }
 
@@ -150,6 +155,17 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
         >
           <Note id={noteMention} hideActions hideAvatar />
         </View>
+      )}
+
+      {image && (
+        <ImageView
+          animationType="slide"
+          presentationStyle="pageSheet"
+          images={[{ uri: image }]}
+          imageIndex={0}
+          visible={!!image}
+          onRequestClose={() => setImage(null)}
+        />
       )}
     </>
   )
