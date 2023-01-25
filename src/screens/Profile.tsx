@@ -24,12 +24,13 @@ export function ProfileScreen({ route }) {
   const profile = useProfile(pubkey)
   const contactList = useContactList(user?.pubkey)
   const { notes, loading } = useProfileNotes(pubkey)
-  const [applyNavigationBlur, setApplyNavigationBlur] = React.useState(false)
+  const [scroll, setScroll] = React.useState(0)
   const profileContent = profile?.content
   const isFollowing = contactList?.tags.find((tag) => tag[0] === "p" && tag[1] === pubkey)?.length > 0
   const npub = nip19.npubEncode(pubkey)
   const isMe = user?.pubkey === pubkey
-  const [scroll, setScroll] = React.useState(0)
+  const lastFourOfPubkey = pubkey?.slice(-4)
+  const bannerUri = `https://media.nostr.band/thumbs/${lastFourOfPubkey}/${pubkey}-banner-600`
 
   React.useEffect(() => {
     dispatch(doFetchProfile(pubkey))
@@ -114,7 +115,10 @@ export function ProfileScreen({ route }) {
           ) : (
             <Button
               appearance={isFollowing ? "outline" : "primary"}
-              style={{ marginBottom: "auto", backgroundColor: theme["background-color-basic-1"] }}
+              style={{
+                marginBottom: "auto",
+                backgroundColor: isFollowing ? theme["background-color-basic-1"] : undefined,
+              }}
               onPress={handleToggleFollow}
             >
               {isFollowing ? "Unfollow" : "Follow"}
@@ -181,9 +185,7 @@ export function ProfileScreen({ route }) {
     <Layout>
       <View style={{ position: "absolute", flex: 1, height: bannerSize, width: "100%" }}>
         <ImageBackground
-          source={
-            profileContent?.banner ? { uri: profileContent.banner } : require("../../assets/banner.png")
-          }
+          source={profileContent?.banner ? { uri: bannerUri } : require("../../assets/banner.png")}
           style={{ width: "100%", height: bannerSize }}
         >
           <LinearGradient
