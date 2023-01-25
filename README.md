@@ -1,6 +1,8 @@
 # Daisy
 
-A nostr client for iOS and Android
+A Nostr client for iOS and Android
+
+![image of Daisy in iOS](/assets/adaptive-icon.png)
 
 ## Downloads
 
