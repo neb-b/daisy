@@ -134,7 +134,7 @@ export const NoteContent: React.FC<Props> = ({ note, size = "small" }) => {
                   )}
                 </View>
                 <View style={{ padding: 8, flex: 1 }}>
-                  {false && linkPreview.previewData.title && (
+                  {linkPreview.previewData.title && (
                     <Text style={{ flex: 1, fontWeight: "bold" }}>{linkPreview.previewData.title}</Text>
                   )}
                   <Text style={{ paddingTop: 4, paddingBottom: 4 }}>{domain}</Text>

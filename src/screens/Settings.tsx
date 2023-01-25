@@ -237,7 +237,8 @@ const RelayManagement = () => {
             <View style={{ flex: 1, paddingRight: 16, paddingLeft: 16, paddingTop: 16 }}>
               <Input
                 autoFocus
-                autoComplete="off"
+                spellCheck={false}
+                autoCorrect={false}
                 label="Relay url"
                 autoCapitalize="none"
                 placeholder="wss://test.relay.nostr"
