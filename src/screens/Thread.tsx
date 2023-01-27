@@ -5,7 +5,7 @@ import { FlashList } from "@shopify/flash-list"
 
 import { Note, Layout, TopNavigation } from "components"
 import { useThread } from "store/hooks"
-import { doPopulateThread } from "store/notesSlice"
+import { doSubscribeToThread } from "store/subscriptionsSlice"
 import { useDispatch } from "store"
 
 export function ThreadScreen({ route }) {
@@ -17,7 +17,7 @@ export function ThreadScreen({ route }) {
   const indexOfHighlightedNote = notes.indexOf(id)
 
   React.useEffect(() => {
-    dispatch(doPopulateThread(id))
+    dispatch(doSubscribeToThread(id))
   }, [id])
 
   const renderNote = React.useCallback(

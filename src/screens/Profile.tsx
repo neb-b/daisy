@@ -117,7 +117,7 @@ export function ProfileScreen({ route }) {
               appearance={isFollowing ? "outline" : "primary"}
               style={{
                 marginBottom: "auto",
-                backgroundColor: isFollowing ? theme["background-color-basic-1"] : undefined,
+                ...(isFollowing ? { backgroundColor: theme["background-color-basic-1"] } : {}),
               }}
               onPress={handleToggleFollow}
             >

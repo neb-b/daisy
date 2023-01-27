@@ -1,3 +1,4 @@
+import React from "react"
 import { View, Image, Pressable } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import { Icon, useTheme } from "@ui-kitten/components"
@@ -10,7 +11,7 @@ type Props = {
 }
 
 export const Avatar: React.FC<Props> = ({ pubkey, size = 40, ...rest }) => {
-  const { navigate } = useNavigation()
+  const navigation = useNavigation()
   const note = useProfile(pubkey)
   const theme = useTheme()
   const picture = note?.content?.picture
@@ -18,15 +19,15 @@ export const Avatar: React.FC<Props> = ({ pubkey, size = 40, ...rest }) => {
 
   const avatarUri = `https://media.nostr.band/thumbs/${lastFourOfPubkey}/${pubkey}-picture-64`
 
+  const handlePress = React.useCallback(() => {
+    // @ts-expect-error
+    navigation.push("Profile", {
+      pubkey,
+    })
+  }, [pubkey])
+
   return (
-    <Pressable
-      onPress={() =>
-        // @ts-expect-error
-        navigate("Profile", {
-          pubkey,
-        })
-      }
-    >
+    <Pressable onPress={handlePress}>
       <View
         style={{
           width: size,
@@ -39,7 +40,7 @@ export const Avatar: React.FC<Props> = ({ pubkey, size = 40, ...rest }) => {
         {picture ? (
           <Image
             source={{
-              uri: avatarUri,
+              uri: picture, //avatarUri,
             }}
             style={{ height: size, width: size, borderRadius: size ? size / 2 : 10, resizeMode: "stretch" }}
           />
