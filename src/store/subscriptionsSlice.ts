@@ -68,7 +68,6 @@ export const doSubscribeToNotifications = () => async (dispatch: AppDispatch, ge
 
 export const doSubscribeToThread = (noteId) => async (dispatch: AppDispatch, getState: GetState) => {
   const {
-    settings: settingsState,
     notes: { notesById },
   } = getState()
 
@@ -79,14 +78,42 @@ export const doSubscribeToThread = (noteId) => async (dispatch: AppDispatch, get
   const filter = {
     kinds: [nostrEventKinds.note, nostrEventKinds.reaction],
     "#e": replyIds,
-    ids: replyIds,
   }
 
-  dispatch(doSubscribeToRelays(noteId, filter, true))
+  const additionalSubscriptionsCreated = {}
+
+  dispatch(
+    doSubscribeToRelays(
+      noteId,
+      filter,
+      (event) => {
+        // const { tags } = event
+        // const eTags = tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
+        // const newETags = eTags.reduce((acc, eTag) => {
+        //   if (additionalSubscriptionsCreated[eTag]) {
+        //     return acc
+        //   } else {
+        //     additionalSubscriptionsCreated[eTag] = true
+        //     return [...acc, eTag]
+        //   }
+        // }, [])
+        // if (newETags.length > 0) {
+        //   console.log("onEvent new subscription")
+        //   dispatch(
+        //     doSubscribeToRelays(noteId, {
+        //       ...filter,
+        //       "#e": newETags,
+        //     })
+        //   )
+        // }
+      },
+      false
+    )
+  )
 }
 
 export const doSubscribeToRelays =
-  (feedId: string, filter: NostrFilter, log?: boolean) =>
+  (feedId: string, filter: NostrFilter, onEvent?: (NostrEvent) => void, log?: boolean) =>
   async (dispatch: AppDispatch, getState: GetState) => {
     const { settings: settingsState } = getState()
     const { relaysByUrl } = settingsState
@@ -105,10 +132,6 @@ export const doSubscribeToRelays =
         subscriptions = [...subscriptions, { url: relay.url, sub }]
 
         sub.on("event", async (event: unknown) => {
-          const {
-            notes: { reactionsByNoteId, profilesByPubkey, notesById },
-          } = getState()
-
           const eventId = (event as NostrEvent).id
           const eventKind = (event as NostrEvent).kind
           const eventPubkey = (event as NostrEvent).pubkey
@@ -116,16 +139,17 @@ export const doSubscribeToRelays =
           // Save event so we don't process it again
           if (eventHistoryMap[eventId]) {
             return
+          } else {
+            eventHistoryMap[eventId] = true
           }
 
-          //
-          // Add it to redux before fetching other data
-          //
-          const eventToAdd = event as NostrNoteEvent | NostrRepostEvent
-          dispatch(updateNotesById({ [eventId]: eventToAdd }))
+          if (log) {
+            console.log("event", event)
+          }
 
-          eventHistoryMap[eventId] = true
-          const mentionsSet = new Set<string>()
+          const {
+            notes: { reactionsByNoteId, profilesByPubkey, notesById },
+          } = getState()
 
           //
           // No associated data is needed for reaction events
@@ -141,6 +165,18 @@ export const doSubscribeToRelays =
             dispatch(updateReactionsByNoteId({ [parentNoteFromReaction]: newReactionsForNoteId }))
             return
           }
+
+          if (onEvent) {
+            onEvent(event as NostrEvent)
+          }
+
+          //
+          // Add it to redux before fetching other data
+          //
+          const eventToAdd = event as NostrNoteEvent | NostrRepostEvent
+          dispatch(updateNotesById({ [eventId]: eventToAdd }))
+
+          const mentionsSet = new Set<string>()
 
           // Event is a note or repost
           // Add it to the feed, then determine what data needs to be fetched
@@ -285,7 +321,11 @@ export const doSubscribeToRelays =
         dispatch(doRemoveRelaySubscriptionFromFeed(relay.url, feedId))
       }
 
-      dispatch(updateSubscriptionsByFeedId({ [feedId]: subscriptions }))
+      const { subscriptionsByFeedId } = getState().subscriptions
+      const currentSubscriptionsForFeedId = subscriptionsByFeedId[feedId] || []
+      dispatch(
+        updateSubscriptionsByFeedId({ [feedId]: [...currentSubscriptionsForFeedId, ...subscriptions] })
+      )
     })
   }
 
@@ -301,7 +341,7 @@ const doRemoveRelaySubscriptionFromFeed =
   }
 
 export const doUnsubscribeFromRelays =
-  (feedId: "following" | "notifications") => async (dispatch: AppDispatch, getState: GetState) => {
+  (feedId: string) => async (dispatch: AppDispatch, getState: GetState) => {
     const {
       subscriptions: { subscriptionsByFeedId },
     } = getState()

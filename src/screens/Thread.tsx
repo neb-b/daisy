@@ -2,10 +2,11 @@ import React from "react"
 import { View } from "react-native"
 import { Divider, Spinner } from "@ui-kitten/components"
 import { FlashList } from "@shopify/flash-list"
+import { useFocusEffect } from "@react-navigation/native"
 
 import { Note, Layout, TopNavigation } from "components"
 import { useThread } from "store/hooks"
-import { doSubscribeToThread } from "store/subscriptionsSlice"
+import { doSubscribeToThread, doUnsubscribeFromRelays } from "store/subscriptionsSlice"
 import { useDispatch } from "store"
 
 export function ThreadScreen({ route }) {
@@ -16,9 +17,13 @@ export function ThreadScreen({ route }) {
   const { notes, loading } = useThread(id)
   const indexOfHighlightedNote = notes.indexOf(id)
 
-  React.useEffect(() => {
-    dispatch(doSubscribeToThread(id))
-  }, [id])
+  useFocusEffect(
+    React.useCallback(() => {
+      dispatch(doSubscribeToThread(id))
+
+      return () => dispatch(doUnsubscribeFromRelays(id))
+    }, [id])
+  )
 
   const renderNote = React.useCallback(
     ({ item, index }) => (

@@ -136,20 +136,20 @@ export const useThread = (noteId: string) => {
 
   // This is a reply to a message in the middle of a thread
   // Get reply chain for this specific message
-  const topLevelReplyId = highlightedNoteReplyIds[0]
-  const directReplyId = highlightedNoteReplyIds[1]
+  const topLevelReplyId = highlightedNoteReplyIds[1]
+  const directReplyId = highlightedNoteReplyIds[0]
 
   const travelUpThread = (noteId: string) => {
     const note = notesById[noteId]
-    const noteIdReplyingToId = note?.tags.filter(
+    const noteHighlightIsReplyingTo = note?.tags.filter(
       (tag) => tag[0] === "e" && tag[1] !== topLevelReplyId
     )?.[0]?.[1]
 
-    if (!noteIdReplyingToId) {
+    if (!noteHighlightIsReplyingTo) {
       return [noteId]
     }
 
-    return [...travelUpThread(noteIdReplyingToId), noteId]
+    return [...travelUpThread(noteHighlightIsReplyingTo), noteId]
   }
 
   const repliesBetweenHighlightedNoteAndTopLevelNote = travelUpThread(directReplyId)
