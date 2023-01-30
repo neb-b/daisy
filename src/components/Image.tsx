@@ -7,7 +7,7 @@ export const Image = React.memo(({ src, style = {} }: { src: string; style?: {} 
 
   return (
     <BaseImage
-      resizeMode="cover"
+      resizeMode="contain"
       source={{ uri: src }}
       style={{
         width: undefined,

@@ -4,7 +4,11 @@ import { AppState } from "react-native"
 import { useDispatch } from "store"
 import { useContactList, useUser, useRelaysByUrl } from "store/hooks"
 import { doPopulateFollowingFeed } from "store/notesSlice"
-import { doSubscribeToRelays, doUnsubscribeFromRelays } from "store/subscriptionsSlice"
+import {
+  doSubscribeToFollowing,
+  doSubscribeToNotifications,
+  doUnsubscribeFromRelaysForId,
+} from "store/subscriptionsSlice"
 import { doCycleRelays } from "store/settingsSlice"
 import { usePrevious } from "utils/usePrevious"
 
@@ -27,12 +31,12 @@ export const NostrRelayHandler = () => {
 
   React.useEffect(() => {
     if (hasContactList) {
-      dispatch(doSubscribeToRelays("following"))
-      dispatch(doSubscribeToRelays("notifications"))
+      dispatch(doSubscribeToFollowing())
+      dispatch(doSubscribeToNotifications())
     }
     return () => {
-      dispatch(doUnsubscribeFromRelays("following"))
-      dispatch(doUnsubscribeFromRelays("notifications"))
+      dispatch(doUnsubscribeFromRelaysForId("following"))
+      dispatch(doUnsubscribeFromRelaysForId("notifications"))
     }
   }, [hasContactList, relaysCount])
 

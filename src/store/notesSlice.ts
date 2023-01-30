@@ -3,15 +3,7 @@ import type { PayloadAction } from "@reduxjs/toolkit"
 import type { AppDispatch, GetState } from "store"
 import type { Sub } from "nostr-tools"
 
-import {
-  getProfile,
-  getNostrEvents,
-  getEventsFromPubkeys,
-  getEventsForPubkey,
-  publishNote,
-  nostrEventKinds,
-  getReplies,
-} from "core/nostr"
+import { getProfile, getNostrEvent, getNostrEvents, publishNote, nostrEventKinds } from "core/nostr"
 import { noteMentionRegex } from "utils/note"
 
 export interface NotesState {
@@ -80,9 +72,6 @@ export const notesSlice = createSlice({
     updateloadingByIdOrPubkey(state, action: PayloadAction<Record<string, boolean>>) {
       state.loadingByIdOrPubkey = { ...state.loadingByIdOrPubkey, ...action.payload }
     },
-    updateSubscriptionsById(state, action: PayloadAction<Record<string, Sub[]>>) {
-      state.subscriptionsById = { ...state.subscriptionsById, ...action.payload }
-    },
     updateReactionsByNoteId(state, action: PayloadAction<Record<string, NostrReactionEvent[]>>) {
       state.reactionsByNoteId = { ...state.reactionsByNoteId, ...action.payload }
     },
@@ -97,7 +86,6 @@ export const {
   updatefeedsByIdOrPubkey,
   addNoteToFeedById,
   updateloadingByIdOrPubkey,
-  updateSubscriptionsById,
   updateReactionsByNoteId,
 } = notesSlice.actions
 
@@ -122,26 +110,30 @@ export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, 
   }
 }
 
-export const doFetchProfileNotes = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
+export const doFetchNote = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
   const {
     settings: { relaysByUrl, relaysLoadingByUrl },
+    notes: { notesById },
   } = getState()
 
-  dispatch(updateloadingByIdOrPubkey({ [pubkey]: true }))
-
-  const relays = Object.values(relaysByUrl).filter((relay) => relaysLoadingByUrl[relay.url] !== true)
-
-  const { notes, profiles, related } = await getEventsFromPubkeys(relays, [pubkey], 20)
-
-  dispatch(
-    updateNotesAndProfiles({
-      notes: [...notes, ...related],
-      profiles,
-    })
+  const relays = Object.values(relaysByUrl).filter(
+    (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
   )
-  dispatch(updatefeedsByIdOrPubkey({ [pubkey]: Array.from(new Set(notes.map((note) => note.id))) }))
-  dispatch(updateloadingByIdOrPubkey({ [pubkey]: false }))
-  dispatch(doFetchReactionsForNotes([...notes, ...related].map((note) => note.id)))
+
+  const note = notesById[noteId]
+
+  if (note) {
+    return
+  }
+
+  const filter = {
+    ids: [noteId],
+  }
+
+  const event = await getNostrEvent(relays, filter)
+  const noteEvent = event as NostrNoteEvent
+
+  dispatch(updateNotesById({ [noteEvent.id]: noteEvent }))
 }
 
 export const doPopulateNotificationsFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
@@ -180,16 +172,16 @@ export const doPopulateThread = (noteId: string) => async (dispatch: AppDispatch
 
   const filterForReplies = {
     kinds: [nostrEventKinds.note],
+  }
+
+  const filter = {
+    kinds: [nostrEventKinds.note],
+    ids: filteredReplyIds,
     "#e": filteredReplyIds,
   }
 
-  const filterForTopLevel = {
-    kinds: [nostrEventKinds.note],
-    ids: filteredReplyIds,
-  }
-
-  dispatch(doPopulateFeed(noteId, filterForReplies))
-  dispatch(doPopulateFeed(noteId, filterForTopLevel))
+  dispatch(doPopulateFeed(noteId, filter))
+  // dispatch(doPopulateFeed(noteId, filterForTopLevel))
 }
 
 export const doPopulateProfileFeed =
@@ -354,9 +346,12 @@ export const doFetchReactionsForNotes =
       if (newReactionsByNoteId[noteIdReactionIsFor] === undefined) {
         newReactionsByNoteId[noteIdReactionIsFor] = [reaction]
       } else {
+        const newReactionsSet = new Set(newReactionsByNoteId[noteIdReactionIsFor])
+        newReactionsSet.add(reaction)
+
         newReactionsByNoteId = {
           ...newReactionsByNoteId,
-          noteIdReactionIsFor: [...newReactionsByNoteId[noteIdReactionIsFor], reaction],
+          noteIdReactionIsFor: Array.from(newReactionsSet),
         }
       }
     })
