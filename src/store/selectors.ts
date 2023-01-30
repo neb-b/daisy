@@ -81,7 +81,17 @@ export const makeSelectNoteByNoteId = (noteId: string) =>
     }
 
     if (note.kind !== nostrEventKinds.repost) {
-      return note
+      // See if there are any replies
+      // TODO: handle reposts of replies
+      const replyingToPubkeys = note.tags.filter((tag) => tag[0] === "p").map((tag) => tag[1])
+      const replyingToProfiles = replyingToPubkeys
+        .map((pubkey) => profilesByPubkey[pubkey] || pubkey)
+        .slice(0, 3)
+
+      return {
+        ...note,
+        replyingToProfiles,
+      }
     }
 
     const repostedId = note.tags.find((tag) => tag[0] === "e")?.[1]

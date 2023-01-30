@@ -4,7 +4,7 @@ import { Text, Divider, useTheme, Icon } from "@ui-kitten/components"
 import { useNavigation } from "@react-navigation/native"
 import { nip19 } from "nostr-tools"
 
-import { useNote, useProfile } from "store/hooks"
+import { useNote, useProfile, useUser } from "store/hooks"
 import { timeSince, fullDateString } from "utils/time"
 import { Avatar, NoteContent, NoteActions, Nip05Badge } from "components"
 
@@ -97,11 +97,19 @@ export const Note: React.FC<Props> = ({
 }
 
 function ReplyText({ pubkeysOrProfiles }) {
+  const user = useUser()
   const renderReply = React.useCallback((pubkeyOrProfile: string | NostrProfile, index: number) => {
-    const name =
-      typeof pubkeyOrProfile === "string"
-        ? nip19.npubEncode(pubkeyOrProfile).slice(0, 8)
-        : pubkeyOrProfile.content.name || nip19.npubEncode(pubkeyOrProfile.pubkey).slice(0, 6)
+    let name
+    if (typeof pubkeyOrProfile === "string") {
+      name = nip19.npubEncode(pubkeyOrProfile).slice(0, 8)
+    } else {
+      const profile = pubkeyOrProfile
+      const isMe = profile?.pubkey === user.pubkey
+
+      name = isMe
+        ? "self"
+        : pubkeyOrProfile?.content?.name || nip19.npubEncode(pubkeyOrProfile?.pubkey).slice(0, 6)
+    }
 
     if (index === 0) {
       return name
