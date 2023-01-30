@@ -136,29 +136,43 @@ export const useThread = (noteId: string) => {
 
   // This is a reply to a message in the middle of a thread
   // Get reply chain for this specific message
-  const topLevelReplyId = highlightedNoteReplyIds[1]
+  const rootNoteId = highlightedNoteReplyIds[0]
   const directReplyId = highlightedNoteReplyIds[0]
+  const directReplyNote = notesById[directReplyId]
 
-  const travelUpThread = (noteId: string) => {
-    const note = notesById[noteId]
-    const noteHighlightIsReplyingTo = note?.tags.filter(
-      (tag) => tag[0] === "e" && tag[1] !== topLevelReplyId
-    )?.[0]?.[1]
+  const travelUpThread = (note: NostrEvent) => {
+    const replyIds = note.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
 
-    if (!noteHighlightIsReplyingTo) {
-      return [noteId]
+    const topLevelReply = replyIds[0]
+    const topLevelReplyNote = notesById[topLevelReply]
+    const directReply = replyIds[1]
+    const directReplyNote = notesById[directReply]
+
+    if (!topLevelReplyNote || !directReplyNote) {
+      return [note]
     }
 
-    return [...travelUpThread(noteHighlightIsReplyingTo), noteId]
+    if (directReplyNote) {
+      // console.log("hasDirectReply", directReplyNote)
+      return [...travelUpThread(directReplyNote), note]
+    } else {
+      const topLevelReplyNote = notesById[topLevelReply]
+      return [topLevelReplyNote, note]
+    }
   }
 
-  const repliesBetweenHighlightedNoteAndTopLevelNote = travelUpThread(directReplyId)
+  let repliesBetweenHighlightedNoteAndTopLevelNote = []
+  if (directReplyNote) {
+    repliesBetweenHighlightedNoteAndTopLevelNote = travelUpThread(note)
+  }
+
+  // console.log("\n???", repliesBetweenHighlightedNoteAndTopLevelNote)
 
   return {
     notes: [
-      topLevelReplyId,
-      ...repliesBetweenHighlightedNoteAndTopLevelNote,
-      noteId,
+      rootNoteId,
+      ...repliesBetweenHighlightedNoteAndTopLevelNote.map((note) => note.id),
+      // noteId,
       ...repliesToHighlightedNote,
     ],
     loading,

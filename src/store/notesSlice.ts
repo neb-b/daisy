@@ -110,31 +110,31 @@ export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, 
   }
 }
 
-// export const doFetchNote = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
-//   const {
-//     settings: { relaysByUrl, relaysLoadingByUrl },
-//     notes: { profilesByPubkey, notesById },
-//   } = getState()
+export const doFetchNote = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
+  const {
+    settings: { relaysByUrl, relaysLoadingByUrl },
+    notes: { notesById },
+  } = getState()
 
-//   const relays = Object.values(relaysByUrl).filter(
-//     (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
-//   )
+  const relays = Object.values(relaysByUrl).filter(
+    (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
+  )
 
-//   const note = notesById[noteId]
-//   // const replyTags = note?.tags?.filter((tag) => tag[0] === "e") || []
+  const note = notesById[noteId]
 
-//   if (note) {
-//     return
-//   }
+  if (note) {
+    return
+  }
 
-//   const filter = {
-//     ids: [noteId],
-//   }
+  const filter = {
+    ids: [noteId],
+  }
 
-//   const event = await getNostrEvent(relays, filter)
+  const event = await getNostrEvent(relays, filter)
+  const noteEvent = event as NostrNoteEvent
 
-//   dispatch(updateNotesById({ [event.id]: event }))
-// }
+  dispatch(updateNotesById({ [noteEvent.id]: noteEvent }))
+}
 
 export const doPopulateNotificationsFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
   const { settings: settingsState } = getState()
