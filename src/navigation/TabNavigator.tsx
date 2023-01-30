@@ -2,7 +2,7 @@ import React from "react"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import { BottomNavigation, BottomNavigationTab, Icon, Divider } from "@ui-kitten/components"
 
-import { FollowingFeedScreen } from "screens/FollowingFeed"
+import { FollowingScreen } from "screens/Following"
 import { NotificationsScreen } from "screens/Notifications"
 import { SettingsScreen } from "screens/Settings"
 
@@ -28,7 +28,7 @@ function BottomTabBar({ navigation, state }) {
 export function BottomTabNavigator() {
   return (
     <Navigator tabBar={(props) => <BottomTabBar {...props} />} screenOptions={{ headerShown: false }}>
-      <Screen name="FollowingFeed" component={FollowingFeedScreen} />
+      <Screen name="Following" component={FollowingScreen} />
       <Screen name="Notifications" component={NotificationsScreen} />
       <Screen name="Settings" component={SettingsScreen} />
     </Navigator>

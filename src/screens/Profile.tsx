@@ -1,14 +1,16 @@
 import React from "react"
-import { View, ImageBackground, Dimensions } from "react-native"
-import { Button, Divider, Text, useTheme } from "@ui-kitten/components"
+import { View, ImageBackground, Dimensions, Pressable } from "react-native"
+import { Button, Divider, Text, useTheme, Icon } from "@ui-kitten/components"
 import { nip19 } from "nostr-tools"
 import { useNavigation } from "@react-navigation/native"
 import { LinearGradient } from "expo-linear-gradient"
+import * as Clipboard from "expo-clipboard"
 
-import { Layout, Avatar, TopNavigation, Note, Spinner, Link, FlashList } from "components"
+import { Layout, Avatar, TopNavigation, Note, Spinner, Link, FlashList, Nip05Badge } from "components"
 import { useDispatch } from "store"
-import { useUser, useProfile, useContactList, useProfileNotes } from "store/hooks"
-import { doFetchProfile, doPopulateProfileFeed, doToggleFollow } from "store/notesSlice"
+import { useUser, useProfile, useContactList, useFeed } from "store/hooks"
+import { doPopulateProfileFeed } from "store/notesSlice"
+import { doFetchProfile, doToggleFollow } from "store/profilesSlice"
 import { noteOrUrlRegex, isUrl } from "utils/note"
 
 const WINDOW_WIDTH = Dimensions.get("window").width
@@ -23,7 +25,7 @@ export function ProfileScreen({ route }) {
   const user = useUser()
   const profile = useProfile(pubkey)
   const contactList = useContactList(user?.pubkey)
-  const { notes, loading } = useProfileNotes(pubkey)
+  const { notes, loading } = useFeed(pubkey)
   const [scroll, setScroll] = React.useState(0)
   const profileContent = profile?.content
   const isFollowing = contactList?.tags.find((tag) => tag[0] === "p" && tag[1] === pubkey)?.length > 0
@@ -125,25 +127,24 @@ export function ProfileScreen({ route }) {
             </Button>
           )}
         </View>
-        <View style={{ marginTop: 16, flexDirection: "row", alignItems: "center" }}>
-          {profileContent?.display_name && (
-            <Text style={{ fontWeight: "bold", fontSize: 18, marginRight: 8 }}>
-              {profileContent.display_name}
+        <View style={{ marginTop: 16 }}>
+          {(profileContent?.display_name || profileContent?.name) && (
+            <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 8 }}>
+              {profileContent.display_name || profileContent.name}
             </Text>
           )}
-          {profileContent?.name && (
-            <Text
-              appearance={profileContent.display_name ? "hint" : undefined}
-              style={{ fontWeight: profileContent?.display_name ? undefined : "bold", fontSize: 16 }}
-            >
-              @{profileContent.name}
-            </Text>
-          )}
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            {profileContent?.name && (
+              <Text
+                appearance={profileContent.display_name ? "hint" : undefined}
+                style={{ fontWeight: profileContent?.display_name ? undefined : "bold", fontSize: 16 }}
+              >
+                @{profileContent.name}
+              </Text>
+            )}
+            <Nip05Badge includeDomain pubkey={pubkey} />
+          </View>
         </View>
-
-        <Text appearance="hint" style={{ fontSize: 16, marginTop: 4 }}>
-          {npub.slice(0, 24)}...
-        </Text>
 
         {profileContent?.about && (
           <View style={{ marginTop: 8, flexDirection: "row", flexWrap: "wrap" }}>
@@ -176,6 +177,34 @@ export function ProfileScreen({ route }) {
             })}
           </View>
         )}
+        <Pressable
+          style={{
+            marginTop: 16,
+            backgroundColor: theme["background-basic-color-2"],
+            marginRight: "auto",
+            paddingTop: 4,
+            paddingBottom: 4,
+            paddingLeft: 8,
+            paddingRight: 8,
+            borderRadius: 10,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+          onPress={async () => {
+            await Clipboard.setStringAsync(npub)
+          }}
+        >
+          <Text style={{ color: theme["color-basic-500"], marginRight: "auto", fontSize: 14 }}>
+            {npub.slice(0, 24)}...
+          </Text>
+          <Icon
+            name="copy-outline"
+            width={16}
+            height={16}
+            fill={theme["color-basic-600"]}
+            style={{ marginLeft: 4 }}
+          />
+        </Pressable>
       </View>
       <Divider />
     </>

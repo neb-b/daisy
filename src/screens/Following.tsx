@@ -9,7 +9,7 @@ import { usePrevious } from "utils/usePrevious"
 //
 // Following feed is populated in NostrRelayHandler
 //
-export function FollowingFeedScreen() {
+export function FollowingScreen() {
   const [creatingNote, setCreatingNote] = React.useState(false)
   const { loading, notes } = useFeed("following")
   const prevLoading = usePrevious(loading)

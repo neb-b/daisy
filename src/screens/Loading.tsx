@@ -20,7 +20,16 @@ export function LoadingScreen({ navigation }) {
 
   React.useEffect(() => {
     if (pubkey) {
-      reset({ index: 0, routes: [{ name: "Home" }] })
+      reset({
+        index: 0,
+        routes: [
+          { name: "Home" },
+          // {
+          //   name: "Profile",
+          //   params: { pubkey: "cbf904c0702a361911c46d79379a6a502bc3bd0b4c56d25389e62d3ebf4a7db8" },
+          // },
+        ],
+      })
     } else {
       reset({
         index: 0,
