@@ -8,7 +8,7 @@ import * as Clipboard from "expo-clipboard"
 
 import { Layout, Avatar, TopNavigation, Note, Spinner, Link, FlashList, Nip05Badge } from "components"
 import { useDispatch } from "store"
-import { useUser, useProfile, useContactList, useProfileNotes } from "store/hooks"
+import { useUser, useProfile, useContactList, useFeed } from "store/hooks"
 import { doPopulateProfileFeed } from "store/notesSlice"
 import { doFetchProfile, doToggleFollow } from "store/profilesSlice"
 import { noteOrUrlRegex, isUrl } from "utils/note"
@@ -25,7 +25,7 @@ export function ProfileScreen({ route }) {
   const user = useUser()
   const profile = useProfile(pubkey)
   const contactList = useContactList(user?.pubkey)
-  const { notes, loading } = useProfileNotes(pubkey)
+  const { notes, loading } = useFeed(pubkey)
   const [scroll, setScroll] = React.useState(0)
   const profileContent = profile?.content
   const isFollowing = contactList?.tags.find((tag) => tag[0] === "p" && tag[1] === pubkey)?.length > 0

@@ -46,6 +46,14 @@ export const selectHasRelayConnection = createSelector(selectRelaysByUrl, (relay
   return !!Object.values(relaysByUrl).find((relay) => relay.status === 1 && typeof relay.on === "function")
 })
 
+export const selectFeedsById = createSelector(selectNotes, (notes) => {
+  return notes.feedsByIdOrPubkey
+})
+
+export const selectLoadingById = createSelector(selectNotes, (notes) => {
+  return notes.loadingByIdOrPubkey
+})
+
 export const makeSelectProfileByPubkey = (pubkey: string) =>
   createSelector(selectProfilesByPubkey, (profilesByPubkey) => {
     return profilesByPubkey[pubkey]
@@ -59,6 +67,31 @@ export const makeSelectContactListByPubkey = (pubkey: string) =>
 export const makeSelectSubscriptionByFeedId = (feedId: string) =>
   createSelector(selectSubscriptionsByFeedId, (subscriptionsByFeedId) => {
     return subscriptionsByFeedId[feedId]
+  })
+
+export const makeSelectNoteByNoteId = (noteId: string) =>
+  createSelector(selectNotesById, selectProfilesByPubkey, (notesById, profilesByPubkey) => {
+    const note = notesById[noteId]
+
+    if (!note) {
+      return
+    }
+
+    if (note.kind !== nostrEventKinds.repost) {
+      return note
+    }
+
+    const repostedId = note.tags.find((tag) => tag[0] === "e")?.[1]
+    const repostedNote = notesById[repostedId]
+
+    if (!repostedNote) {
+      return
+    }
+
+    return {
+      repostedBy: note.pubkey,
+      ...repostedNote,
+    }
   })
 
 export const makeSelectUserHasRepostedByNoteId = (noteId: string) =>
@@ -112,4 +145,126 @@ export const makeSelectUserHasReactedToNoteId = (noteId: string) =>
     }
 
     return reactions.some((reaction) => reaction.pubkey === user.pubkey)
+  })
+
+export const makeSelectFeedById = (feedId: string) =>
+  createSelector(selectFeedsById, selectNotesById, selectLoadingById, (feedsById, notesById, loadingById) => {
+    const loading = loadingById[feedId]
+    const feed = feedsById[feedId]
+
+    if (!feed) {
+      return { notes: [], loading }
+    }
+
+    return {
+      loading,
+      notes: feed
+        .reduce((acc, noteId) => {
+          const note = notesById[noteId]
+
+          if (note) {
+            return [...acc, note]
+          }
+
+          return acc
+        }, [])
+        .sort((a, b) => b.created_at - a.created_at)
+        .map((note) => note.id),
+    }
+  })
+
+export const makeSelectThreadByNoteId = (noteId: string) =>
+  createSelector(selectNotesById, selectLoadingById, (notesById, loadingById) => {
+    const note = notesById[noteId]
+    const loading = loadingById[noteId]
+
+    if (!note) {
+      return { notes: [], loading }
+    }
+
+    let noteToDisplay = note
+    if (note.kind === nostrEventKinds.repost) {
+      const repostedId = note.tags.find((tag) => tag[0] === "e")?.[1]
+      const repostedNote = notesById[repostedId]
+      if (repostedNote) {
+        noteToDisplay = repostedNote
+      }
+    }
+
+    const highlightedNoteReplyIds = noteToDisplay.tags
+      .slice()
+      .filter((tag) => tag[0] === "e")
+      .map((tag) => tag[1])
+
+    const repliesToHighlightedNote = Object.values(notesById)
+      .reduce((acc, noteFromNoteById) => {
+        if (noteFromNoteById.kind === nostrEventKinds.reaction) {
+          return acc
+        }
+
+        const noteTags = noteFromNoteById.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
+
+        if (noteTags.includes(noteToDisplay.id) && noteFromNoteById.kind !== nostrEventKinds.repost) {
+          acc.push(noteFromNoteById)
+        }
+
+        return acc
+      }, [])
+      .sort((a, b) => a.created_at - b.created_at)
+      .map((note) => note.id)
+
+    if (!highlightedNoteReplyIds.length) {
+      // This is a top level message
+      // Get direct replies to this message
+      return { notes: [noteToDisplay.id, ...repliesToHighlightedNote], loading }
+    }
+
+    if (highlightedNoteReplyIds.length === 1) {
+      // The highlighted note is replying to the top of a thread
+      // Get other replies to this highlighted note
+      return {
+        notes: [highlightedNoteReplyIds[0], noteToDisplay.id, ...repliesToHighlightedNote],
+        loading,
+      }
+    }
+
+    // This is a reply to a message in the middle of a thread
+    // Get reply chain for this specific message
+    const rootNoteId = highlightedNoteReplyIds[0]
+    const directReplyId = highlightedNoteReplyIds[0]
+    const directReplyNote = notesById[directReplyId]
+
+    const travelUpThread = (note: NostrEvent) => {
+      const replyIds = note.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
+
+      const topLevelReply = replyIds[0]
+      const topLevelReplyNote = notesById[topLevelReply]
+      const directReply = replyIds[1]
+      const directReplyNote = notesById[directReply]
+
+      if (!topLevelReplyNote || !directReplyNote) {
+        return [note]
+      }
+
+      if (directReplyNote) {
+        return [...travelUpThread(directReplyNote), note]
+      } else {
+        const topLevelReplyNote = notesById[topLevelReply]
+        return [topLevelReplyNote, note]
+      }
+    }
+
+    let repliesBetweenHighlightedNoteAndTopLevelNote = []
+    if (directReplyNote) {
+      repliesBetweenHighlightedNoteAndTopLevelNote = travelUpThread(note)
+    }
+
+    return {
+      notes: [
+        rootNoteId,
+        ...repliesBetweenHighlightedNoteAndTopLevelNote.map((note) => note.id),
+        ...repliesToHighlightedNote,
+      ],
+      loading,
+    }
   })
