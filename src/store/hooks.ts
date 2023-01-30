@@ -7,10 +7,15 @@ import {
   selectRelaysByUrl,
   selectRelaysLoadingByUrl,
   selectSubscriptionsByFeedId,
+  selectNotesById,
   selectHasRelayConnection,
   makeSelectProfileByPubkey,
   makeSelectContactListByPubkey,
   makeSelectSubscriptionByFeedId,
+  makeSelectUserHasRepostedByNoteId,
+  makeSelectRepostCountByNoteId,
+  makeSelectionReactionsByNoteId,
+  makeSelectUserHasReactedToNoteId,
 } from "./selectors"
 
 export const useProfile = (pubkey?: string) => {
@@ -227,49 +232,17 @@ export const useNote = (
 }
 
 export const useReactions = (noteId: string) => {
-  const {
-    notes: { reactionsByNoteId },
-    settings: { user },
-  } = useSelector((state: RootState) => state)
-
-  const reactions = reactionsByNoteId[noteId] || []
-  let liked = false
-
-  reactions.forEach((reaction) => {
-    if (reaction.pubkey === user.pubkey) {
-      liked = true
-    }
-  })
+  const reactions = useSelector(makeSelectionReactionsByNoteId(noteId))
+  const liked = useSelector(makeSelectUserHasReactedToNoteId(noteId))
 
   return { reactions, liked }
 }
 
 export const useReposted = (noteId: string) => {
-  const {
-    notes: { notesById },
-    settings: { user },
-  } = useSelector((state: RootState) => state)
+  const userHasReposted = useSelector(makeSelectUserHasRepostedByNoteId(noteId))
+  const repostCount = useSelector(makeSelectRepostCountByNoteId(noteId))
 
-  const notes = Object.values(notesById)
-  let reposted = false
-  let count = 0
-
-  for (let i = 0; i < notes.length; i++) {
-    const note = notes[i]
-    if (note.kind === nostrEventKinds.repost) {
-      const isMe = note.pubkey === user.pubkey
-      const isNoteMatch = note.tags.find((tag) => tag[0] === "e")?.[1] === noteId
-
-      if (isNoteMatch) {
-        count++
-        if (isMe) {
-          reposted = true
-        }
-      }
-    }
-  }
-
-  return { repostedCount: count, reposted }
+  return { repostedCount: repostCount, reposted: userHasReposted }
 }
 
 export const useRelaysByUrl = () => {

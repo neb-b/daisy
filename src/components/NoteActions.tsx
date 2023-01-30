@@ -93,7 +93,7 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
             fill={liked ? interactedColor : iconProps.fill}
             name={liked ? "heart" : "heart-outline"}
           />
-          {reactions.length > 0 && (
+          {reactions > 0 && (
             <Text
               style={{
                 color: liked ? interactedColor : defaultColor,
@@ -101,7 +101,7 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
                 marginLeft: 8,
               }}
             >
-              {reactions.length}
+              {reactions}
             </Text>
           )}
         </Pressable>
