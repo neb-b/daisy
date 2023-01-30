@@ -6,7 +6,7 @@ import { useNavigation } from "@react-navigation/native"
 import { LinearGradient } from "expo-linear-gradient"
 import * as Clipboard from "expo-clipboard"
 
-import { Layout, Avatar, TopNavigation, Note, Spinner, Link, FlashList } from "components"
+import { Layout, Avatar, TopNavigation, Note, Spinner, Link, FlashList, Nip05Badge } from "components"
 import { useDispatch } from "store"
 import { useUser, useProfile, useContactList, useProfileNotes } from "store/hooks"
 import { doFetchProfile, doPopulateProfileFeed, doToggleFollow } from "store/notesSlice"
@@ -126,32 +126,23 @@ export function ProfileScreen({ route }) {
             </Button>
           )}
         </View>
-        <View style={{ marginTop: 16, flexDirection: "row", alignItems: "center" }}>
-          {profileContent?.display_name && (
-            <Text style={{ fontWeight: "bold", fontSize: 18, marginRight: 8 }}>
-              {profileContent.display_name}
+        <View style={{ marginTop: 16 }}>
+          {(profileContent?.display_name || profileContent.name) && (
+            <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 8 }}>
+              {profileContent.display_name || profileContent.name}
             </Text>
           )}
-          {profileContent?.name && (
-            <Text
-              appearance={profileContent.display_name ? "hint" : undefined}
-              style={{ fontWeight: profileContent?.display_name ? undefined : "bold", fontSize: 16 }}
-            >
-              @{profileContent.name}
-            </Text>
-          )}
-          {profileContent.nip05 && (
-            <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 8 }}>
-              <Icon
-                name="checkmark-circle-2"
-                width={16}
-                height={16}
-                fill={theme["color-success-300"]}
-                style={{ marginRight: 4 }}
-              />
-              <Text style={{ color: theme["color-success-300"] }}>{profileContent.nip05.split("@")[1]}</Text>
-            </View>
-          )}
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            {profileContent?.name && (
+              <Text
+                appearance={profileContent.display_name ? "hint" : undefined}
+                style={{ fontWeight: profileContent?.display_name ? undefined : "bold", fontSize: 16 }}
+              >
+                @{profileContent.name}
+              </Text>
+            )}
+            <Nip05Badge includeDomain pubkey={pubkey} />
+          </View>
         </View>
 
         {profileContent?.about && (

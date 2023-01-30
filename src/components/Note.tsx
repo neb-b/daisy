@@ -6,7 +6,7 @@ import { nip19 } from "nostr-tools"
 
 import { useNote, useProfile } from "store/hooks"
 import { timeSince, fullDateString } from "utils/time"
-import { Avatar, NoteContent, NoteActions } from "components"
+import { Avatar, NoteContent, NoteActions, Nip05Badge } from "components"
 
 type Props = {
   threadId?: string
@@ -59,7 +59,12 @@ export const Note: React.FC<Props> = ({
               </View>
             )}
             <View style={{ flex: 1, marginLeft: 8 }}>
-              <NoteAuthor isHighlightedNote={isHighlightedNote} note={note} profileContent={profileContent} />
+              <NoteAuthor
+                pubkey={note.pubkey}
+                isHighlightedNote={isHighlightedNote}
+                note={note}
+                profileContent={profileContent}
+              />
 
               {!isHighlightedNote && note.replyingToProfiles?.length > 0 && (
                 <ReplyText pubkeysOrProfiles={note.replyingToProfiles} />
@@ -146,7 +151,7 @@ function RepostAuthor({ pubkey }) {
   )
 }
 
-const NoteAuthor = ({ profileContent, isHighlightedNote, note }) => {
+const NoteAuthor = ({ pubkey, profileContent, isHighlightedNote, note }) => {
   return (
     <>
       <View style={{ flexDirection: "row" }}>
@@ -167,6 +172,7 @@ const NoteAuthor = ({ profileContent, isHighlightedNote, note }) => {
             </Text>
           )}
         </Text>
+        <Nip05Badge pubkey={pubkey} style={{ marginLeft: 2 }} />
 
         {!isHighlightedNote && (
           <Text appearance="hint" style={{ fontSize: 14, marginLeft: 4 }}>
