@@ -9,7 +9,8 @@ import * as Clipboard from "expo-clipboard"
 import { Layout, Avatar, TopNavigation, Note, Spinner, Link, FlashList, Nip05Badge } from "components"
 import { useDispatch } from "store"
 import { useUser, useProfile, useContactList, useProfileNotes } from "store/hooks"
-import { doFetchProfile, doPopulateProfileFeed, doToggleFollow } from "store/notesSlice"
+import { doPopulateProfileFeed } from "store/notesSlice"
+import { doFetchProfile, doToggleFollow } from "store/profilesSlice"
 import { noteOrUrlRegex, isUrl } from "utils/note"
 
 const WINDOW_WIDTH = Dimensions.get("window").width
@@ -127,7 +128,7 @@ export function ProfileScreen({ route }) {
           )}
         </View>
         <View style={{ marginTop: 16 }}>
-          {(profileContent?.display_name || profileContent.name) && (
+          {(profileContent?.display_name || profileContent?.name) && (
             <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 8 }}>
               {profileContent.display_name || profileContent.name}
             </Text>

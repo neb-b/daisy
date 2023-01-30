@@ -7,6 +7,7 @@ import { persistStore, persistReducer } from "redux-persist"
 import { notesSlice } from "./notesSlice"
 import { settingsSlice } from "./settingsSlice"
 import { subscriptionsSlice } from "./subscriptionsSlice"
+import { profilesSlice } from "./profilesSlice"
 
 const persistConfig = {
   key: "root",
@@ -18,6 +19,7 @@ const rootReducer = combineReducers({
   notes: notesSlice.reducer,
   settings: settingsSlice.reducer,
   subscriptions: subscriptionsSlice.reducer,
+  profiles: profilesSlice.reducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

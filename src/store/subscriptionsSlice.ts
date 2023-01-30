@@ -5,13 +5,8 @@ import type { Sub } from "nostr-tools"
 import { getNostrEvent, getNostrEvents, nostrEventKinds } from "core/nostr"
 import type { AppDispatch, GetState } from "store"
 import { noteMentionRegex } from "utils/note"
-import {
-  updateReactionsByNoteId,
-  updateNotesById,
-  addNoteToFeedById,
-  updateProfilesByPubkey,
-  doFetchNote,
-} from "./notesSlice"
+import { updateReactionsByNoteId, updateNotesById, addNoteToFeedById, doFetchNote } from "./notesSlice"
+import { updateProfilesByPubkey } from "./profilesSlice"
 
 type Subscription = {
   url: string
@@ -39,8 +34,8 @@ export const subscriptionsSlice = createSlice({
 export const { updateSubscriptionsByFeedId } = subscriptionsSlice.actions
 
 export const doSubscribeToFollowing = () => async (dispatch: AppDispatch, getState: GetState) => {
-  const { settings: settingsState, notes: notesState } = getState()
-  const { contactListsByPubkey } = notesState
+  const { settings: settingsState, profiles: profilesState } = getState()
+  const { contactListsByPubkey } = profilesState
   const contactList = contactListsByPubkey[settingsState.user.pubkey]
   const pubkeys = [settingsState.user.pubkey, ...contactList.tags.map((tag) => tag[1])]
 
@@ -143,7 +138,8 @@ export const doSubscribeToRelays =
           dispatch(updateNotesById({ [eventId]: eventToAdd }))
 
           const {
-            notes: { reactionsByNoteId, profilesByPubkey, notesById },
+            notes: { reactionsByNoteId, notesById },
+            profiles: { profilesByPubkey },
           } = getState()
 
           //

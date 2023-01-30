@@ -5,7 +5,7 @@ import { useNavigation } from "@react-navigation/native"
 
 import { useDispatch } from "store"
 import { useUser, useHasRelayConnection } from "store/hooks"
-import { doFetchProfile } from "store/notesSlice"
+import { doFetchProfile } from "store/profilesSlice"
 import { Avatar } from "components"
 
 type Props = {
@@ -22,6 +22,7 @@ export const TopNavigation = ({ title, hideProfileLink, hideBack, showLogo = fal
   const dispatch = useDispatch()
   const { goBack } = useNavigation()
   const { pubkey } = useUser()
+
   const user = useUser()
   const hasRelayConnection = useHasRelayConnection()
 

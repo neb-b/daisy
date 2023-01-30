@@ -1,15 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
 import type { AppDispatch, GetState } from "store"
-import type { Sub } from "nostr-tools"
 
-import { getProfile, getNostrEvent, getNostrEvents, publishNote, nostrEventKinds } from "core/nostr"
+import { getNostrEvent, getNostrEvents, publishNote, nostrEventKinds } from "core/nostr"
 import { noteMentionRegex } from "utils/note"
+import { updateProfilesByPubkey } from "store/profilesSlice"
 
 export interface NotesState {
   loading: boolean
   notesById: Record<string, NostrNoteEvent | NostrRepostEvent>
-  profilesByPubkey: Record<string, NostrProfile>
   contactListsByPubkey: Record<string, NostrContactListEvent>
   feedsByIdOrPubkey: Record<string, string[]>
   feedsByPubkey: Record<string, string[]>
@@ -19,7 +18,6 @@ export interface NotesState {
 
 const initialState = {
   notesById: {},
-  profilesByPubkey: {},
   feedsByIdOrPubkey: {},
   contactListsByPubkey: {},
   loadingByIdOrPubkey: {},
@@ -32,28 +30,6 @@ export const notesSlice = createSlice({
   reducers: {
     updateNotesById(state, action: PayloadAction<Record<string, NostrNoteEvent | NostrRepostEvent>>) {
       state.notesById = { ...state.notesById, ...action.payload }
-    },
-
-    updateProfilesByPubkey(state, action: PayloadAction<Record<string, NostrProfile>>) {
-      state.profilesByPubkey = { ...state.profilesByPubkey, ...action.payload }
-    },
-
-    updateContactListsByPubkey(state, action: PayloadAction<Record<string, NostrContactListEvent>>) {
-      state.contactListsByPubkey = { ...state.contactListsByPubkey, ...action.payload }
-    },
-
-    updateNotesAndProfiles(
-      state,
-      action: PayloadAction<{ notes: NostrEvent[]; profiles: Record<string, NostrProfile> }>
-    ) {
-      const { notes, profiles } = action.payload
-
-      state.notesById = {
-        ...state.notesById,
-        ...notes.reduce((acc, note) => ({ ...acc, [note.id]: note }), {}),
-      }
-      state.profilesByPubkey = { ...state.profilesByPubkey, ...profiles }
-      state.loading = false
     },
 
     updatefeedsByIdOrPubkey(state, action: PayloadAction<Record<string, string[]>>) {
@@ -80,35 +56,11 @@ export const notesSlice = createSlice({
 
 export const {
   updateNotesById,
-  updateProfilesByPubkey,
-  updateContactListsByPubkey,
-  updateNotesAndProfiles,
   updatefeedsByIdOrPubkey,
   addNoteToFeedById,
   updateloadingByIdOrPubkey,
   updateReactionsByNoteId,
 } = notesSlice.actions
-
-export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
-  const {
-    settings: { relaysByUrl, relaysLoadingByUrl },
-    notes: { profilesByPubkey },
-  } = getState()
-
-  const hasProfile = profilesByPubkey[pubkey]
-
-  dispatch(updateloadingByIdOrPubkey({ [pubkey]: true }))
-
-  const relays = Object.values(relaysByUrl).filter(
-    (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
-  )
-
-  if (!hasProfile) {
-    const { profile, contactList } = await getProfile(relays, pubkey)
-    dispatch(updateProfilesByPubkey({ [pubkey]: profile }))
-    dispatch(updateContactListsByPubkey({ [pubkey]: contactList }))
-  }
-}
 
 export const doFetchNote = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
   const {
@@ -148,8 +100,8 @@ export const doPopulateNotificationsFeed = () => async (dispatch: AppDispatch, g
 }
 
 export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
-  const { settings: settingsState, notes: notesState } = getState()
-  const { contactListsByPubkey } = notesState
+  const { settings: settingsState, profiles: profilesState } = getState()
+  const { contactListsByPubkey } = profilesState
   const contactList = contactListsByPubkey[settingsState.user.pubkey]
   const pubkeys = [settingsState.user.pubkey, ...contactList.tags.map((tag) => tag[1])]
 
@@ -170,10 +122,6 @@ export const doPopulateThread = (noteId: string) => async (dispatch: AppDispatch
   const replyIds = note.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
   const filteredReplyIds = replyIds.filter((id) => !notesById[id])
 
-  const filterForReplies = {
-    kinds: [nostrEventKinds.note],
-  }
-
   const filter = {
     kinds: [nostrEventKinds.note],
     ids: filteredReplyIds,
@@ -181,7 +129,6 @@ export const doPopulateThread = (noteId: string) => async (dispatch: AppDispatch
   }
 
   dispatch(doPopulateFeed(noteId, filter))
-  // dispatch(doPopulateFeed(noteId, filterForTopLevel))
 }
 
 export const doPopulateProfileFeed =
@@ -414,55 +361,6 @@ export const doPublishNote =
     }
   }
 
-export const doToggleFollow =
-  (newFollowPubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
-    const { settings: settingsState, notes: notesState } = getState()
-    const {
-      user: { pubkey, privateKey },
-      relaysByUrl,
-      relaysLoadingByUrl,
-    } = settingsState
-    const { contactListsByPubkey } = notesState
-    const contactList = contactListsByPubkey[pubkey]
-    const isCurrentlyFollowing = contactList.tags.some((tag) => tag[1] === newFollowPubkey)
-
-    if (!contactList) {
-      console.log("unable to find contactList")
-      return
-    }
-
-    if (!pubkey || !privateKey) {
-      console.log("no user found")
-      return
-    }
-
-    let newTags = contactList.tags.slice()
-
-    if (isCurrentlyFollowing) {
-      // remove from following
-      newTags = newTags.filter((tag) => tag[1] !== newFollowPubkey)
-    } else {
-      newTags.push(["p", newFollowPubkey])
-    }
-
-    const relays = Object.values(relaysByUrl).filter(
-      (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
-    )
-
-    await publishNote(relays, { pubkey, privateKey }, nostrEventKinds.contactList, "", newTags)
-
-    // TODO: only dispatch state if we get success from publishNote
-    // currently seeing the contact list be saved, but not received as success from relays after publish
-    dispatch(
-      updateContactListsByPubkey({
-        [pubkey]: {
-          ...contactList,
-          tags: newTags,
-        },
-      })
-    )
-  }
-
 export const doLike = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
   const { settings: settingsState, notes: notesState } = getState()
   const {
@@ -479,38 +377,3 @@ export const doLike = (noteId: string) => async (dispatch: AppDispatch, getState
     ["e", noteId],
   ])
 }
-
-export const doUpdateProfile =
-  (profile: NostrProfileContent, onSuccess: () => void) =>
-  async (dispatch: AppDispatch, getState: GetState) => {
-    const { settings: settingsState } = getState()
-    const {
-      user: { pubkey, privateKey },
-      relaysByUrl,
-      relaysLoadingByUrl,
-    } = settingsState
-
-    if (!pubkey || !privateKey) {
-      console.log("no user found")
-      return
-    }
-
-    const relays = Object.values(relaysByUrl).filter(
-      (relay) => relaysLoadingByUrl[relay.url] !== true && relay.status === 1
-    )
-
-    const profileResponse = (await publishNote(
-      relays,
-      { pubkey, privateKey },
-      nostrEventKinds.profile,
-      JSON.stringify(profile)
-    )) as unknown
-
-    const updatedProfile = profileResponse as NostrProfile
-    try {
-      updatedProfile.content = JSON.parse(updatedProfile.content)
-    } catch (e) {}
-
-    dispatch(updateProfilesByPubkey({ [pubkey]: updatedProfile }))
-    onSuccess()
-  }

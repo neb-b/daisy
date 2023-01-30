@@ -1,31 +1,33 @@
 import { useSelector } from "react-redux"
 import { nostrEventKinds } from "core/nostr"
+
 import type { RootState } from "./index"
+import {
+  selectUser,
+  selectRelaysByUrl,
+  selectRelaysLoadingByUrl,
+  selectSubscriptionsByFeedId,
+  selectHasRelayConnection,
+  makeSelectProfileByPubkey,
+  makeSelectContactListByPubkey,
+  makeSelectSubscriptionByFeedId,
+} from "./selectors"
+
+export const useProfile = (pubkey?: string) => {
+  const profile = useSelector(makeSelectProfileByPubkey(pubkey))
+  return profile
+}
 
 export const useUser = () => {
-  const { user } = useSelector((state: RootState) => state.settings)
+  const user = useSelector(selectUser)
 
   return user
 }
 
-export const useProfile = (pubkey?: string) => {
-  const { profilesByPubkey } = useSelector((state: RootState) => state.notes)
-
-  if (!pubkey) {
-    return undefined
-  }
-
-  return profilesByPubkey[pubkey]
-}
-
 export const useContactList = (pubkey?: string) => {
-  const { contactListsByPubkey } = useSelector((state: RootState) => state.notes)
+  const contactList = useSelector(makeSelectContactListByPubkey(pubkey))
 
-  if (!pubkey) {
-    return undefined
-  }
-
-  return contactListsByPubkey[pubkey]
+  return contactList
 }
 
 export const useFeed = (feedIdOrPubkey: string) => {
@@ -185,7 +187,10 @@ export const useNote = (
   repostedBy?: string
   replyingToProfiles?: (NostrProfileEvent | string)[]
 } => {
-  const { notesById, profilesByPubkey } = useSelector((state: RootState) => state.notes)
+  const {
+    notes: { notesById },
+    profiles: { profilesByPubkey },
+  } = useSelector((state: RootState) => state)
   const note = notesById[noteId]
 
   if (!note) {
@@ -268,37 +273,21 @@ export const useReposted = (noteId: string) => {
 }
 
 export const useRelaysByUrl = () => {
-  const { relaysByUrl } = useSelector((state: RootState) => state.settings)
-
+  const relaysByUrl = useSelector(selectRelaysByUrl)
   return relaysByUrl
 }
 
 export const useRelaysLoadingByUrl = () => {
-  const { relaysLoadingByUrl } = useSelector((state: RootState) => state.settings)
-
+  const relaysLoadingByUrl = useSelector(selectRelaysLoadingByUrl)
   return relaysLoadingByUrl
 }
 
 export const useHasRelayConnection = () => {
-  const { relaysByUrl } = useSelector((state: RootState) => state.settings)
-
-  return (
-    relaysByUrl &&
-    !!Object.values(relaysByUrl).find((relay) => relay.status === 1 && typeof relay.on === "function")
-  )
+  const hasConnection = useSelector(selectHasRelayConnection)
+  return hasConnection
 }
 
 export const useSubscriptionsByFeedId = (feedId) => {
-  const { subscriptionsByFeedId } = useSelector((state: RootState) => state.subscriptions)
-
-  return subscriptionsByFeedId[feedId] || []
-}
-
-export const useSubscriptions = () => {
-  const { subscriptionsByFeedId } = useSelector((state: RootState) => state.subscriptions)
-
-  return Object.keys(subscriptionsByFeedId).reduce((acc, feedId) => {
-    acc[feedId] = Object.values(subscriptionsByFeedId[feedId]).length
-    return acc
-  }, {})
+  const subscriptions = useSelector(makeSelectSubscriptionByFeedId(feedId))
+  return subscriptions
 }
