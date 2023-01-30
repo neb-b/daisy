@@ -293,3 +293,12 @@ export const useSubscriptionsByFeedId = (feedId) => {
 
   return subscriptionsByFeedId[feedId] || []
 }
+
+export const useSubscriptions = () => {
+  const { subscriptionsByFeedId } = useSelector((state: RootState) => state.subscriptions)
+
+  return Object.keys(subscriptionsByFeedId).reduce((acc, feedId) => {
+    acc[feedId] = Object.values(subscriptionsByFeedId[feedId]).length
+    return acc
+  }, {})
+}

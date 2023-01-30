@@ -108,7 +108,7 @@ export const doSubscribeToRelays =
     const { relaysByUrl } = settingsState
     const relays = Object.values(relaysByUrl)
 
-    let subscriptions: Subscription[] = []
+    let subscription: Subscription
     const eventHistoryMap: Record<string, boolean> = {}
 
     relays.forEach((relay) => {
@@ -118,7 +118,7 @@ export const doSubscribeToRelays =
 
       try {
         const sub = relay.sub([{ ...filter }])
-        subscriptions = [...subscriptions, { url: relay.url, sub }]
+        subscription = { url: relay.url, sub }
 
         sub.on("event", async (event: unknown) => {
           const eventId = (event as NostrEvent).id
@@ -308,9 +308,7 @@ export const doSubscribeToRelays =
 
       const { subscriptionsByFeedId } = getState().subscriptions
       const currentSubscriptionsForFeedId = subscriptionsByFeedId[feedId] || []
-      dispatch(
-        updateSubscriptionsByFeedId({ [feedId]: [...currentSubscriptionsForFeedId, ...subscriptions] })
-      )
+      dispatch(updateSubscriptionsByFeedId({ [feedId]: [...currentSubscriptionsForFeedId, subscription] }))
     })
   }
 
