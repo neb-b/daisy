@@ -8,11 +8,13 @@ import { updateloadingByIdOrPubkey } from "store/notesSlice"
 export interface ProfilesStateState {
   profilesByPubkey: Record<string, NostrProfile>
   contactListsByPubkey: Record<string, NostrContactListEvent>
+  nip05ByPubkey: Record<string, boolean | null>
 }
 
 const initialState = {
   profilesByPubkey: {},
   contactListsByPubkey: {},
+  nip05ByPubkey: {},
 } as ProfilesStateState
 
 export const profilesSlice = createSlice({
@@ -26,10 +28,15 @@ export const profilesSlice = createSlice({
     updateContactListsByPubkey(state, action: PayloadAction<Record<string, NostrContactListEvent>>) {
       state.contactListsByPubkey = { ...state.contactListsByPubkey, ...action.payload }
     },
+
+    updateNip05ByPubkey(state, action: PayloadAction<Record<string, boolean>>) {
+      state.nip05ByPubkey = { ...state.nip05ByPubkey, ...action.payload }
+    },
   },
 })
 
-export const { updateProfilesByPubkey, updateContactListsByPubkey } = profilesSlice.actions
+export const { updateProfilesByPubkey, updateContactListsByPubkey, updateNip05ByPubkey } =
+  profilesSlice.actions
 
 export const doFetchProfile = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
   const {
@@ -135,3 +142,36 @@ export const doToggleFollow =
       })
     )
   }
+
+export const doFetchNip05 = (pubkey: string) => async (dispatch: AppDispatch, getState: GetState) => {
+  const {
+    profiles: { nip05ByPubkey, profilesByPubkey },
+  } = getState()
+
+  const profile = profilesByPubkey[pubkey]
+  if (!profile?.content?.nip05) {
+    return
+  }
+
+  const [name, domain] = profile.content.nip05.split("@")
+  const nip05ForDomain = nip05ByPubkey[domain]
+
+  // Already fetched
+  if (nip05ForDomain || nip05ForDomain === null) {
+    return
+  }
+
+  const url = `https://${domain}/.well-known/nostr.json?name=${encodeURIComponent(name)}`
+
+  try {
+    const res = await fetch(url)
+    const { names } = await res.json()
+    const nip05ExistsForName = names[name]
+
+    dispatch(updateNip05ByPubkey({ [pubkey]: nip05ExistsForName }))
+  } catch (e) {
+    dispatch(updateNip05ByPubkey({ [pubkey]: null }))
+
+    console.log("error fetching nip05", e)
+  }
+}

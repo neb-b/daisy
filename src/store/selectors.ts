@@ -1,4 +1,3 @@
-import { useSelector } from "react-redux"
 import { createSelector } from "@reduxjs/toolkit"
 
 import { nostrEventKinds } from "core/nostr"
@@ -32,6 +31,10 @@ export const selectSubscriptionsByFeedId = createSelector(selectSubscriptions, (
 
 export const selectContactListsByPubkey = createSelector(selectProfiles, (profiles) => {
   return profiles.contactListsByPubkey
+})
+
+export const selectNip05ByPubkey = createSelector(selectProfiles, (profiles) => {
+  return profiles.nip05ByPubkey
 })
 
 export const selectNotesById = createSelector(selectNotes, (notes) => {
@@ -268,3 +271,17 @@ export const makeSelectThreadByNoteId = (noteId: string) =>
       loading,
     }
   })
+
+export const makeSelectNip05ByPubkey = (pubkey: string) =>
+  createSelector(
+    selectNip05ByPubkey,
+    (state: RootState) => makeSelectProfileByPubkey(pubkey)(state),
+    (nip05ByPubkey, profile) => {
+      if (!profile || !profile?.content.nip05) {
+        return undefined
+      }
+
+      const nip05ForPubkey = nip05ByPubkey[pubkey]
+      return nip05ForPubkey
+    }
+  )

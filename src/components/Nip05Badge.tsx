@@ -2,7 +2,10 @@ import React from "react"
 import { View } from "react-native"
 import type { FlexStyle } from "react-native"
 import { Text, Icon, useTheme } from "@ui-kitten/components"
-import { useProfile } from "store/hooks"
+
+import { useDispatch } from "store"
+import { useProfile, useNip05 } from "store/hooks"
+import { doFetchNip05 } from "store/profilesSlice"
 
 type Props = {
   pubkey: string
@@ -11,11 +14,24 @@ type Props = {
 }
 
 export const Nip05Badge: React.FC<Props> = ({ pubkey, includeDomain = false, style = {} }) => {
+  const dispatch = useDispatch()
   const theme = useTheme()
+  const nip05ForPubkey = useNip05(pubkey)
   const profile = useProfile(pubkey)
-  const profileContent = profile?.content
+  const profileNip05 = profile?.content?.nip05
 
-  if (!profileContent?.nip05) {
+  React.useEffect(() => {
+    // If null, it's already been fetched and returned nothing
+    if (!profileNip05 || nip05ForPubkey || nip05ForPubkey === null) {
+      return
+    }
+
+    if (nip05ForPubkey === undefined) {
+      dispatch(doFetchNip05(pubkey))
+    }
+  }, [profileNip05, nip05ForPubkey])
+
+  if (!nip05ForPubkey) {
     return null
   }
 
@@ -37,7 +53,7 @@ export const Nip05Badge: React.FC<Props> = ({ pubkey, includeDomain = false, sty
         style={{ marginRight: 4 }}
       />
       {includeDomain && (
-        <Text style={{ color: theme["color-success-300"] }}>{profileContent.nip05.split("@")[1]}</Text>
+        <Text style={{ color: theme["color-success-300"] }}>{profileNip05.split("@")[1]}</Text>
       )}
     </View>
   )

@@ -144,7 +144,11 @@ function RepostAuthor({ pubkey }) {
       <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 24, marginBottom: 8 }}>
         <Icon name="flip-2-outline" style={{ height: 16, width: 16, tintColor: theme["color-basic-600"] }} />
         <Text appearance="hint" style={{ marginLeft: 8 }}>
-          {repostAuthor} boosted
+          {repostAuthor}
+        </Text>
+        <Nip05Badge pubkey={pubkey} style={{ marginLeft: 2 }} />
+        <Text appearance="hint" style={{ marginLeft: 4 }}>
+          Boosted
         </Text>
       </View>
     </Pressable>

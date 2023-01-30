@@ -17,6 +17,7 @@ import {
   makeSelectUserHasReactedToNoteId,
   makeSelectFeedById,
   makeSelectThreadByNoteId,
+  makeSelectNip05ByPubkey,
 } from "./selectors"
 
 export const useProfile = (pubkey?: string) => {
@@ -86,4 +87,10 @@ export const useHasRelayConnection = () => {
 export const useSubscriptionsByFeedId = (feedId) => {
   const subscriptions = useSelector(makeSelectSubscriptionByFeedId(feedId))
   return subscriptions
+}
+
+export const useNip05 = (pubkey: string) => {
+  const nip05 = useSelector(makeSelectNip05ByPubkey(pubkey))
+
+  return nip05
 }
