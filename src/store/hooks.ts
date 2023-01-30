@@ -108,6 +108,10 @@ export const useThread = (noteId: string) => {
 
   const repliesToHighlightedNote = Object.values(notesById)
     .reduce((acc, noteFromNoteById) => {
+      if (noteFromNoteById.kind === nostrEventKinds.reaction) {
+        return acc
+      }
+
       const noteTags = noteFromNoteById.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
 
       if (noteTags.includes(noteToDisplay.id) && noteFromNoteById.kind !== nostrEventKinds.repost) {
@@ -153,7 +157,6 @@ export const useThread = (noteId: string) => {
     }
 
     if (directReplyNote) {
-      // console.log("hasDirectReply", directReplyNote)
       return [...travelUpThread(directReplyNote), note]
     } else {
       const topLevelReplyNote = notesById[topLevelReply]
@@ -166,13 +169,10 @@ export const useThread = (noteId: string) => {
     repliesBetweenHighlightedNoteAndTopLevelNote = travelUpThread(note)
   }
 
-  // console.log("\n???", repliesBetweenHighlightedNoteAndTopLevelNote)
-
   return {
     notes: [
       rootNoteId,
       ...repliesBetweenHighlightedNoteAndTopLevelNote.map((note) => note.id),
-      // noteId,
       ...repliesToHighlightedNote,
     ],
     loading,

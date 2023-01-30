@@ -1,9 +1,10 @@
 import React from "react"
-import { View, ImageBackground, Dimensions } from "react-native"
-import { Button, Divider, Text, useTheme } from "@ui-kitten/components"
+import { View, ImageBackground, Dimensions, Pressable } from "react-native"
+import { Button, Divider, Text, useTheme, Icon } from "@ui-kitten/components"
 import { nip19 } from "nostr-tools"
 import { useNavigation } from "@react-navigation/native"
 import { LinearGradient } from "expo-linear-gradient"
+import * as Clipboard from "expo-clipboard"
 
 import { Layout, Avatar, TopNavigation, Note, Spinner, Link, FlashList } from "components"
 import { useDispatch } from "store"
@@ -139,11 +140,19 @@ export function ProfileScreen({ route }) {
               @{profileContent.name}
             </Text>
           )}
+          {profileContent.nip05 && (
+            <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 8 }}>
+              <Icon
+                name="checkmark-circle-2"
+                width={16}
+                height={16}
+                fill={theme["color-success-300"]}
+                style={{ marginRight: 4 }}
+              />
+              <Text style={{ color: theme["color-success-300"] }}>{profileContent.nip05.split("@")[1]}</Text>
+            </View>
+          )}
         </View>
-
-        <Text appearance="hint" style={{ fontSize: 16, marginTop: 4 }}>
-          {npub.slice(0, 24)}...
-        </Text>
 
         {profileContent?.about && (
           <View style={{ marginTop: 8, flexDirection: "row", flexWrap: "wrap" }}>
@@ -176,6 +185,34 @@ export function ProfileScreen({ route }) {
             })}
           </View>
         )}
+        <Pressable
+          style={{
+            marginTop: 16,
+            backgroundColor: theme["background-basic-color-2"],
+            marginRight: "auto",
+            paddingTop: 4,
+            paddingBottom: 4,
+            paddingLeft: 8,
+            paddingRight: 8,
+            borderRadius: 10,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+          onPress={async () => {
+            await Clipboard.setStringAsync(npub)
+          }}
+        >
+          <Text style={{ color: theme["color-basic-500"], marginRight: "auto", fontSize: 14 }}>
+            {npub.slice(0, 24)}...
+          </Text>
+          <Icon
+            name="copy-outline"
+            width={16}
+            height={16}
+            fill={theme["color-basic-600"]}
+            style={{ marginLeft: 4 }}
+          />
+        </Pressable>
       </View>
       <Divider />
     </>
