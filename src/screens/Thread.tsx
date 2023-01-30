@@ -6,7 +6,7 @@ import { useFocusEffect } from "@react-navigation/native"
 
 import { Note, Layout, TopNavigation } from "components"
 import { useThread } from "store/hooks"
-import { doSubscribeToThread, doUnsubscribeFromRelays } from "store/subscriptionsSlice"
+import { doSubscribeToThread, doUnsubscribeFromRelaysForId } from "store/subscriptionsSlice"
 import { useDispatch } from "store"
 
 export function ThreadScreen({ route }) {
@@ -21,7 +21,7 @@ export function ThreadScreen({ route }) {
     React.useCallback(() => {
       dispatch(doSubscribeToThread(id))
 
-      return () => dispatch(doUnsubscribeFromRelays(id))
+      return () => dispatch(doUnsubscribeFromRelaysForId(id))
     }, [id])
   )
 

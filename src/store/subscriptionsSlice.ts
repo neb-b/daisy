@@ -51,7 +51,7 @@ export const doSubscribeToFollowing = () => async (dispatch: AppDispatch, getSta
     limit: 0,
   }
 
-  dispatch(doSubscribeToRelays(filter, "following"))
+  dispatch(doSubscribeToRelays("following", filter))
 }
 
 export const doSubscribeToNotifications = () => async (dispatch: AppDispatch, getState: GetState) => {
@@ -64,7 +64,7 @@ export const doSubscribeToNotifications = () => async (dispatch: AppDispatch, ge
     limit: 0,
   }
 
-  dispatch(doSubscribeToRelays(filter, "notifications"))
+  dispatch(doSubscribeToRelays("notifications", filter))
 }
 
 export const doSubscribeToThread = (noteId) => async (dispatch: AppDispatch, getState: GetState) => {
@@ -81,28 +81,28 @@ export const doSubscribeToThread = (noteId) => async (dispatch: AppDispatch, get
 
   dispatch(
     doSubscribeToRelays(
+      noteId,
       {
         kinds: [nostrEventKinds.note],
         "#e": replyIds,
       },
-      undefined,
       false
     )
   )
   dispatch(
     doSubscribeToRelays(
+      noteId,
       {
         kinds: [nostrEventKinds.reaction],
         "#e": replyIds,
       },
-      undefined,
       false
     )
   )
 }
 
 export const doSubscribeToRelays =
-  (filter: NostrFilter, feedId?: string, log?: boolean) =>
+  (feedId: string, filter: NostrFilter, log?: boolean) =>
   async (dispatch: AppDispatch, getState: GetState) => {
     const { settings: settingsState } = getState()
     const { relaysByUrl } = settingsState
@@ -325,7 +325,7 @@ const doRemoveRelaySubscriptionFromFeed =
     dispatch(updateSubscriptionsByFeedId({ [feedId]: newSubscriptionsForFeedId }))
   }
 
-export const doUnsubscribeFromRelays =
+export const doUnsubscribeFromRelaysForId =
   (feedId: string) => async (dispatch: AppDispatch, getState: GetState) => {
     const {
       subscriptions: { subscriptionsByFeedId },

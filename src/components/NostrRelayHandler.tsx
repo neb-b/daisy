@@ -7,7 +7,7 @@ import { doPopulateFollowingFeed } from "store/notesSlice"
 import {
   doSubscribeToFollowing,
   doSubscribeToNotifications,
-  doUnsubscribeFromRelays,
+  doUnsubscribeFromRelaysForId,
 } from "store/subscriptionsSlice"
 import { doCycleRelays } from "store/settingsSlice"
 import { usePrevious } from "utils/usePrevious"
@@ -35,8 +35,8 @@ export const NostrRelayHandler = () => {
       dispatch(doSubscribeToNotifications())
     }
     return () => {
-      dispatch(doUnsubscribeFromRelays("following"))
-      dispatch(doUnsubscribeFromRelays("notifications"))
+      dispatch(doUnsubscribeFromRelaysForId("following"))
+      dispatch(doUnsubscribeFromRelaysForId("notifications"))
     }
   }, [hasContactList, relaysCount])
 
