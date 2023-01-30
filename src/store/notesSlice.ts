@@ -346,9 +346,12 @@ export const doFetchReactionsForNotes =
       if (newReactionsByNoteId[noteIdReactionIsFor] === undefined) {
         newReactionsByNoteId[noteIdReactionIsFor] = [reaction]
       } else {
+        const newReactionsSet = new Set(newReactionsByNoteId[noteIdReactionIsFor])
+        newReactionsSet.add(reaction)
+
         newReactionsByNoteId = {
           ...newReactionsByNoteId,
-          noteIdReactionIsFor: [...newReactionsByNoteId[noteIdReactionIsFor], reaction],
+          noteIdReactionIsFor: Array.from(newReactionsSet),
         }
       }
     })

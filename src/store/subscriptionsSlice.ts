@@ -76,15 +76,29 @@ export const doSubscribeToThread = (noteId) => async (dispatch: AppDispatch, get
   const replyTags = note?.tags?.filter((tag) => tag[0] === "e") || []
   const replyIds = replyTags.map((tag) => tag[1])
 
-  const filter = {
-    kinds: [nostrEventKinds.note],
-    "#e": replyIds,
-  }
-
   const rootNoteId = replyIds[0]
   dispatch(doFetchNote(rootNoteId))
 
-  dispatch(doSubscribeToRelays(filter, undefined, false))
+  dispatch(
+    doSubscribeToRelays(
+      {
+        kinds: [nostrEventKinds.note],
+        "#e": replyIds,
+      },
+      undefined,
+      false
+    )
+  )
+  dispatch(
+    doSubscribeToRelays(
+      {
+        kinds: [nostrEventKinds.reaction],
+        "#e": replyIds,
+      },
+      undefined,
+      false
+    )
+  )
 }
 
 export const doSubscribeToRelays =
