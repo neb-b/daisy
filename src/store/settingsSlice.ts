@@ -60,12 +60,15 @@ export const initRelays = () => async (dispatch: AppDispatch, getState: GetState
     settings: { relaysByUrl },
   } = getState()
 
-  const relayMap =
-    relaysByUrl ||
-    defaultRelays.reduce((acc, relayUrl) => {
+  let relayMap
+  if (Object.keys(relaysByUrl).length > 0) {
+    relayMap = relaysByUrl
+  } else {
+    relayMap = defaultRelays.reduce((acc, relayUrl) => {
       acc[relayUrl] = { status: 0 }
       return acc
     }, {})
+  }
 
   const relayUrls = Object.keys(relayMap)
   const initialRelayLoadingState = relayUrls.reduce((acc, relay) => {

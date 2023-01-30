@@ -87,25 +87,25 @@ export const doSubscribeToThread = (noteId) => async (dispatch: AppDispatch, get
       noteId,
       filter,
       (event) => {
-        // const { tags } = event
-        // const eTags = tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
-        // const newETags = eTags.reduce((acc, eTag) => {
-        //   if (additionalSubscriptionsCreated[eTag]) {
-        //     return acc
-        //   } else {
-        //     additionalSubscriptionsCreated[eTag] = true
-        //     return [...acc, eTag]
-        //   }
-        // }, [])
-        // if (newETags.length > 0) {
-        //   console.log("onEvent new subscription")
-        //   dispatch(
-        //     doSubscribeToRelays(noteId, {
-        //       ...filter,
-        //       "#e": newETags,
-        //     })
-        //   )
-        // }
+        const { tags } = event
+        const eTags = tags.filter((tag) => tag[0] === "e").map((tag) => tag[1])
+        const newETags = eTags.reduce((acc, eTag) => {
+          if (additionalSubscriptionsCreated[eTag]) {
+            return acc
+          } else {
+            additionalSubscriptionsCreated[eTag] = true
+            return [...acc, eTag]
+          }
+        }, [])
+        if (newETags.length > 0) {
+          console.log("onEvent new subscription")
+          dispatch(
+            doSubscribeToRelays(noteId, {
+              ...filter,
+              "#e": newETags,
+            })
+          )
+        }
       },
       false
     )
