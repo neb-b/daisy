@@ -67,7 +67,7 @@ export const Note: React.FC<Props> = ({
               />
 
               {!isHighlightedNote && note.replyingToProfiles?.length > 0 && (
-                <ReplyText pubkeysOrProfiles={note.replyingToProfiles} />
+                <ReplyText author={note.pubkey} pubkeysOrProfiles={note.replyingToProfiles} />
               )}
 
               {!isHighlightedNote && (
@@ -96,17 +96,16 @@ export const Note: React.FC<Props> = ({
   )
 }
 
-function ReplyText({ pubkeysOrProfiles }) {
-  const user = useUser()
+function ReplyText({ pubkeysOrProfiles, author }) {
   const renderReply = React.useCallback((pubkeyOrProfile: string | NostrProfile, index: number) => {
     let name
     if (typeof pubkeyOrProfile === "string") {
       name = nip19.npubEncode(pubkeyOrProfile).slice(0, 8)
     } else {
       const profile = pubkeyOrProfile
-      const isMe = profile?.pubkey === user.pubkey
+      const replyToSelf = profile?.pubkey === author
 
-      name = isMe
+      name = replyToSelf
         ? "self"
         : pubkeyOrProfile?.content?.name || nip19.npubEncode(pubkeyOrProfile?.pubkey).slice(0, 6)
     }
