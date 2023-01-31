@@ -27,7 +27,7 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
   const defaultColor = theme["color-basic-600"]
   const interactedColor = theme["color-primary-500"]
   const isLarge = size === "large"
-  const iconSize = isLarge ? 20 : 18
+  const iconSize = isLarge ? 20 : 16
 
   const iconProps = {
     height: iconSize,
@@ -83,25 +83,25 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
 
   return (
     <>
-      <View style={{ flexDirection: "row", marginTop: 16, marginRight: 8, justifyContent: "space-between" }}>
-        <Pressable onPress={handleReply}>
+      <View style={{ flexDirection: "row", marginTop: 12, marginRight: 8, justifyContent: "space-between" }}>
+        <NoteActionPressable onPress={handleReply} style={{ marginLeft: -4 }}>
           <Icon {...iconProps} name="message-circle-outline" />
-        </Pressable>
-        <Pressable style={{ flexDirection: "row", alignItems: "center" }} onPress={handleRepost}>
+        </NoteActionPressable>
+        <NoteActionPressable onPress={handleRepost}>
           <Icon {...iconProps} name="flip-2-outline" fill={reposted ? interactedColor : iconProps.fill} />
           {repostedCount > 0 && (
             <Text
               style={{
                 color: reposted ? interactedColor : defaultColor,
                 fontSize: isLarge ? 16 : 12,
-                marginLeft: 8,
+                marginLeft: isLarge ? 8 : 4,
               }}
             >
               {repostedCount}
             </Text>
           )}
-        </Pressable>
-        <Pressable style={{ flexDirection: "row", alignItems: "center" }} onPress={handleLike}>
+        </NoteActionPressable>
+        <NoteActionPressable onPress={handleLike}>
           <Icon
             {...iconProps}
             fill={liked ? interactedColor : iconProps.fill}
@@ -112,16 +112,16 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
               style={{
                 color: liked ? interactedColor : defaultColor,
                 fontSize: isLarge ? 16 : 12,
-                marginLeft: 8,
+                marginLeft: isLarge ? 8 : 4,
               }}
             >
               {reactions}
             </Text>
           )}
-        </Pressable>
-        <Pressable onPress={handleShare}>
+        </NoteActionPressable>
+        <NoteActionPressable onPress={handleShare} style={{ marginRight: 8 }} hasCount={false}>
           <Icon {...iconProps} name="share-outline" />
-        </Pressable>
+        </NoteActionPressable>
       </View>
       {creatingNote && (
         <Modal
@@ -135,5 +135,22 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
         </Modal>
       )}
     </>
+  )
+}
+
+const NoteActionPressable = ({ onPress, children, style = {}, hasCount = true }) => {
+  return (
+    <Pressable
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        padding: 4,
+        minWidth: hasCount ? 40 : undefined,
+        ...style,
+      }}
+      onPress={onPress}
+    >
+      {children}
+    </Pressable>
   )
 }
