@@ -34,9 +34,9 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
     fill: defaultColor,
   }
 
-  const handleReply = () => setCreatingNote(true)
+  const handleReply = React.useCallback(() => setCreatingNote(true), [])
 
-  const handleShare = async () => {
+  const handleShare = React.useCallback(async () => {
     try {
       await Share.share({
         message: `https://snort.social/e/${id}`,
@@ -44,9 +44,10 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
     } catch (error: any) {
       console.log("error sharing", error)
     }
-  }
+  }, [id])
 
-  const handleRepost = () => {
+  const stringifiedNote = JSON.stringify(note)
+  const handleRepost = React.useCallback(() => {
     Alert.alert("Boost", "Are you sure you want to boost this?", [
       {
         text: "Boost",
@@ -54,18 +55,18 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
           dispatch(
             doPublishNote({
               kind: nostrEventKinds.repost,
-              content: JSON.stringify(note),
+              content: stringifiedNote,
               repostOf: id,
             })
           ),
       },
       { text: "Cancel", style: "cancel" },
     ])
-  }
+  }, [id, stringifiedNote])
 
-  const handleLike = () => {
+  const handleLike = React.useCallback(() => {
     dispatch(doLike(id))
-  }
+  }, [id])
 
   return (
     <>

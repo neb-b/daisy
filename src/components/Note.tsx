@@ -4,7 +4,7 @@ import { Text, Divider, useTheme, Icon } from "@ui-kitten/components"
 import { useNavigation } from "@react-navigation/native"
 import { nip19 } from "nostr-tools"
 
-import { useNote, useProfile, useUser } from "store/hooks"
+import { useNote, useProfile } from "store/hooks"
 import { timeSince, fullDateString } from "utils/time"
 import { Avatar, NoteContent, NoteActions, Nip05Badge } from "components"
 
@@ -34,6 +34,9 @@ export const Note: React.FC<Props> = ({
 
   if (!note) return null
 
+  // @ts-expect-error
+  const onNavigate = React.useCallback(() => navigation.push("Thread", { id }), [id])
+
   return (
     <>
       <View
@@ -49,8 +52,7 @@ export const Note: React.FC<Props> = ({
       >
         {note.repostedBy && <RepostAuthor pubkey={note.repostedBy} />}
 
-        {/* @ts-expect-error */}
-        <Pressable onPress={() => navigation.push("Thread", { id })}>
+        <Pressable onPress={onNavigate}>
           <View style={{ flexDirection: "row", alignItems: isHighlightedNote ? "center" : "flex-start" }}>
             {!hideAvatar && (
               <View style={{ alignItems: "center" }}>
