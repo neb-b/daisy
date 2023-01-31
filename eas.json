@@ -7,17 +7,32 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "ios": { "image": "latest" }
+      "ios": {
+        "image": "latest",
+        "ios": {
+          "resourceClass": "m1-medium"
+        }
+      }
     },
     "preview": {
       "distribution": "internal",
-      "ios": { "image": "latest" },
+      "ios": {
+        "image": "latest",
+        "ios": {
+          "resourceClass": "m1-medium"
+        }
+      },
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
-      "ios": { "image": "latest" }
+      "ios": {
+        "image": "latest",
+        "ios": {
+          "resourceClass": "m1-medium"
+        }
+      }
     }
   },
   "submit": {
