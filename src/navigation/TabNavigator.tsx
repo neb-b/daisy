@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import { BottomNavigation, BottomNavigationTab, Icon, Divider } from "@ui-kitten/components"
 
 import { FollowingScreen } from "screens/Following"
+import { DMsScreen } from "screens/DMs"
 import { NotificationsScreen } from "screens/Notifications"
 import { SettingsScreen } from "screens/Settings"
 
@@ -18,6 +19,7 @@ function BottomTabBar({ navigation, state }) {
         onSelect={(index) => navigation.navigate(state.routeNames[index])}
       >
         <BottomNavigationTab icon={(props) => <Icon {...props} name="home-outline" />} />
+        <BottomNavigationTab icon={(props) => <Icon {...props} name="message-circle-outline" />} />
         <BottomNavigationTab icon={(props) => <Icon {...props} name="bell-outline" />} />
         <BottomNavigationTab icon={(props) => <Icon {...props} name="settings-outline" />} />
       </BottomNavigation>
@@ -29,6 +31,7 @@ export function BottomTabNavigator() {
   return (
     <Navigator tabBar={(props) => <BottomTabBar {...props} />} screenOptions={{ headerShown: false }}>
       <Screen name="Following" component={FollowingScreen} />
+      <Screen name="DMs" component={DMsScreen} />
       <Screen name="Notifications" component={NotificationsScreen} />
       <Screen name="Settings" component={SettingsScreen} />
     </Navigator>
