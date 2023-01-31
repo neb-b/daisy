@@ -7,7 +7,7 @@ export const FlashList = (props) => {
   return (
     <BaseFlatList
       estimatedItemSize={144}
-      maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+      maintainVisibleContentPosition={{ minIndexForVisible: 3 }}
       removeClippedSubviews={true}
       {...props}
     />
