@@ -133,6 +133,7 @@ const RelayManagement = () => {
   const [draftRelay, setDraftRelay] = React.useState("")
 
   const relayLength = Object.values(relaysByUrl).length
+  const validDraftRelay = draftRelay.match(/wss:\/\/(\w|.)+/)
 
   const handleRelayToggle = (relay) => {
     Alert.alert("Update relay", relay.url, [
@@ -245,7 +246,11 @@ const RelayManagement = () => {
                 value={draftRelay}
                 onChangeText={(newContent) => setDraftRelay(newContent)}
               />
-              <Button style={{ marginTop: 16, borderRadius: 10 }} onPress={handleAddRelay}>
+              <Button
+                disabled={!validDraftRelay}
+                style={{ marginTop: 16, borderRadius: 10 }}
+                onPress={handleAddRelay}
+              >
                 Add
               </Button>
             </View>
