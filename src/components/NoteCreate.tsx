@@ -1,6 +1,7 @@
 import React from "react"
 import { View, ScrollView } from "react-native"
 import { Input, Button, Divider, TopNavigation, Text } from "@ui-kitten/components"
+import * as Haptics from "expo-haptics"
 
 import { Layout, Note } from "components"
 import { useDispatch } from "store"
@@ -27,6 +28,7 @@ export const NoteCreate: React.FC<Props> = ({ closeModal, id }) => {
   }
 
   const handlePublish = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
     dispatch(doPublishNote({ content, kind: nostrEventKinds.note, replyId: id, onSuccess: closeModal }))
   }
 

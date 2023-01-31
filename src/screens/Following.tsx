@@ -1,6 +1,7 @@
 import React from "react"
 import { Modal, View } from "react-native"
 import { Button, Divider, Icon, Text } from "@ui-kitten/components"
+import * as Haptics from "expo-haptics"
 
 import { useFeed } from "store/hooks"
 import { Layout, Note, NoteCreate, TopNavigation, Spinner, FlashList } from "components"
@@ -34,7 +35,10 @@ export function FollowingScreen() {
         )}
 
         <Button
-          onPress={() => setCreatingNote(true)}
+          onPress={() => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+            setCreatingNote(true)
+          }}
           style={{
             position: "absolute",
             bottom: 16,

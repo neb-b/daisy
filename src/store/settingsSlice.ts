@@ -228,7 +228,6 @@ export const doCycleRelays = () => async (dispatch: AppDispatch, getState: GetSt
       count++
 
       if (count === relayUrls.length) {
-        console.log("count reached, init relays")
         dispatch(initRelays())
       }
     }

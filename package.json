@@ -49,7 +49,8 @@
     "redux-persist": "6.0.0",
     "text-encoding": "0.7.0",
     "typescript": "4.9.4",
-    "expo-system-ui": "~2.0.1"
+    "expo-system-ui": "~2.0.1",
+    "expo-haptics": "~12.0.1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.48.1",

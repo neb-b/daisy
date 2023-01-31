@@ -1,6 +1,7 @@
 import React from "react"
 import { View, Pressable, Share, Modal, Alert } from "react-native"
 import { useTheme, Icon, Text } from "@ui-kitten/components"
+import * as Haptics from "expo-haptics"
 
 import { NoteCreate } from "components"
 import { nostrEventKinds } from "core/nostr"
@@ -34,9 +35,18 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
     fill: defaultColor,
   }
 
-  const handleReply = React.useCallback(() => setCreatingNote(true), [])
+  const haptic = React.useCallback(() => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+  }, [])
+
+  const handleReply = React.useCallback(() => {
+    haptic()
+    setCreatingNote(true)
+  }, [haptic, setCreatingNote])
 
   const handleShare = React.useCallback(async () => {
+    haptic()
+
     try {
       await Share.share({
         message: `https://snort.social/e/${id}`,
@@ -44,10 +54,12 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
     } catch (error: any) {
       console.log("error sharing", error)
     }
-  }, [id])
+  }, [id, haptic])
 
   const stringifiedNote = JSON.stringify(note)
   const handleRepost = React.useCallback(() => {
+    haptic()
+
     Alert.alert("Boost", "Are you sure you want to boost this?", [
       {
         text: "Boost",
@@ -62,11 +74,12 @@ export const NoteActions: React.FC<Props> = ({ id, size = "small" }) => {
       },
       { text: "Cancel", style: "cancel" },
     ])
-  }, [id, stringifiedNote])
+  }, [id, stringifiedNote, haptic])
 
   const handleLike = React.useCallback(() => {
+    haptic()
     dispatch(doLike(id))
-  }, [id])
+  }, [id, haptic])
 
   return (
     <>

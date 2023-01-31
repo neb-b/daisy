@@ -32,10 +32,10 @@ export const Note: React.FC<Props> = ({
   const profileContent = profile?.content
   const isHighlightedNote = id === threadId
 
-  if (!note) return null
-
   // @ts-expect-error
   const onNavigate = React.useCallback(() => navigation.push("Thread", { id }), [id])
+
+  if (!note) return null
 
   return (
     <>

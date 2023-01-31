@@ -1,10 +1,9 @@
 import React from "react"
 import { View } from "react-native"
 import { Divider, Spinner } from "@ui-kitten/components"
-import { FlashList } from "@shopify/flash-list"
 import { useFocusEffect } from "@react-navigation/native"
 
-import { Note, Layout, TopNavigation } from "components"
+import { Note, Layout, TopNavigation, FlashList } from "components"
 import { useThread } from "store/hooks"
 import { doSubscribeToThread, doUnsubscribeFromRelaysForId } from "store/subscriptionsSlice"
 import { useDispatch } from "store"
