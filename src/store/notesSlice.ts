@@ -203,12 +203,13 @@ const doPopulateFeed =
     const mentionsSet = new Set<string>()
 
     let reposts = []
-    events.forEach((event: unknown) => {
+    events.forEach(async (event: unknown) => {
       const note = event as NostrNoteEvent | NostrRepostEvent | NostrDMEvent
 
       if (note.kind === nostrEventKinds.dm) {
+        console.log("dm", note.tags)
         try {
-          const decryptedContent = nip04.decrypt(
+          const decryptedContent = await nip04.decrypt(
             settingsState.user.privateKey,
             settingsState.user.pubkey,
             note.content
