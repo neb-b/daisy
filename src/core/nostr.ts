@@ -13,6 +13,7 @@ export const nostrEventKinds = {
   profile: 0,
   note: 1,
   contactList: 3,
+  dm: 4,
   repost: 6,
   reaction: 7,
 }
@@ -25,7 +26,7 @@ export const defaultRelays = [
   "wss://nostr-pub.semisol.dev",
 ]
 
-const GET_EVENTS_LIMIT = 50
+const GET_EVENTS_LIMIT = 3
 const TIMEOUT = 3000
 
 type ConnectionEventCbArg = {

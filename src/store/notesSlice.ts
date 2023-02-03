@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
-import type { AppDispatch, GetState } from "store"
+import { nip04 } from "nostr-tools"
 
+import type { AppDispatch, GetState } from "store"
 import { getNostrEvent, getNostrEvents, publishNote, nostrEventKinds } from "core/nostr"
 import { noteMentionRegex } from "utils/note"
 import { updateProfilesByPubkey } from "store/profilesSlice"
@@ -113,6 +114,17 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
   dispatch(doPopulateFeed("following", filter))
 }
 
+export const doPopulateDMsFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
+  const { settings: settingsState } = getState()
+
+  const filter = {
+    "#p": [settingsState.user.pubkey],
+    kinds: [nostrEventKinds.dm],
+  }
+
+  dispatch(doPopulateFeed("dm", filter))
+}
+
 export const doPopulateThread = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
   const {
     notes: { notesById },
@@ -183,6 +195,7 @@ const doPopulateFeed =
 
     dispatch(updateloadingByIdOrPubkey({ [feedId]: true }))
 
+    console.log("fetch dms", updatedFilter)
     const events = await getNostrEvents(relays, updatedFilter)
 
     const profilePubkeySet = new Set<string>()
@@ -191,7 +204,20 @@ const doPopulateFeed =
 
     let reposts = []
     events.forEach((event: unknown) => {
-      const note = event as NostrNoteEvent | NostrRepostEvent
+      const note = event as NostrNoteEvent | NostrRepostEvent | NostrDMEvent
+
+      if (note.kind === nostrEventKinds.dm) {
+        try {
+          const decryptedContent = nip04.decrypt(
+            settingsState.user.privateKey,
+            settingsState.user.pubkey,
+            note.content
+          )
+          console.log("content", decryptedContent)
+        } catch (e) {
+          console.log("???", e)
+        }
+      }
 
       const mentions = note.content.match(noteMentionRegex) || []
       for (var i = 0; i < mentions.length; i++) {
