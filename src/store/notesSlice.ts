@@ -1,15 +1,23 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
 import { nip04 } from "nostr-tools"
-import * as base64 from "@protobufjs/base64"
+// import * as base64 from "@protobufjs/base64"
 import * as secp from "@noble/secp256k1"
 // import crypto from "isomorphic-webcrypto"
 // import { decrypt } from "./nip04"
+import base64 from "react-native-base64"
+// import * as Crypto from "expo-crypto"
+// import crypto from "react-native-crypto"
+import crypto from "isomorphic-webcrypto"
+import { Buffer } from "buffer/"
 
 import type { AppDispatch, GetState } from "store"
 import { getNostrEvent, getNostrEvents, publishNote, nostrEventKinds } from "core/nostr"
 import { noteMentionRegex } from "utils/note"
 import { updateProfilesByPubkey } from "store/profilesSlice"
+import { TextDecoder } from "text-encoding"
+
+const utf8Decoder = new TextDecoder("utf-8")
 
 export interface NotesState {
   loading: boolean
@@ -219,16 +227,45 @@ const doPopulateFeed =
     const { pubkey, privateKey } = settingsState.user
     let reposts = []
 
+    function getNormalizedX(key) {
+      return key.slice(1, 33)
+    }
+
     events.forEach(async (event: unknown) => {
       let note = event as NostrNoteEvent | NostrRepostEvent | NostrDMEvent
 
       if (note.kind === nostrEventKinds.dm) {
         try {
-          const decoded = await nip04.decrypt(privateKey, pubkey, note.content)
-          note.content = decoded
+          console.log("\n")
+          // const decoded = await nip04.decrypt(privateKey, pubkey, note.content)
+          // note.content = decoded
+          const data = note.content
+          let [ctb64, ivb64] = data.split("?iv=")
+          let key = secp.getSharedSecret(privateKey, "02" + pubkey)
+          let normalizedKey = getNormalizedX(key)
+          let cryptoKey = await crypto.subtle.importKey("raw", normalizedKey, { name: "AES-CBC" }, false, [
+            "decrypt",
+          ])
+
+          console.log("cryptKey", cryptoKey)
+          // console.log("ctb64", ctb64)
+          let ciphertext = base64.decode(ctb64)
+          // console.log("ciphertext", ciphertext)
+          let iv = base64.decode(ivb64)
+          try {
+            const buffer = Buffer.from(ciphertext)
+            console.log("getting plaintext", buffer)
+            let plaintext = await crypto.subtle.decrypt({ name: "AES-CBC", iv }, cryptoKey, buffer)
+            console.log("plaintext", plaintext)
+            let text = utf8Decoder.decode(plaintext)
+            console.log("text", text)
+          } catch (e) {
+            console.log("error decrypt: ", e)
+          }
         } catch (e) {
           console.log("e", e)
         }
+        console.log("\n")
         dispatch(addDmForPubkey({ pubkey: note.pubkey, id: note.id }))
       }
 
