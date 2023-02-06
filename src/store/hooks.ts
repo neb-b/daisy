@@ -7,6 +7,7 @@ import {
   selectRelaysByUrl,
   selectRelaysLoadingByUrl,
   selectHasRelayConnection,
+  selectDmsByPubkey,
   makeSelectProfileByPubkey,
   makeSelectContactListByPubkey,
   makeSelectNoteByNoteId,
@@ -18,6 +19,7 @@ import {
   makeSelectFeedById,
   makeSelectThreadByNoteId,
   makeSelectNip05ByPubkey,
+  selectNotesById,
 } from "./selectors"
 
 export const useProfile = (pubkey?: string) => {
@@ -93,4 +95,26 @@ export const useNip05 = (pubkey: string) => {
   const nip05 = useSelector(makeSelectNip05ByPubkey(pubkey))
 
   return nip05
+}
+
+export const useDMs = () => {
+  const dmsByPubkey = useSelector(selectDmsByPubkey)
+  const notesById = useSelector(selectNotesById)
+
+  const dmsWithNotes = Object.keys(dmsByPubkey).reduce((acc, pubkey) => {
+    const noteIdsInConversation = dmsByPubkey[pubkey]
+    const notes = noteIdsInConversation.map((noteId) => notesById[noteId]).filter((note) => note)
+
+    return {
+      ...acc,
+      [pubkey]: notes,
+    }
+  }, {})
+
+  return dmsWithNotes
+}
+
+export const useDM = (id: string) => {
+  const notesById = useSelector(selectNotesById)
+  return notesById[id]
 }

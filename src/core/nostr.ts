@@ -26,7 +26,7 @@ export const defaultRelays = [
   "wss://nostr-pub.semisol.dev",
 ]
 
-const GET_EVENTS_LIMIT = 3
+const GET_EVENTS_LIMIT = 30
 const TIMEOUT = 3000
 
 type ConnectionEventCbArg = {

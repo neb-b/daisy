@@ -164,31 +164,48 @@ function RepostAuthor({ pubkey }) {
   )
 }
 
-const NoteAuthor = ({ pubkey, profileContent, isHighlightedNote, note }) => {
+export const NoteAuthor = ({ pubkey, profileContent, isHighlightedNote = false, note }) => {
   return (
     <>
-      <View style={{ flexDirection: "row" }}>
-        <Text
-          numberOfLines={1}
-          style={{ fontSize: 14, fontWeight: "bold", maxWidth: Dimensions.get("window").width - 116 }}
-        >
-          {profileContent?.display_name || profileContent?.name || nip19.npubEncode(note.pubkey).slice(0, 8)}{" "}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          flex: 1,
+          overflow: "hidden",
+        }}
+      >
+        <View style={{ flexDirection: "row" }}>
+          <Text
+            numberOfLines={1}
+            style={{
+              fontSize: 14,
+              fontWeight: "bold",
+              maxWidth: Dimensions.get("window").width - 156,
+            }}
+          >
+            {profileContent?.display_name ||
+              profileContent?.name ||
+              nip19.npubEncode(note.pubkey).slice(0, 8)}
+          </Text>
+          <Nip05Badge pubkey={pubkey} style={{ marginLeft: 2 }} />
           {!isHighlightedNote && profileContent?.name && profileContent?.display_name && (
             <Text
+              numberOfLines={1}
               appearance="hint"
               style={{
                 fontSize: 14,
                 marginLeft: 4,
+                maxWidth: Dimensions.get("window").width - 116,
               }}
             >
               @{profileContent?.name}
             </Text>
           )}
-        </Text>
-        <Nip05Badge pubkey={pubkey} style={{ marginLeft: 2 }} />
+        </View>
 
         {!isHighlightedNote && (
-          <Text appearance="hint" style={{ fontSize: 14, marginLeft: 4 }}>
+          <Text appearance="hint" style={{ fontSize: 14, paddingLeft: 8 }}>
             {timeSince(note.created_at)}
           </Text>
         )}

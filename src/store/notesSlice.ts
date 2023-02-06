@@ -1,6 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
 import { nip04 } from "nostr-tools"
+import * as base64 from "@protobufjs/base64"
+import * as secp from "@noble/secp256k1"
+// import crypto from "isomorphic-webcrypto"
+// import { decrypt } from "./nip04"
 
 import type { AppDispatch, GetState } from "store"
 import { getNostrEvent, getNostrEvents, publishNote, nostrEventKinds } from "core/nostr"
@@ -15,6 +19,7 @@ export interface NotesState {
   feedsByPubkey: Record<string, string[]>
   loadingByIdOrPubkey: Record<string, boolean>
   reactionsByNoteId: Record<string, NostrReactionEvent[]>
+  dmsByPubkey: Record<string, string[]>
 }
 
 const initialState = {
@@ -23,6 +28,7 @@ const initialState = {
   contactListsByPubkey: {},
   loadingByIdOrPubkey: {},
   reactionsByNoteId: {},
+  dmsByPubkey: {},
 } as NotesState
 
 export const notesSlice = createSlice({
@@ -52,6 +58,14 @@ export const notesSlice = createSlice({
     updateReactionsByNoteId(state, action: PayloadAction<Record<string, NostrReactionEvent[]>>) {
       state.reactionsByNoteId = { ...state.reactionsByNoteId, ...action.payload }
     },
+    addDmForPubkey(state, action: PayloadAction<{ pubkey: string; id: string }>) {
+      const { pubkey, id } = action.payload
+      const currentIdsForPubkey = state.dmsByPubkey[pubkey] || []
+      const currentIdsForPubkeySet = new Set(currentIdsForPubkey)
+      currentIdsForPubkeySet.add(id)
+
+      state.dmsByPubkey = { ...state.dmsByPubkey, [pubkey]: Array.from(currentIdsForPubkeySet) }
+    },
   },
 })
 
@@ -61,6 +75,7 @@ export const {
   addNoteToFeedById,
   updateloadingByIdOrPubkey,
   updateReactionsByNoteId,
+  addDmForPubkey,
 } = notesSlice.actions
 
 export const doFetchNote = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
@@ -195,31 +210,29 @@ const doPopulateFeed =
 
     dispatch(updateloadingByIdOrPubkey({ [feedId]: true }))
 
-    console.log("fetch dms", updatedFilter)
     const events = await getNostrEvents(relays, updatedFilter)
 
     const profilePubkeySet = new Set<string>()
     const repostIdSet = new Set<string>()
     const mentionsSet = new Set<string>()
 
+    const { pubkey, privateKey } = settingsState.user
     let reposts = []
+
     events.forEach(async (event: unknown) => {
-      const note = event as NostrNoteEvent | NostrRepostEvent | NostrDMEvent
+      let note = event as NostrNoteEvent | NostrRepostEvent | NostrDMEvent
 
       if (note.kind === nostrEventKinds.dm) {
-        console.log("dm", note.tags)
         try {
-          const decryptedContent = await nip04.decrypt(
-            settingsState.user.privateKey,
-            settingsState.user.pubkey,
-            note.content
-          )
-          console.log("content", decryptedContent)
+          const decoded = await nip04.decrypt(privateKey, pubkey, note.content)
+          note.content = decoded
         } catch (e) {
-          console.log("???", e)
+          console.log("e", e)
         }
+        dispatch(addDmForPubkey({ pubkey: note.pubkey, id: note.id }))
       }
 
+      // Scan for note mentions in the note
       const mentions = note.content.match(noteMentionRegex) || []
       for (var i = 0; i < mentions.length; i++) {
         const mention = mentions[i]
