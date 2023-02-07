@@ -45,6 +45,10 @@ export const selectReactionsById = createSelector(selectNotes, (notes) => {
   return notes.reactionsByNoteId
 })
 
+export const selectDmsByPubkey = createSelector(selectNotes, (notes) => {
+  return notes.dmsByPubkey
+})
+
 export const selectHasRelayConnection = createSelector(selectRelaysByUrl, (relaysByUrl) => {
   return !!Object.values(relaysByUrl).find((relay) => relay.status === 1 && typeof relay.on === "function")
 })

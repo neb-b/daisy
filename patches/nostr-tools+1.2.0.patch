@@ -1,0 +1,47 @@
+diff --git a/node_modules/nostr-tools/lib/nostr.cjs.js b/node_modules/nostr-tools/lib/nostr.cjs.js
+index b72b619..e95fa55 100644
+--- a/node_modules/nostr-tools/lib/nostr.cjs.js
++++ b/node_modules/nostr-tools/lib/nostr.cjs.js
+@@ -433,6 +433,8 @@ __export(nip04_exports, {
+ var import_utils2 = require("@noble/hashes/utils");
+ var secp256k13 = __toESM(require("@noble/secp256k1"));
+ var import_base = require("@scure/base");
++const crypto = require('isomorphic-webcrypto')
++
+ async function encrypt(privkey, pubkey, text) {
+   const key = secp256k13.getSharedSecret(privkey, "02" + pubkey);
+   const normalizedKey = getNormalizedX(key);
+@@ -445,11 +447,13 @@ async function encrypt(privkey, pubkey, text) {
+     false,
+     ["encrypt"]
+   );
++  console.log("key", normalizedKey)
+   let ciphertext = await crypto.subtle.encrypt(
+     { name: "AES-CBC", iv },
+     cryptoKey,
+     plaintext
+   );
++  console.log("cyphertext", ciphertext)
+   let ctb64 = import_base.base64.encode(new Uint8Array(ciphertext));
+   let ivb64 = import_base.base64.encode(new Uint8Array(iv.buffer));
+   return `${ctb64}?iv=${ivb64}`;
+@@ -472,6 +476,7 @@ async function decrypt(privkey, pubkey, data) {
+     cryptoKey,
+     ciphertext
+   );
++
+   let text = utf8Decoder.decode(plaintext);
+   return text;
+ }
+diff --git a/node_modules/nostr-tools/nip04.ts b/node_modules/nostr-tools/nip04.ts
+index aff2b94..449b2e3 100644
+--- a/node_modules/nostr-tools/nip04.ts
++++ b/node_modules/nostr-tools/nip04.ts
+@@ -2,6 +2,7 @@ import {randomBytes} from '@noble/hashes/utils'
+ import * as secp256k1 from '@noble/secp256k1'
+ import {base64} from '@scure/base'
+ 
++
+ import {utf8Decoder, utf8Encoder} from './utils'
+ 
+ export async function encrypt(

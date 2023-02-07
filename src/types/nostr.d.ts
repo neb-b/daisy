@@ -29,6 +29,10 @@ declare interface NostrContactListEvent extends NostrBaseEvent {
   kind: 3
 }
 
+declare interface NostrDMEvent extends NostrBaseEvent {
+  kind: 3
+}
+
 declare interface NostrRepostEvent extends NostrBaseEvent {
   kind: 6
 }

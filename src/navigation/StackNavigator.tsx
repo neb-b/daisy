@@ -5,6 +5,7 @@ import { ProfileScreen } from "screens/Profile"
 import { ProfileEditScreen } from "screens/ProfileEdit"
 import { SettingsScreen } from "screens/Settings"
 import { ThreadScreen } from "screens/Thread"
+import { DMScreen } from "screens/DM"
 import { LoadingScreen } from "screens/Loading"
 import { AuthScreen } from "screens/Auth"
 
@@ -22,6 +23,7 @@ function HomeStackNavigator() {
       <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="Thread" component={ThreadScreen} />
+      <Stack.Screen name="DM" component={DMScreen} />
     </Stack.Navigator>
   )
 }

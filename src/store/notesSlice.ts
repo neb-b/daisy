@@ -1,10 +1,24 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
-import type { AppDispatch, GetState } from "store"
+import { nip04 } from "nostr-tools"
+// import * as base64 from "@protobufjs/base64"
+import * as secp from "@noble/secp256k1"
+// import crypto from "isomorphic-webcrypto"
+// import { decrypt } from "./nip04"
+import base64 from "react-native-base64"
+// import * as Crypto from "expo-crypto"
+// import crypto from "react-native-crypto"
+import crypto from "isomorphic-webcrypto"
+import { Buffer } from "buffer/"
+import { decrypt } from "react-native-aes-crypto"
 
+import type { AppDispatch, GetState } from "store"
 import { getNostrEvent, getNostrEvents, publishNote, nostrEventKinds } from "core/nostr"
 import { noteMentionRegex } from "utils/note"
 import { updateProfilesByPubkey } from "store/profilesSlice"
+import { TextDecoder } from "text-encoding"
+
+const utf8Decoder = new TextDecoder("utf-8")
 
 export interface NotesState {
   loading: boolean
@@ -14,6 +28,7 @@ export interface NotesState {
   feedsByPubkey: Record<string, string[]>
   loadingByIdOrPubkey: Record<string, boolean>
   reactionsByNoteId: Record<string, NostrReactionEvent[]>
+  dmsByPubkey: Record<string, string[]>
 }
 
 const initialState = {
@@ -22,6 +37,7 @@ const initialState = {
   contactListsByPubkey: {},
   loadingByIdOrPubkey: {},
   reactionsByNoteId: {},
+  dmsByPubkey: {},
 } as NotesState
 
 export const notesSlice = createSlice({
@@ -51,6 +67,14 @@ export const notesSlice = createSlice({
     updateReactionsByNoteId(state, action: PayloadAction<Record<string, NostrReactionEvent[]>>) {
       state.reactionsByNoteId = { ...state.reactionsByNoteId, ...action.payload }
     },
+    addDmForPubkey(state, action: PayloadAction<{ pubkey: string; id: string }>) {
+      const { pubkey, id } = action.payload
+      const currentIdsForPubkey = state.dmsByPubkey[pubkey] || []
+      const currentIdsForPubkeySet = new Set(currentIdsForPubkey)
+      currentIdsForPubkeySet.add(id)
+
+      state.dmsByPubkey = { ...state.dmsByPubkey, [pubkey]: Array.from(currentIdsForPubkeySet) }
+    },
   },
 })
 
@@ -60,6 +84,7 @@ export const {
   addNoteToFeedById,
   updateloadingByIdOrPubkey,
   updateReactionsByNoteId,
+  addDmForPubkey,
 } = notesSlice.actions
 
 export const doFetchNote = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
@@ -111,6 +136,17 @@ export const doPopulateFollowingFeed = () => async (dispatch: AppDispatch, getSt
   }
 
   dispatch(doPopulateFeed("following", filter))
+}
+
+export const doPopulateDMsFeed = () => async (dispatch: AppDispatch, getState: GetState) => {
+  const { settings: settingsState } = getState()
+
+  const filter = {
+    "#p": [settingsState.user.pubkey],
+    kinds: [nostrEventKinds.dm],
+  }
+
+  dispatch(doPopulateFeed("dm", filter))
 }
 
 export const doPopulateThread = (noteId: string) => async (dispatch: AppDispatch, getState: GetState) => {
@@ -189,10 +225,54 @@ const doPopulateFeed =
     const repostIdSet = new Set<string>()
     const mentionsSet = new Set<string>()
 
+    const { pubkey, privateKey } = settingsState.user
     let reposts = []
-    events.forEach((event: unknown) => {
-      const note = event as NostrNoteEvent | NostrRepostEvent
 
+    function getNormalizedX(key) {
+      return key.slice(1, 33)
+    }
+
+    events.forEach(async (event: unknown) => {
+      let note = event as NostrNoteEvent | NostrRepostEvent | NostrDMEvent
+
+      if (note.kind === nostrEventKinds.dm) {
+        try {
+          console.log("\n")
+          // const decoded = await nip04.decrypt(privateKey, pubkey, note.content)
+          // note.content = decoded
+          const data = note.content
+          let [ctb64, ivb64] = data.split("?iv=")
+          let key = secp.getSharedSecret(privateKey, "02" + pubkey)
+          let normalizedKey = getNormalizedX(key)
+          let cryptoKey = await crypto.subtle.importKey("raw", normalizedKey, { name: "AES-CBC" }, false, [
+            "decrypt",
+          ])
+
+          console.log("cryptKey", cryptoKey)
+          // console.log("ctb64", ctb64)
+          let ciphertext = base64.decode(ctb64)
+          // console.log("ciphertext", ciphertext)
+          let iv = base64.decode(ivb64)
+          try {
+            // const buffer = Buffer.from(ciphertext)
+            // console.log("getting plaintext", buffer)
+            // let plaintext = await crypto.subtle.decrypt({ name: "AES-CBC", iv }, cryptoKey, buffer)
+            // console.log("plaintext", plaintext)
+            // let text = utf8Decoder.decode(plaintext)
+            // console.log("text", text)
+            const decryptData = await decrypt(ciphertext, normalizedKey, iv, "aes-256-cbc")
+            console.log("??", decryptData)
+          } catch (e) {
+            console.log("error decrypt: ", e)
+          }
+        } catch (e) {
+          console.log("e", e)
+        }
+        console.log("\n")
+        dispatch(addDmForPubkey({ pubkey: note.pubkey, id: note.id }))
+      }
+
+      // Scan for note mentions in the note
       const mentions = note.content.match(noteMentionRegex) || []
       for (var i = 0; i < mentions.length; i++) {
         const mention = mentions[i]

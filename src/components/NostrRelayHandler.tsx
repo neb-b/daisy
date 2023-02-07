@@ -29,32 +29,32 @@ export const NostrRelayHandler = () => {
   ).length
   const prevRelayCount = usePrevious(relaysCount)
 
-  React.useEffect(() => {
-    if (hasContactList) {
-      dispatch(doSubscribeToFollowing())
-      dispatch(doSubscribeToNotifications())
-    }
-    return () => {
-      dispatch(doUnsubscribeFromRelaysForId("following"))
-      dispatch(doUnsubscribeFromRelaysForId("notifications"))
-    }
-  }, [hasContactList, relaysCount])
+  // React.useEffect(() => {
+  //   if (hasContactList) {
+  //     dispatch(doSubscribeToFollowing())
+  //     dispatch(doSubscribeToNotifications())
+  //   }
+  //   return () => {
+  //     dispatch(doUnsubscribeFromRelaysForId("following"))
+  //     dispatch(doUnsubscribeFromRelaysForId("notifications"))
+  //   }
+  // }, [hasContactList, relaysCount])
 
-  React.useEffect(() => {
-    if (!hasContactList || relaysCount === 0) {
-      return
-    }
+  // React.useEffect(() => {
+  //   if (!hasContactList || relaysCount === 0) {
+  //     return
+  //   }
 
-    if (!hasPerformedInitialFetch && relaysCount > 0) {
-      dispatch(doPopulateFollowingFeed())
-      setHasPerformedInitialFetch(true)
-      return
-    }
+  //   if (!hasPerformedInitialFetch && relaysCount > 0) {
+  //     dispatch(doPopulateFollowingFeed())
+  //     setHasPerformedInitialFetch(true)
+  //     return
+  //   }
 
-    if (relaysCount > 0 && prevRelayCount === 0) {
-      dispatch(doPopulateFollowingFeed())
-    }
-  }, [hasContactList, relaysCount, prevRelayCount, hasPerformedInitialFetch, setHasPerformedInitialFetch])
+  //   if (relaysCount > 0 && prevRelayCount === 0) {
+  //     dispatch(doPopulateFollowingFeed())
+  //   }
+  // }, [hasContactList, relaysCount, prevRelayCount, hasPerformedInitialFetch, setHasPerformedInitialFetch])
 
   React.useEffect(() => {
     if (!hasContactList) {

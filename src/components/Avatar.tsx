@@ -8,6 +8,7 @@ import { useProfile } from "store/hooks"
 type Props = {
   pubkey: string
   size?: number
+  marginRight?: number
 }
 
 export const Avatar: React.FC<Props> = ({ pubkey, size = 40, ...rest }) => {
