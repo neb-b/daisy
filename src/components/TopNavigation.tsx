@@ -1,12 +1,12 @@
 import React from "react"
-import { View, Image } from "react-native"
+import { View, Image, Modal } from "react-native"
 import { TopNavigationAction, TopNavigation as BaseTopNavigation, Icon } from "@ui-kitten/components"
 import { useNavigation } from "@react-navigation/native"
 
 import { useDispatch } from "store"
 import { useUser, useHasRelayConnection } from "store/hooks"
 import { doFetchProfile } from "store/profilesSlice"
-import { Avatar } from "components"
+import { Avatar, Search } from "components"
 
 type Props = {
   title?: string
@@ -22,6 +22,7 @@ export const TopNavigation = ({ title, hideProfileLink, hideBack, showLogo = fal
   const dispatch = useDispatch()
   const { goBack } = useNavigation()
   const { pubkey } = useUser()
+  const [searching, setSearching] = React.useState(false)
 
   const user = useUser()
   const hasRelayConnection = useHasRelayConnection()
@@ -32,9 +33,13 @@ export const TopNavigation = ({ title, hideProfileLink, hideBack, showLogo = fal
     }
   }, [pubkey, hasRelayConnection])
 
-  const navigateBack = () => {
+  const navigateBack = React.useCallback(() => {
     goBack()
-  }
+  }, [])
+
+  const showSearch = React.useCallback(() => {
+    setSearching(true)
+  }, [setSearching])
 
   const backAction = React.useCallback(
     () => (
@@ -42,8 +47,17 @@ export const TopNavigation = ({ title, hideProfileLink, hideBack, showLogo = fal
     ),
     []
   )
+  const searchAction = React.useCallback(
+    () => (
+      <TopNavigationAction icon={(props) => <Icon {...props} name="search-outline" />} onPress={showSearch} />
+    ),
+    []
+  )
+
+  const showBack = !!hideProfileLink
   const profileLink = React.useCallback(() => <Avatar pubkey={user.pubkey} size={35} />, [user.pubkey])
   const accessoryLeft = hideProfileLink ? (hideBack ? null : backAction) : profileLink
+  const acccessoryRight = showBack ? null : searchAction
   const titleImage = React.useCallback(
     () =>
       showLogo ? (
@@ -55,11 +69,25 @@ export const TopNavigation = ({ title, hideProfileLink, hideBack, showLogo = fal
   )
 
   return (
-    <BaseTopNavigation
-      alignment="center"
-      accessoryLeft={accessoryLeft}
-      title={title || titleImage}
-      {...style}
-    />
+    <>
+      <BaseTopNavigation
+        alignment="center"
+        accessoryLeft={accessoryLeft}
+        accessoryRight={acccessoryRight}
+        title={title || titleImage}
+        {...style}
+      />
+      {searching && (
+        <Modal
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => {
+            setSearching(false)
+          }}
+        >
+          <Search closeModal={() => setSearching(false)} />
+        </Modal>
+      )}
+    </>
   )
 }
