@@ -10,6 +10,7 @@ import base64 from "react-native-base64"
 // import crypto from "react-native-crypto"
 import crypto from "isomorphic-webcrypto"
 import { Buffer } from "buffer/"
+import { decrypt } from "react-native-aes-crypto"
 
 import type { AppDispatch, GetState } from "store"
 import { getNostrEvent, getNostrEvents, publishNote, nostrEventKinds } from "core/nostr"
@@ -253,12 +254,14 @@ const doPopulateFeed =
           // console.log("ciphertext", ciphertext)
           let iv = base64.decode(ivb64)
           try {
-            const buffer = Buffer.from(ciphertext)
-            console.log("getting plaintext", buffer)
-            let plaintext = await crypto.subtle.decrypt({ name: "AES-CBC", iv }, cryptoKey, buffer)
-            console.log("plaintext", plaintext)
-            let text = utf8Decoder.decode(plaintext)
-            console.log("text", text)
+            // const buffer = Buffer.from(ciphertext)
+            // console.log("getting plaintext", buffer)
+            // let plaintext = await crypto.subtle.decrypt({ name: "AES-CBC", iv }, cryptoKey, buffer)
+            // console.log("plaintext", plaintext)
+            // let text = utf8Decoder.decode(plaintext)
+            // console.log("text", text)
+            const decryptData = await decrypt(ciphertext, normalizedKey, iv, "aes-256-cbc")
+            console.log("??", decryptData)
           } catch (e) {
             console.log("error decrypt: ", e)
           }
